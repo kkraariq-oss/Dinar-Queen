@@ -1,0 +1,2258 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دينار كوين - Dinar Coin | العملة الرقمية العراقية الأولى</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-green: #1a5f3f;
+            --dark-green: #0d3d28;
+            --gold: #c9a961;
+            --bright-gold: #FFD700;
+            --dark-bg: rgba(10, 31, 26, 0.95);
+            --card-bg: rgba(26, 47, 42, 0.85);
+            --text-light: #e8f5e9;
+            --text-gold: #c9a961;
+            --border-gold: rgba(201, 169, 97, 0.3);
+            --success: #4CAF50;
+            --error: #f44336;
+            --warning: #ff9800;
+        }
+
+        body {
+            background: url('.icon-ico/Dinar Queen1.png') no-repeat center center fixed;
+            background-size: cover;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-light);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--bright-gold);
+            border-radius: 50%;
+            opacity: 0;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.3;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-100vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Header Styles */
+        .top-banner {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            border-bottom: 2px solid var(--gold);
+            padding: 0.8rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1001;
+        }
+
+        .banner-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .iraq-emblem {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--bright-gold), var(--gold));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        .iraq-emblem i {
+            color: var(--dark-green);
+            font-size: 1.5rem;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+            }
+        }
+
+        .banner-text {
+            text-align: center;
+        }
+
+        .banner-text h2 {
+            font-size: 1.2rem;
+            color: var(--bright-gold);
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 0.2rem;
+        }
+
+        .banner-text p {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .header {
+            background: var(--dark-bg);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--border-gold);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--bright-gold) 0%, var(--gold) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--dark-green);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            border: 3px solid var(--dark-green);
+            animation: rotate 20s linear infinite;
+            position: relative;
+        }
+
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--bright-gold), transparent, var(--bright-gold));
+            animation: rotate 3s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .logo-text h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, var(--bright-gold), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .logo-text p {
+            font-size: 0.9rem;
+            color: var(--gold);
+            font-weight: 500;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            padding: 0.6rem 1.2rem;
+            color: var(--text-light);
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s;
+            font-weight: 500;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-link:hover {
+            background: rgba(201, 169, 97, 0.1);
+            border-color: var(--gold);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(201, 169, 97, 0.2);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--bright-gold) 0%, var(--gold) 100%);
+            color: var(--dark-green);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.5);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gold);
+            color: var(--dark-green);
+            transform: translateY(-3px);
+        }
+
+        /* Landing Section */
+        .landing {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .coin-logo {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 2rem;
+            animation: floatCoin 3s ease-in-out infinite;
+            filter: drop-shadow(0 10px 30px rgba(255, 215, 0, 0.4));
+        }
+
+        @keyframes floatCoin {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(5deg);
+            }
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--bright-gold) 0%, #fff 50%, var(--bright-gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            text-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
+            animation: shimmer 3s infinite;
+            background-size: 200% auto;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 0% center;
+            }
+            100% {
+                background-position: 200% center;
+            }
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            line-height: 1.8;
+        }
+
+        /* Beta Badge */
+        .beta-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--warning), #ff6f00);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.05);
+            }
+        }
+
+        /* Price Card */
+        .price-card {
+            background: var(--card-bg);
+            border: 2px solid var(--gold);
+            border-radius: 25px;
+            padding: 3rem;
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .price-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+
+        .price-label {
+            font-size: 1.2rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .price-amount {
+            font-size: 4rem;
+            color: var(--bright-gold);
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .price-currency {
+            font-size: 1.3rem;
+            color: var(--text-light);
+        }
+
+        .price-note {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 15px;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Features Grid */
+        .features-section {
+            margin: 4rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--bright-gold);
+            margin-bottom: 3rem;
+            font-weight: 700;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            padding: 1.2rem 1rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-gold);
+            text-align: center;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--gold);
+            box-shadow: 0 15px 40px rgba(201, 169, 97, 0.3);
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--bright-gold), var(--gold));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: var(--dark-green);
+            box-shadow: 0 3px 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .feature-title {
+            font-size: 1.3rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .feature-text {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* About Section */
+        .about-section {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 3rem;
+            margin: 4rem 0;
+            border: 2px solid var(--border-gold);
+            backdrop-filter: blur(10px);
+        }
+
+        .about-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .about-content h3 {
+            font-size: 2rem;
+            color: var(--bright-gold);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .about-content p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            line-height: 2;
+            margin-bottom: 1.5rem;
+            text-align: justify;
+        }
+
+        .about-content .highlight {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 1.5rem;
+            border-right: 4px solid var(--gold);
+            border-radius: 10px;
+            margin: 2rem 0;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid var(--border-gold);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(201, 169, 97, 0.3);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            color: var(--bright-gold);
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--gold);
+            font-size: 1.1rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            border-radius: 25px;
+            margin: 4rem 0;
+            border: 2px solid var(--gold);
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            color: var(--bright-gold);
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-section p {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 25px;
+            max-width: 500px;
+            width: 90%;
+            border: 2px solid var(--gold);
+            position: relative;
+            animation: slideIn 0.3s;
+            backdrop-filter: blur(20px);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: transparent;
+            border: none;
+            color: var(--gold);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            color: var(--bright-gold);
+            transform: rotate(90deg);
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            color: var(--bright-gold);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border-gold);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--gold);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .error-message {
+            color: var(--error);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        /* Dashboard Styles */
+        .dashboard {
+            display: none;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .dashboard-header {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 25px;
+            margin-bottom: 2rem;
+            border: 2px solid var(--border-gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--bright-gold), var(--gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--dark-green);
+            font-weight: bold;
+            border: 3px solid var(--dark-green);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-details h2 {
+            color: var(--bright-gold);
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-details p {
+            color: var(--gold);
+            font-size: 1.1rem;
+        }
+
+        /* Wallet Card */
+        .wallet-card {
+            background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+            border-radius: 25px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--gold);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .wallet-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(201,169,97,0.1)"/></svg>');
+            background-size: contain;
+            opacity: 0.5;
+        }
+
+        .wallet-balance {
+            position: relative;
+            z-index: 1;
+        }
+
+        .balance-label {
+            font-size: 1.2rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .balance-amount {
+            font-size: 4rem;
+            color: var(--bright-gold);
+            font-weight: 800;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            margin-bottom: 0.5rem;
+        }
+
+        .balance-currency {
+            font-size: 1.5rem;
+            color: var(--text-light);
+        }
+
+        .wallet-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .wallet-btn {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .wallet-btn.buy {
+            background: linear-gradient(135deg, var(--bright-gold), var(--gold));
+            color: var(--dark-green);
+        }
+
+        .wallet-btn.send {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            border: 2px solid var(--gold);
+        }
+
+        .wallet-btn.receive {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            border: 2px solid var(--gold);
+        }
+
+        .wallet-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+        }
+
+        /* QR Code Section */
+        .qr-section {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin-top: 2rem;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: white;
+            margin: 1rem auto;
+            border-radius: 15px;
+            padding: 1rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Referral Section */
+        .referral-card {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 2px solid var(--border-gold);
+        }
+
+        .referral-card h3 {
+            color: var(--bright-gold);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .referral-code {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 2px dashed var(--gold);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .referral-code-text {
+            font-size: 2rem;
+            color: var(--bright-gold);
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .referral-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .referral-stat {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+
+        .referral-stat-number {
+            font-size: 2rem;
+            color: var(--bright-gold);
+            font-weight: 700;
+        }
+
+        .referral-stat-label {
+            color: var(--gold);
+            font-size: 0.9rem;
+        }
+
+        /* Transactions */
+        .transactions-card {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 2rem;
+            border: 2px solid var(--border-gold);
+        }
+
+        .transactions-card h3 {
+            color: var(--bright-gold);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+
+        .transaction-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-5px);
+        }
+
+        .transaction-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .transaction-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .transaction-icon.buy {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .transaction-icon.send {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+        }
+
+        .transaction-icon.receive {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .transaction-amount {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .transaction-amount.positive {
+            color: var(--success);
+        }
+
+        .transaction-amount.negative {
+            color: var(--error);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--dark-bg);
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+            border-top: 2px solid var(--border-gold);
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .footer-text {
+            color: var(--gold);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .footer-link {
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .footer-link:hover {
+            color: var(--bright-gold);
+        }
+
+        /* Purchase Request Modal */
+        .purchase-modal .modal-content {
+            max-width: 600px;
+        }
+
+        .purchase-preview {
+            background: rgba(255, 215, 0, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+            border: 2px solid var(--gold);
+        }
+
+        .purchase-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .purchase-row.total {
+            border-top: 2px solid var(--gold);
+            padding-top: 1rem;
+            margin-top: 1rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--bright-gold);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-menu {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .auth-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .price-amount {
+                font-size: 2.5rem;
+            }
+
+            .wallet-actions {
+                flex-direction: column;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--bright-gold);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Success Message */
+        .success-message {
+            background: linear-gradient(135deg, var(--success), #45a049);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            animation: slideInRight 0.5s;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .success-message.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Particles -->
+    <div class="particles" id="particles"></div>
+
+  
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon" style="background: none; box-shadow: none;">
+                    <img src=".icon-ico/Dinar Queen.png" alt="دينار كوين" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; object-position: center; box-shadow: 0 0 0 4px #FFD700; background: #FFD700;">
+                </div>
+                <div class="logo-text">
+                    <h1>  Dinar Coin</h1>
+                    <p>العملة الرقمية العراقية الأولى</p>
+                </div>
+            </div>
+
+            <nav class="nav-menu" id="navMenu">
+        <!-- Stats Row: Active Users, Available Coins, Successful Transactions -->
+        <section class="stats-section" style="margin: 0 0 2rem 0; display: flex; justify-content: center; gap: 2rem; background: none; box-shadow: none; border: none;">
+            <div class="stat-card">
+                <div class="stat-number" id="totalUsers">0</div>
+                <div class="stat-label">مستخدم نشط</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">1M</div>
+                <div class="stat-label">عملة متاحة</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalTransactions">0</div>
+                <div class="stat-label">معاملة ناجحة</div>
+            </div>
+        </section>
+                <a href="#home" class="nav-link" onclick="showSection('landing')">
+                    <i class="fas fa-home"></i> الرئيسية
+                </a>
+                <a href="#about" class="nav-link" onclick="showSection('about')">
+                    <i class="fas fa-info-circle"></i> من نحن
+                </a>
+                <a href="#" class="nav-link">
+                    <i class="fas fa-newspaper"></i> الأخبار
+                </a>
+            </nav>
+
+            <div class="auth-buttons" id="authButtons">
+                <button class="btn btn-secondary" onclick="showModal('loginModal')">
+                    <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+                </button>
+                <button class="btn btn-primary" onclick="showModal('registerModal')">
+                    <i class="fas fa-user-plus"></i> إنشاء حساب
+                </button>
+            </div>
+
+            <div class="auth-buttons" id="userButtons" style="display: none;">
+                <button class="btn btn-primary" onclick="showDashboard()">
+                    <i class="fas fa-wallet"></i> محفظتي
+                </button>
+                <button class="btn btn-secondary" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Landing Page -->
+    <main class="landing" id="landingPage">
+        <!-- Hero Section -->
+        
+            
+        <!-- Price Card -->
+        <div class="price-card">
+            <div class="price-label">السعر الحالي</div>
+            <div class="price-amount">1,000</div>
+            <div class="price-currency">دينار عراقي</div>
+            <div class="price-note">
+                <i class="fas fa-gift"></i>
+                <strong>مكافأة الانضمام:</strong> احصل على 1 دينار كوين مجاناً عند التسجيل!
+                <br><br>
+                <i class="fas fa-users"></i>
+                <strong>برنامج الإحالة:</strong> اربح 0.25 دينار كوين لكل 10 أصدقاء تدعوهم!
+            </div>
+        </div>
+
+        <!-- Features -->
+        <section class="features-section">
+            <h2 class="section-title">لماذا دينار كوين؟</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">آمن ومضمون</h3>
+                    <p class="feature-text">
+                        تقنية blockchain المتقدمة لحماية استثماراتك
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="feature-title">سريع وسهل</h3>
+                    <p class="feature-text">
+                        معاملات فورية وواجهة استخدام بسيطة
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="feature-title">نمو متوقع</h3>
+                    <p class="feature-text">
+                        فرصة استثمارية واعدة في السوق العربي
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-globe-americas"></i>
+                    </div>
+                    <h3 class="feature-title">عالمي ومحلي</h3>
+                    <p class="feature-text">
+                        عملة عربية بمعايير عالمية
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats -->
+        <section class="stats-section">
+            <div class="stat-card">
+                <div class="stat-number" id="totalUsers">0</div>
+                <div class="stat-label">مستخدم نشط</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">1M</div>
+                <div class="stat-label">عملة متاحة</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalTransactions">0</div>
+                <div class="stat-label">معاملة ناجحة</div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="about-section" id="aboutSection">
+            <div class="about-content">
+                <h3><i class="fas fa-users"></i> من نحن</h3>
+                
+                <p>
+                    نحن مجموعة من الشباب العراقيين المستثمرين والمتحمسين للتكنولوجيا، قررنا إطلاق أول عملة رقمية عراقية لمواكبة التطور العالمي في مجال العملات الرقمية. نؤمن بأن العالم العربي يستحق أن يكون له موطئ قدم قوي في عالم الاقتصاد الرقمي.
+                </p>
+
+                <div class="highlight">
+                    <h4 style="color: var(--bright-gold); margin-bottom: 1rem;">
+                        <i class="fas fa-lightbulb"></i> رؤيتنا
+                    </h4>
+                    <p>
+                        في السنوات الأخيرة، ظهرت عملات رقمية كثيرة مثل البيتكوين والإيثيريوم وغيرها، وكانت أغلبها عملات أجنبية. شاهدنا كيف تحولت هذه العملات من مجرد أفكار تجريبية إلى ثروات حقيقية، واليوم أصبحت بعضها أغلى من الذهب نفسه.
+                    </p>
+                </div>
+
+                <p>
+                    <strong style="color: var(--bright-gold);">لماذا دينار كوين؟</strong><br>
+                    جاءت فكرة إنشاء دينار كوين من رغبتنا في إنشاء عملة عربية رقمية تواكب الحداثة والعصر، وتدخل عالم العملات الرقمية لنواكب الدول المتقدمة. نريد أن تكون لنا عملتنا الخاصة، حتى لا يكون التحكم في المستقبل حكراً فقط على العملات الأجنبية.
+                </p>
+
+                <p>
+                    <strong style="color: var(--bright-gold);">الدينار العراقي: تاريخ من القوة</strong><br>
+                    في السابق، كان الدينار العراقي من أقوى العملات في العالم، بل كان أغلى من الدولار الأمريكي نفسه. لكن في الآونة الأخيرة، شهدنا تدهوراً في قيمة العملات العربية في العديد من البلدان مثل سوريا، لبنان، واليمن، حيث أصبحت قيمة عملاتها ضعيفة جداً أمام العملات الأجنبية.
+                </p>
+
+                <p>
+                    نريد أن ننشط العملة العربية مرة أخرى من خلال الدينار الرقمي، ليكون مفتاحاً لعودة قوة العملة العربية إلى العالم. نطمح أن يصبح دينار كوين في المستقبل أقوى من باقي العملات الرقمية.
+                </p>
+
+                <div class="highlight">
+                    <h4 style="color: var(--warning); margin-bottom: 1rem;">
+                        <i class="fas fa-exclamation-triangle"></i> تنويه هام
+                    </h4>
+                    <p>
+                        <strong>هذا الموقع تجريبي حالياً.</strong> إذا نجحت هذه العملة وتم التداول بها بشكل واسع، سيتم إطلاق منصات ومواقع رسمية للتداول الحقيقي. نحن الآن في مرحلة اختبار لمعرفة مدى الدعم العربي والعراقي لهذه الفكرة.
+                    </p>
+                    <p>
+                        إذا نجحت هذه التجربة، سنفتح المزيد من الفرص لشراء وبيع وتعدين العملة بطرق رسمية مصرح بها من قبل الدولة، لتصبح العملة الرقمية السائدة في الدول العربية والأجنبية.
+                    </p>
+                </div>
+
+                <p style="text-align: center; font-size: 1.3rem; color: var(--bright-gold); margin-top: 2rem;">
+                    <strong>ساعدنا في بناء مستقبل الاقتصاد الرقمي العربي!</strong>
+                </p>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <h2>ابدأ رحلتك الاستثمارية اليوم</h2>
+            <p>انضم إلى آلاف المستخدمين الذين يثقون في دينار كوين</p>
+            <button class="btn btn-primary" onclick="showModal('registerModal')" style="font-size: 1.2rem; padding: 1rem 3rem;">
+                <i class="fas fa-rocket"></i> سجّل الآن واحصل على 1 دينار كوين مجاناً!
+            </button>
+        </section>
+    </main>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="user-info">
+                <div class="user-avatar" id="dashboardAvatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-details">
+                    <h2 id="dashboardName">مرحباً بك</h2>
+                    <p id="dashboardEmail"></p>
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="showLanding()">
+                <i class="fas fa-arrow-right"></i> العودة للرئيسية
+            </button>
+        </div>
+
+        <!-- Wallet Card -->
+        <div class="wallet-card">
+            <div class="wallet-balance">
+                <div class="balance-label">رصيدك الحالي</div>
+                <div class="balance-amount" id="walletBalance">0.00</div>
+                <div class="balance-currency">دينار كوين</div>
+            </div>
+
+            <div class="wallet-actions">
+                <button class="wallet-btn buy" onclick="showBuyModal()">
+                    <i class="fas fa-shopping-cart"></i>
+                    شراء
+                </button>
+                <button class="wallet-btn send" onclick="showSendModal()">
+                    <i class="fas fa-paper-plane"></i>
+                    إرسال
+                </button>
+                <button class="wallet-btn receive" onclick="showReceiveModal()">
+                    <i class="fas fa-qrcode"></i>
+                    استقبال
+                </button>
+            </div>
+
+            <div class="qr-section">
+                <h4 style="color: var(--gold); margin-bottom: 1rem;">رمز QR الخاص بك</h4>
+                <div class="qr-code" id="userQRCode">
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #333;">
+                        <i class="fas fa-qrcode" style="font-size: 100px;"></i>
+                    </div>
+                </div>
+                <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 1rem;">
+                    اطلب من الآخرين مسح هذا الرمز لإرسال دينار كوين إليك
+                </p>
+            </div>
+        </div>
+
+        <!-- Referral Card -->
+        <div class="referral-card">
+            <h3><i class="fas fa-gift"></i> برنامج الإحالة</h3>
+            <p style="color: var(--text-light); margin-bottom: 1.5rem;">
+                شارك رمز الإحالة الخاص بك مع أصدقائك واحصل على 0.25 دينار كوين لكل 10 أشخاص يسجلون!
+            </p>
+            
+            <div class="referral-code">
+                <div class="referral-code-text" id="referralCode">LOADING...</div>
+                <button class="btn btn-primary" onclick="copyReferralCode()" style="margin-top: 1rem;">
+                    <i class="fas fa-copy"></i> نسخ الرمز
+                </button>
+            </div>
+
+            <div class="referral-stats">
+                <div class="referral-stat">
+                    <div class="referral-stat-number" id="referralCount">0</div>
+                    <div class="referral-stat-label">إحالات ناجحة</div>
+                </div>
+                <div class="referral-stat">
+                    <div class="referral-stat-number" id="referralEarnings">0.00</div>
+                    <div class="referral-stat-label">أرباح الإحالة</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions -->
+        <div class="transactions-card">
+            <h3><i class="fas fa-history"></i> سجل المعاملات</h3>
+            <div id="transactionsList">
+                <div style="text-align: center; padding: 3rem; color: var(--gold);">
+                    <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p>لا توجد معاملات بعد</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('registerModal')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="modal-title">إنشاء حساب جديد</h2>
+            
+            <div class="success-message" id="registerSuccess">
+                <i class="fas fa-check-circle" style="font-size: 1.5rem;"></i>
+                <span>تم إنشاء حسابك بنجاح! احصل على 1 دينار كوين مجاناً!</span>
+            </div>
+
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> الاسم الكامل</label>
+                    <input type="text" id="registerName" required placeholder="أدخل اسمك الكامل">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <input type="email" id="registerEmail" required placeholder="example@email.com">
+                    <div class="error-message" id="registerEmailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <input type="password" id="registerPassword" required placeholder="كلمة مرور قوية">
+                    <div class="error-message" id="registerPasswordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> تأكيد كلمة المرور</label>
+                    <input type="password" id="registerConfirmPassword" required placeholder="أعد إدخال كلمة المرور">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-gift"></i> رمز الإحالة (اختياري)</label>
+                    <input type="text" id="registerReferralCode" placeholder="أدخل رمز الإحالة إذا كان لديك">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                    <i class="fas fa-user-plus"></i> إنشاء الحساب
+                </button>
+            </form>
+
+            <p style="text-align: center; margin-top: 1.5rem; color: var(--text-light);">
+                لديك حساب بالفعل؟ 
+                <a href="#" onclick="closeModal('registerModal'); showModal('loginModal');" style="color: var(--bright-gold); font-weight: 600;">
+                    سجّل الدخول
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('loginModal')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="modal-title">تسجيل الدخول</h2>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <input type="email" id="loginEmail" required placeholder="example@email.com">
+                    <div class="error-message" id="loginEmailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <input type="password" id="loginPassword" required placeholder="كلمة المرور">
+                    <div class="error-message" id="loginPasswordError"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                    <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+                </button>
+            </form>
+
+            <p style="text-align: center; margin-top: 1.5rem; color: var(--text-light);">
+                ليس لديك حساب؟ 
+                <a href="#" onclick="closeModal('loginModal'); showModal('registerModal');" style="color: var(--bright-gold); font-weight: 600;">
+                    سجّل الآن
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Buy Modal -->
+    <div class="modal purchase-modal" id="buyModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('buyModal')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="width: 100px; height: 100px; margin: 0 auto 1rem; background: linear-gradient(135deg, var(--bright-gold), var(--gold)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);">
+                    ₫
+                </div>
+                <h2 class="modal-title">شراء دينار كوين</h2>
+            </div>
+
+            <form id="buyForm" onsubmit="handleBuyRequest(event)">
+                <div class="form-group">
+                    <label><i class="fas fa-coins"></i> الكمية المطلوبة</label>
+                    <input type="number" id="buyAmount" required min="0.01" step="0.01" placeholder="أدخل الكمية" oninput="calculateTotal()">
+                </div>
+
+                <div class="purchase-preview">
+                    <div class="purchase-row">
+                        <span>الكمية:</span>
+                        <span id="previewAmount">0</span>
+                    </div>
+                    <div class="purchase-row">
+                        <span>السعر لكل وحدة:</span>
+                        <span>1,000 دينار</span>
+                    </div>
+                    <div class="purchase-row total">
+                        <span>المجموع:</span>
+                        <span id="previewTotal">0 دينار</span>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255, 152, 0, 0.1); padding: 1rem; border-radius: 10px; border-right: 3px solid var(--warning); margin-bottom: 1rem;">
+                    <p style="color: var(--text-light); font-size: 0.9rem; line-height: 1.6;">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>ملاحظة:</strong> سيتم إرسال طلبك إلى الإدارة للمراجعة. بعد الموافقة، سيتم إضافة الرصيد إلى محفظتك.
+                    </p>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-paper-plane"></i> إرسال طلب الشراء
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Send Modal -->
+    <div class="modal" id="sendModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('sendModal')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="modal-title">إرسال دينار كوين</h2>
+
+            <form id="sendForm" onsubmit="handleSend(event)">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> معرّف المستلم أو رمز QR</label>
+                    <input type="text" id="sendRecipient" required placeholder="أدخل معرّف المستلم">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-coins"></i> الكمية</label>
+                    <input type="number" id="sendAmount" required min="0.01" step="0.01" placeholder="أدخل الكمية">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-comment"></i> ملاحظة (اختياري)</label>
+                    <input type="text" id="sendNote" placeholder="أضف ملاحظة">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-paper-plane"></i> إرسال
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Receive Modal -->
+    <div class="modal" id="receiveModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('receiveModal')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="modal-title">استقبال دينار كوين</h2>
+
+            <div style="text-align: center;">
+                <p style="color: var(--text-light); margin-bottom: 2rem;">
+                    شارك رمز QR هذا أو معرّفك مع المرسل
+                </p>
+
+                <div style="background: white; padding: 2rem; border-radius: 20px; margin-bottom: 2rem;">
+                    <div style="width: 200px; height: 200px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-qrcode" style="font-size: 150px; color: #333;"></i>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255, 215, 0, 0.1); padding: 1.5rem; border-radius: 15px; border: 2px dashed var(--gold);">
+                    <p style="color: var(--gold); font-size: 0.9rem; margin-bottom: 0.5rem;">معرّفك:</p>
+                    <p style="color: var(--bright-gold); font-size: 1.5rem; font-weight: 700; letter-spacing: 2px;" id="receiveUserId">XXXXXXXX</p>
+                </div>
+
+                <button class="btn btn-primary" onclick="copyReceiveId()" style="margin-top: 1.5rem;">
+                    <i class="fas fa-copy"></i> نسخ المعرّف
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="footer-text">
+                <strong>دينار كوين</strong> - أول عملة رقمية عراقية
+            </p>
+            <p style="color: var(--text-light); margin-bottom: 1rem;">
+                © 2024 Dinar Coin. جميع الحقوق محفوظة.
+            </p>
+            <div class="footer-links">
+                <a href="#" class="footer-link"><i class="fas fa-shield-alt"></i> الخصوصية</a>
+                <a href="#" class="footer-link"><i class="fas fa-file-contract"></i> الشروط</a>
+                <a href="#" class="footer-link"><i class="fas fa-envelope"></i> اتصل بنا</a>
+                <a href="#" class="footer-link"><i class="fab fa-telegram"></i> تيليجرام</a>
+            </div>
+            <p style="color: var(--gold); margin-top: 2rem; font-size: 0.9rem;">
+                <i class="fas fa-flask"></i> هذه منصة تجريبية | BETA Platform
+            </p>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+       // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDGpAHia_wEmrhnmYjrPf1n1TrAzwEMiAI",
+            authDomain: "messageemeapp.firebaseapp.com",
+            databaseURL: "https://messageemeapp-default-rtdb.firebaseio.com",
+            projectId: "messageemeapp",
+            storageBucket: "messageemeapp.appspot.com",
+            messagingSenderId: "255034474844",
+            appId: "1:255034474844:web:5e3b7a6bc4b2fb94cc4199",
+            measurementId: "G-4QBEWRC583"
+        };
+
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // Global Variables
+        let currentUser = null;
+
+        // Create Animated Particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = particle.style.height = (Math.random() * 3 + 1) + 'px';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        // Auth State Observer
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('authButtons').style.display = 'none';
+                document.getElementById('userButtons').style.display = 'flex';
+                loadUserData();
+            } else {
+                currentUser = null;
+                document.getElementById('authButtons').style.display = 'flex';
+                document.getElementById('userButtons').style.display = 'none';
+            }
+        });
+
+        // Modal Functions
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Navigation
+        function showSection(section) {
+            if (section === 'landing') {
+                document.getElementById('landingPage').style.display = 'block';
+                document.getElementById('dashboard').classList.remove('active');
+            } else if (section === 'about') {
+                document.getElementById('aboutSection').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function showLanding() {
+            document.getElementById('landingPage').style.display = 'block';
+            document.getElementById('dashboard').classList.remove('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showDashboard() {
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            loadUserData();
+        }
+
+        // Register Function
+        async function handleRegister(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            const referralCode = document.getElementById('registerReferralCode').value.trim();
+
+            // Validation
+            if (password !== confirmPassword) {
+                alert('كلمات المرور غير متطابقة');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+                return;
+            }
+
+            try {
+                // Create user
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                // Generate referral code
+                const userReferralCode = generateReferralCode();
+
+                // Create user data
+                const userData = {
+                    name: name,
+                    email: email,
+                    balance: 1.0, // Welcome bonus
+                    referralCode: userReferralCode,
+                    referralCount: 0,
+                    referralEarnings: 0,
+                    createdAt: Date.now(),
+                    usedReferralCode: referralCode || null
+                };
+
+                // Save to database
+                await database.ref('users/' + user.uid).set(userData);
+
+                // Process referral if provided
+                if (referralCode) {
+                    await processReferral(referralCode, user.uid);
+                }
+
+                // Add welcome transaction
+                await database.ref('transactions/' + user.uid).push({
+                    type: 'bonus',
+                    amount: 1.0,
+                    description: 'مكافأة الانضمام',
+                    timestamp: Date.now(),
+                    status: 'completed'
+                });
+
+                // Show success message
+                document.getElementById('registerSuccess').classList.add('active');
+                setTimeout(() => {
+                    closeModal('registerModal');
+                    showDashboard();
+                }, 2000);
+
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert('حدث خطأ: ' + error.message);
+            }
+        }
+
+        // Login Function
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                closeModal('loginModal');
+                showDashboard();
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('خطأ في تسجيل الدخول: ' + error.message);
+            }
+        }
+
+        // Logout Function
+        async function logout() {
+            if (confirm('هل تريد تسجيل الخروج؟')) {
+                try {
+                    await auth.signOut();
+                    showLanding();
+                } catch (error) {
+                    console.error('Logout error:', error);
+                }
+            }
+        }
+
+        // Load User Data
+        async function loadUserData() {
+            if (!currentUser) return;
+
+            try {
+                const snapshot = await database.ref('users/' + currentUser.uid).once('value');
+                const userData = snapshot.val();
+
+                if (userData) {
+                    // Update dashboard
+                    document.getElementById('dashboardName').textContent = 'مرحباً ' + userData.name;
+                    document.getElementById('dashboardEmail').textContent = userData.email;
+                    document.getElementById('walletBalance').textContent = (userData.balance || 0).toFixed(2);
+                    document.getElementById('referralCode').textContent = userData.referralCode;
+                    document.getElementById('referralCount').textContent = userData.referralCount || 0;
+                    document.getElementById('referralEarnings').textContent = (userData.referralEarnings || 0).toFixed(2);
+                    document.getElementById('receiveUserId').textContent = userData.referralCode;
+
+                    // Update avatar
+                    const initial = userData.name.charAt(0).toUpperCase();
+                    document.getElementById('dashboardAvatar').textContent = initial;
+
+                    // Load transactions
+                    loadTransactions();
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Load Transactions
+        async function loadTransactions() {
+            if (!currentUser) return;
+
+            try {
+                const snapshot = await database.ref('transactions/' + currentUser.uid).once('value');
+                const transactions = snapshot.val();
+                const transactionsList = document.getElementById('transactionsList');
+
+                if (!transactions) {
+                    transactionsList.innerHTML = `
+                        <div style="text-align: center; padding: 3rem; color: var(--gold);">
+                            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                            <p>لا توجد معاملات بعد</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const transactionsArray = Object.entries(transactions).map(([key, value]) => ({
+                    id: key,
+                    ...value
+                })).sort((a, b) => b.timestamp - a.timestamp);
+
+                transactionsList.innerHTML = transactionsArray.map(tx => {
+                    const date = new Date(tx.timestamp).toLocaleDateString('ar-IQ', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    let icon = 'fa-circle';
+                    let typeClass = '';
+                    let amountClass = '';
+                    let sign = '';
+
+                    if (tx.type === 'buy' || tx.type === 'bonus' || tx.type === 'referral' || tx.type === 'receive') {
+                        icon = 'fa-plus-circle';
+                        typeClass = 'buy';
+                        amountClass = 'positive';
+                        sign = '+';
+                    } else {
+                        icon = 'fa-minus-circle';
+                        typeClass = 'send';
+                        amountClass = 'negative';
+                        sign = '-';
+                    }
+
+                    return `
+                        <div class="transaction-item">
+                            <div class="transaction-info">
+                                <div class="transaction-icon ${typeClass}">
+                                    <i class="fas ${icon}"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; margin-bottom: 0.3rem;">
+                                        ${tx.description || 'معاملة'}
+                                    </div>
+                                    <div style="font-size: 0.9rem; color: var(--gold);">
+                                        ${date}
+                                    </div>
+                                    ${tx.status === 'pending' ? '<div style="font-size: 0.85rem; color: var(--warning); margin-top: 0.3rem;"><i class="fas fa-clock"></i> قيد المراجعة</div>' : ''}
+                                </div>
+                            </div>
+                            <div class="transaction-amount ${amountClass}">
+                                ${sign}${tx.amount.toFixed(2)} ₫
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+            }
+        }
+
+        // Buy Modal Functions
+        function showBuyModal() {
+            showModal('buyModal');
+        }
+
+        function calculateTotal() {
+            const amount = parseFloat(document.getElementById('buyAmount').value) || 0;
+            const total = amount * 1000;
+            document.getElementById('previewAmount').textContent = amount.toFixed(2);
+            document.getElementById('previewTotal').textContent = total.toLocaleString() + ' دينار';
+        }
+
+        async function handleBuyRequest(event) {
+            event.preventDefault();
+
+            if (!currentUser) {
+                alert('يرجى تسجيل الدخول أولاً');
+                return;
+            }
+
+            const amount = parseFloat(document.getElementById('buyAmount').value);
+            const totalIQD = amount * 1000;
+
+            try {
+                // Create purchase request
+                await database.ref('purchase_requests/' + currentUser.uid).push({
+                    amount: amount,
+                    totalIQD: totalIQD,
+                    timestamp: Date.now(),
+                    status: 'pending',
+                    userId: currentUser.uid
+                });
+
+                // Add pending transaction
+                await database.ref('transactions/' + currentUser.uid).push({
+                    type: 'buy',
+                    amount: amount,
+                    totalIQD: totalIQD,
+                    description: 'طلب شراء',
+                    timestamp: Date.now(),
+                    status: 'pending'
+                });
+
+                alert('✅ تم إرسال طلب الشراء!\n\nسيتم مراجعة طلبك وإضافة الرصيد بعد الموافقة.');
+                closeModal('buyModal');
+                document.getElementById('buyForm').reset();
+                loadTransactions();
+
+            } catch (error) {
+                console.error('Purchase request error:', error);
+                alert('حدث خطأ أثناء إرسال الطلب');
+            }
+        }
+
+        // Send Modal Functions
+        function showSendModal() {
+            showModal('sendModal');
+        }
+
+        async function handleSend(event) {
+            event.preventDefault();
+
+            if (!currentUser) {
+                alert('يرجى تسجيل الدخول أولاً');
+                return;
+            }
+
+            const recipient = document.getElementById('sendRecipient').value.trim();
+            const amount = parseFloat(document.getElementById('sendAmount').value);
+            const note = document.getElementById('sendNote').value.trim();
+
+            // Get current balance
+            const snapshot = await database.ref('users/' + currentUser.uid).once('value');
+            const userData = snapshot.val();
+            const currentBalance = userData.balance || 0;
+
+            if (amount > currentBalance) {
+                alert('⚠️ رصيدك غير كافٍ');
+                return;
+            }
+
+            try {
+                // Find recipient
+                const usersSnapshot = await database.ref('users').once('value');
+                const users = usersSnapshot.val();
+                let recipientId = null;
+
+                for (let uid in users) {
+                    if (users[uid].referralCode === recipient) {
+                        recipientId = uid;
+                        break;
+                    }
+                }
+
+                if (!recipientId) {
+                    alert('⚠️ المستلم غير موجود');
+                    return;
+                }
+
+                // Update sender balance
+                await database.ref('users/' + currentUser.uid).update({
+                    balance: currentBalance - amount
+                });
+
+                // Update recipient balance
+                const recipientSnapshot = await database.ref('users/' + recipientId).once('value');
+                const recipientData = recipientSnapshot.val();
+                const recipientBalance = recipientData.balance || 0;
+
+                await database.ref('users/' + recipientId).update({
+                    balance: recipientBalance + amount
+                });
+
+                // Add transactions
+                await database.ref('transactions/' + currentUser.uid).push({
+                    type: 'send',
+                    amount: amount,
+                    recipient: recipientId,
+                    description: note || 'إرسال دينار كوين',
+                    timestamp: Date.now(),
+                    status: 'completed'
+                });
+
+                await database.ref('transactions/' + recipientId).push({
+                    type: 'receive',
+                    amount: amount,
+                    sender: currentUser.uid,
+                    description: note || 'استلام دينار كوين',
+                    timestamp: Date.now(),
+                    status: 'completed'
+                });
+
+                alert('✅ تم الإرسال بنجاح!');
+                closeModal('sendModal');
+                document.getElementById('sendForm').reset();
+                loadUserData();
+
+            } catch (error) {
+                console.error('Send error:', error);
+                alert('حدث خطأ أثناء الإرسال');
+            }
+        }
+
+        // Receive Modal Functions
+        function showReceiveModal() {
+            showModal('receiveModal');
+        }
+
+        function copyReceiveId() {
+            const userId = document.getElementById('receiveUserId').textContent;
+            navigator.clipboard.writeText(userId);
+            alert('✅ تم نسخ المعرّف!');
+        }
+
+        // Referral Functions
+        function generateReferralCode() {
+            return 'DC' + Math.random().toString(36).substr(2, 8).toUpperCase();
+        }
+
+        async function processReferral(referralCode, newUserId) {
+            try {
+                // Find referrer
+                const usersSnapshot = await database.ref('users').once('value');
+                const users = usersSnapshot.val();
+                let referrerId = null;
+
+                for (let uid in users) {
+                    if (users[uid].referralCode === referralCode) {
+                        referrerId = uid;
+                        break;
+                    }
+                }
+
+                if (referrerId) {
+                    // Update referrer stats
+                    const referrerData = users[referrerId];
+                    const newReferralCount = (referrerData.referralCount || 0) + 1;
+                    let referralEarnings = referrerData.referralEarnings || 0;
+                    let balance = referrerData.balance || 0;
+
+                    // Every 10 referrals = 0.25 Dinar Coin
+                    if (newReferralCount % 10 === 0) {
+                        referralEarnings += 0.25;
+                        balance += 0.25;
+
+                        // Add referral bonus transaction
+                        await database.ref('transactions/' + referrerId).push({
+                            type: 'referral',
+                            amount: 0.25,
+                            description: 'مكافأة إحالة (10 أشخاص)',
+                            timestamp: Date.now(),
+                            status: 'completed'
+                        });
+                    }
+
+                    await database.ref('users/' + referrerId).update({
+                        referralCount: newReferralCount,
+                        referralEarnings: referralEarnings,
+                        balance: balance
+                    });
+                }
+            } catch (error) {
+                console.error('Referral processing error:', error);
+            }
+        }
+
+        function copyReferralCode() {
+            const code = document.getElementById('referralCode').textContent;
+            navigator.clipboard.writeText(code);
+            alert('✅ تم نسخ رمز الإحالة!');
+        }
+
+        // Load Statistics
+        async function loadStats() {
+            try {
+                const usersSnapshot = await database.ref('users').once('value');
+                const users = usersSnapshot.val();
+                const userCount = users ? Object.keys(users).length : 0;
+                document.getElementById('totalUsers').textContent = userCount;
+
+                let totalTransactions = 0;
+                for (let uid in users) {
+                    const txSnapshot = await database.ref('transactions/' + uid).once('value');
+                    const transactions = txSnapshot.val();
+                    if (transactions) {
+                        totalTransactions += Object.keys(transactions).length;
+                    }
+                }
+                document.getElementById('totalTransactions').textContent = totalTransactions;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Initialize
+        loadStats();
+        setInterval(loadStats, 60000); // Update every minute
+    </script>
+</body>
+</html>
