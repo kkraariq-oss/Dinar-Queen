@@ -20,35 +20,35 @@ const urlsToCache = [
 
 // التثبيت
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('فتح الذاكرة المؤقتة');
-        return cache.addAll(urlsToCache);
-      })
-  );
-});
-
-// التفعيل
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('حذف الذاكرة المؤقتة القديمة:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-});
-
-// Fetch
-self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
+    // تجاهل طلبات POST للكاش
+    event.request.method === 'POST'
+      ? fetch(event.request)
+      : fetch(event.request)
+          .then(response => {
+            if (response && response.status === 200) {
+              const responseClone = response.clone();
+              caches.open(CACHE_NAME).then(cache => {
+                cache.put(event.request, responseClone);
+              });
+            }
+            return response;
+          })
+          .catch(() => {
+            return caches.match(event.request).then(cachedResponse => {
+              if (cachedResponse) {
+                return cachedResponse;
+              }
+              if (event.request.mode === 'navigate') {
+                return caches.match('/Dinar-Queen/index.html');
+              }
+              return new Response('Offline - لا يوجد اتصال بالإنترنت', {
+                status: 503,
+                statusText: 'Service Unavailable'
+              });
+            });
+          })
+  );
       .then(response => {
         // إرجاع من الذاكرة المؤقتة أو جلب من الشبكة
         return response || fetch(event.request);
