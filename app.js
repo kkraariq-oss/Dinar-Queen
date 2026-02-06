@@ -1,5 +1,5 @@
 // ==========================================
-// DINAR COIN - Full App JavaScript V2
+// DINAR COIN - Full App JavaScript V2.0
 // ==========================================
 
 if ('serviceWorker' in navigator) {
@@ -32,6 +32,7 @@ let cardNumVisible = false;
 let cvvVisible = false;
 
 const PRICE_PER_COIN = 1000;
+const TOTAL_SUPPLY = 1000000;
 const WELCOME_BONUS = 1.0;
 const REFERRAL_BONUS = 0.25;
 
@@ -46,13 +47,13 @@ const newsArticles = [
         img: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=600&h=300&fit=crop',
         date: '2026-02-06',
         body: `في عالم يتجه بسرعة نحو الرقمنة، يبرز دينار كوين كفرصة استثمارية فريدة من نوعها في المنطقة العربية. مع تزايد الاهتمام العالمي بالعملات الرقمية، يقدم دينار كوين بديلاً محلياً يراعي خصوصيات السوق العراقي والعربي.\n\nيتميز دينار كوين بعدة مزايا تجعله خياراً مثالياً للمستثمرين: سعر مستقر مرتبط بالدينار العراقي، منصة آمنة وسهلة الاستخدام، فريق عمل عراقي متخصص، ودعم كامل للغة العربية.\n\nمع خطط التوسع المستقبلية التي تشمل إضافة محفظة متعددة العملات وتكامل مع بوابات الدفع المحلية، يُتوقع أن يشهد دينار كوين نمواً كبيراً في الفترة القادمة. انضم الآن وكن جزءاً من هذه الثورة الرقمية العراقية!`
+    },
     {
-        id: 5, cat: 'invest',
-        title: 'كيف تحقق أرباحاً من نظام الإحالة في دينار كوين',
-        summary: 'استراتيجيات ذكية لزيادة أرباحك من دعوة الأصدقاء',
-        img: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&h=300&fit=crop',
-        date: '2026-02-01',
-        /*...*/
+        id: 1, cat: 'update',
+        title: 'إطلاق النسخة التجريبية من دينار كوين',
+        summary: 'بداية رحلتنا نحو مستقبل رقمي متطور',
+        img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=300&fit=crop',
+        date: '2026-02-05',
         body: `يسعدنا الإعلان عن إطلاق النسخة التجريبية من منصة دينار كوين! هذه النسخة تتضمن جميع الميزات الأساسية التي يحتاجها المستخدمون.\n\nالميزات المتاحة في النسخة التجريبية:\n• محفظة رقمية آمنة لحفظ عملات دينار كوين\n• إمكانية إرسال واستقبال العملات بسهولة\n• نظام إحالة مع مكافآت فورية\n• لوحة تحكم شاملة مع إحصائيات حية\n• تصميم عصري يعمل على جميع الأجهزة\n\nندعو جميع المهتمين للتسجيل والبدء باستخدام المنصة ومشاركة ملاحظاتهم لتحسين التجربة.`
     },
     {
@@ -105,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     createParticles();
     setupEventListeners();
     renderNewsArticles();
+    loadGlobalStats(); // تحميل الإحصائيات العامة
 });
 
 function initializeApp() {
@@ -132,575 +134,407 @@ function createParticles() {
         p.style.width = s + 'px';
         p.style.height = s + 'px';
         p.style.animationDelay = Math.random() * 20 + 's';
-        p.style.animationDuration = (Math.random() * 12 + 10) + 's';
         c.appendChild(p);
     }
 }
 
 function setupEventListeners() {
-    const buyInput = document.getElementById('buyAmount');
-    if (buyInput) buyInput.addEventListener('input', calculateBuyTotal);
+    document.getElementById('buyAmount')?.addEventListener('input', calculateBuyTotal);
 }
 
 // ==========================================
-// TAB NAVIGATION (FIXED)
+// GLOBAL STATISTICS
 // ==========================================
-function switchTab(tab) {
-    // If not logged in and trying to access protected tabs
-    if (!currentUser && ['home', 'news', 'analytics', 'profile'].includes(tab)) {
-        if (tab !== 'home') {
-            showAuthModal('login');
-            return;
+let globalStatsListener = null;
+
+function loadGlobalStats() {
+    // إنشاء العقدة إذا لم تكن موجودة
+    database.ref('global_stats').once('value').then(snap => {
+        if (!snap.exists()) {
+            database.ref('global_stats').set({
+                totalUsers: 0,
+                totalDistributed: 0,
+                totalRemaining: TOTAL_SUPPLY
+            });
         }
-    }
+    });
 
-    // Hide all screens
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+    // الاستماع للتحديثات
+    globalStatsListener = database.ref('global_stats').on('value', (snap) => {
+        const data = snap.val() || { totalUsers: 0, totalDistributed: 0, totalRemaining: TOTAL_SUPPLY };
+        
+        // تحديث شاشة الصفحة الرئيسية
+        updateElement('homeUsersCount', data.totalUsers.toLocaleString('ar-IQ'));
+        updateElement('homeCoinsRemaining', data.totalRemaining.toLocaleString('ar-IQ'));
+        
+        // تحديث شاشة الداشبورد
+        updateElement('dashUsersCount', data.totalUsers.toLocaleString('ar-IQ'));
+        updateElement('dashCoinsRemaining', data.totalRemaining.toLocaleString('ar-IQ'));
+        
+        // تحديث شاشة التحليلات
+        updateElement('statTotalUsers', data.totalUsers.toLocaleString('ar-IQ'));
+        updateElement('statCirculating', data.totalDistributed.toLocaleString('ar-IQ'));
+        updateElement('statRemaining', data.totalRemaining.toLocaleString('ar-IQ'));
+        updateElement('statTotalSupply', TOTAL_SUPPLY.toLocaleString('ar-IQ'));
+        
+        const distributionPercent = ((data.totalDistributed / TOTAL_SUPPLY) * 100).toFixed(2);
+        updateElement('distributionPercent', distributionPercent + '%');
+    });
+}
 
-    // Update nav tabs
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    const navBtn = document.querySelector(`[data-tab="${tab}"]`);
-    if (navBtn) navBtn.classList.add('active');
-
-    // Show appropriate screen
-    switch(tab) {
-        case 'home':
-            if (currentUser) {
-                document.getElementById('dashboardScreen').classList.add('active-screen');
-            } else {
-                document.getElementById('homeScreen').classList.add('active-screen');
-            }
-            break;
-        case 'news':
-            document.getElementById('newsScreen').classList.add('active-screen');
-            break;
-        case 'analytics':
-            document.getElementById('analyticsScreen').classList.add('active-screen');
-            setTimeout(() => drawAllCharts(), 100);
-            break;
-        case 'profile':
-            document.getElementById('profileScreen').classList.add('active-screen');
-            break;
+async function updateGlobalStats(userCountDelta, coinsDelta) {
+    try {
+        const ref = database.ref('global_stats');
+        const snap = await ref.once('value');
+        const current = snap.val() || { totalUsers: 0, totalDistributed: 0, totalRemaining: TOTAL_SUPPLY };
+        
+        await ref.update({
+            totalUsers: Math.max(0, current.totalUsers + userCountDelta),
+            totalDistributed: Math.max(0, current.totalDistributed + coinsDelta),
+            totalRemaining: Math.max(0, TOTAL_SUPPLY - (current.totalDistributed + coinsDelta))
+        });
+    } catch (e) {
+        console.error('Error updating global stats:', e);
     }
 }
 
+// ==========================================
+// SCREENS
+// ==========================================
 function showHome() {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
     document.getElementById('homeScreen').classList.add('active-screen');
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector('[data-tab="home"]')?.classList.add('active');
+    document.getElementById('dashboardScreen').classList.remove('active-screen');
+    document.getElementById('bottomNav').style.display = 'none';
 }
 
 function showDashboard() {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+    document.getElementById('homeScreen').classList.remove('active-screen');
     document.getElementById('dashboardScreen').classList.add('active-screen');
-    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector('[data-tab="home"]')?.classList.add('active');
+    document.getElementById('bottomNav').style.display = 'flex';
+    switchTab('home');
 }
 
-// ==========================================
-// CARD FLIP
-// ==========================================
-function flipCard() {
-    const flipper = document.getElementById('cardFlipper');
-    if (!flipper) return;
-    cardFlipped = !cardFlipped;
-    flipper.classList.toggle('flipped', cardFlipped);
-}
-
-// ==========================================
-// GENERATE RANDOM CARD DATA
-// ==========================================
-function generateCardData(uid) {
-    // Use uid as seed for consistent random numbers
-    let seed = 0;
-    for (let i = 0; i < uid.length; i++) {
-        seed = ((seed << 5) - seed) + uid.charCodeAt(i);
-        seed |= 0;
+function switchTab(tab) {
+    const screens = ['dashboardScreen', 'newsScreen', 'analyticsScreen', 'profileScreen'];
+    screens.forEach(s => document.getElementById(s).classList.remove('active-screen'));
+    
+    const tabs = document.querySelectorAll('.nav-tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    
+    if (tab === 'home') {
+        document.getElementById('dashboardScreen').classList.add('active-screen');
+        document.querySelector('[data-tab="home"]').classList.add('active');
+        loadTransactions();
+    } else if (tab === 'news') {
+        document.getElementById('newsScreen').classList.add('active-screen');
+        document.querySelector('[data-tab="news"]').classList.add('active');
+    } else if (tab === 'analytics') {
+        document.getElementById('analyticsScreen').classList.add('active-screen');
+        document.querySelector('[data-tab="analytics"]').classList.add('active');
+        updateAnalyticsStats();
+    } else if (tab === 'profile') {
+        document.getElementById('profileScreen').classList.add('active-screen');
+        document.querySelector('[data-tab="profile"]').classList.add('active');
     }
-    const rng = (max) => { seed = (seed * 16807 + 0) % 2147483647; return Math.abs(seed) % max; };
-
-    const groups = [];
-    for (let g = 0; g < 4; g++) {
-        let n = '';
-        for (let d = 0; d < 4; d++) n += rng(10);
-        groups.push(n);
-    }
-    const fullNumber = groups.join(' ');
-    const cvv = '' + rng(10) + rng(10) + rng(10);
-    const expMonth = String(rng(12) + 1).padStart(2, '0');
-    const expYear = String(28 + rng(5));
-    const expiry = expMonth + '/' + expYear;
-    const cardId = 'DC-' + String(100000 + rng(900000));
-
-    return { fullNumber, groups, cvv, expiry, cardId };
 }
 
 // ==========================================
-// AUTHENTICATION
+// AUTH
 // ==========================================
-function showAuthModal(type = 'login') {
+function showAuthModal(type) {
     document.getElementById('authModal').classList.add('active');
-    switchAuthForm(type);
-}
-function closeAuthModal() { document.getElementById('authModal').classList.remove('active'); }
-function switchAuthForm(type) {
-    document.getElementById('loginForm').style.display = type === 'login' ? 'block' : 'none';
-    document.getElementById('signupForm').style.display = type === 'signup' ? 'block' : 'none';
+    if (type === 'signup') {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('signupForm').style.display = 'block';
+    } else {
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('signupForm').style.display = 'none';
+    }
 }
 
-async function login() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const pw = document.getElementById('loginPassword').value;
-    if (!email || !pw) { showNotification('خطأ', 'الرجاء إدخال البيانات', 'error'); return; }
-    try {
-        await auth.signInWithEmailAndPassword(email, pw);
-        closeAuthModal();
-        showNotification('مرحباً بك!', 'تم تسجيل الدخول بنجاح', 'success');
-    } catch (e) { showNotification('خطأ', getErrorMessage(e.code), 'error'); }
+function closeAuthModal() {
+    document.getElementById('authModal').classList.remove('active');
+}
+
+function switchAuthForm(type) {
+    if (type === 'signup') {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('signupForm').style.display = 'block';
+    } else {
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('signupForm').style.display = 'none';
+    }
 }
 
 async function signup() {
     const name = document.getElementById('signupName').value.trim();
     const email = document.getElementById('signupEmail').value.trim();
-    const pw = document.getElementById('signupPassword').value;
-    const ref = document.getElementById('signupReferralCode').value.trim();
-    if (!name || !email || !pw) { showNotification('خطأ', 'الرجاء إدخال جميع البيانات', 'error'); return; }
-    if (pw.length < 6) { showNotification('خطأ', 'كلمة المرور قصيرة جداً', 'error'); return; }
+    const password = document.getElementById('signupPassword').value;
+    const refCode = document.getElementById('signupReferralCode').value.trim();
+    
+    if (!name || !email || !password) {
+        showNotification('خطأ', 'الرجاء إدخال جميع البيانات', 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showNotification('خطأ', 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error');
+        return;
+    }
+    
     try {
-        const cred = await auth.createUserWithEmailAndPassword(email, pw);
-        const user = cred.user;
-        const refCode = generateReferralCode();
-        const cardData = generateCardData(user.uid);
-        let referrerUid = null;
-        if (ref) referrerUid = await validateReferralCode(ref);
-
-        await database.ref(`users/${user.uid}`).set({
-            name, email, balance: WELCOME_BONUS, referralCode: refCode,
-            referralCount: 0, referralEarnings: 0, usedReferralCode: ref || null,
-            cardNumber: cardData.fullNumber, cardCVV: cardData.cvv,
-            cardExpiry: cardData.expiry, cardId: cardData.cardId,
-            createdAt: firebase.database.ServerValue.TIMESTAMP
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const uid = userCredential.user.uid;
+        
+        // إنشاء بيانات البطاقة
+        const cardData = generateCardData(name);
+        
+        // بيانات المستخدم الأساسية
+        const userData = {
+            name: name,
+            email: email,
+            referralCode: generateReferralCode(),
+            balance: WELCOME_BONUS,
+            referralCount: 0,
+            referralEarnings: 0,
+            joinDate: new Date().toISOString(),
+            card: cardData
+        };
+        
+        await database.ref(`users/${uid}`).set(userData);
+        
+        // إضافة معاملة المكافأة الترحيبية
+        await addTransaction(uid, {
+            type: 'bonus',
+            amount: WELCOME_BONUS,
+            description: 'مكافأة الانضمام',
+            status: 'completed'
         });
-        await addTransaction(user.uid, { type: 'bonus', amount: WELCOME_BONUS, description: 'مكافأة الترحيب', status: 'completed' });
-        if (referrerUid) await processReferral(referrerUid, user.uid);
+        
+        // تحديث الإحصائيات العامة - إضافة مستخدم وتوزيع المكافأة
+        await updateGlobalStats(1, WELCOME_BONUS);
+        
+        // معالجة رمز الإحالة إن وُجد
+        if (refCode) {
+            const referrerUid = await validateReferralCode(refCode);
+            if (referrerUid && referrerUid !== uid) {
+                await processReferral(referrerUid);
+                await database.ref(`users/${uid}`).update({ referredBy: refCode });
+            }
+        }
+        
         closeAuthModal();
-        showNotification('مرحباً بك!', 'تم إنشاء الحساب بنجاح', 'success');
-    } catch (e) { showNotification('خطأ', getErrorMessage(e.code), 'error'); }
+        showNotification('مرحباً!', `تم إنشاء حسابك بنجاح! حصلت على ${WELCOME_BONUS} DC`, 'success');
+    } catch (e) {
+        let msg = 'حدث خطأ في التسجيل';
+        if (e.code === 'auth/email-already-in-use') msg = 'البريد الإلكتروني مستخدم مسبقاً';
+        else if (e.code === 'auth/invalid-email') msg = 'بريد إلكتروني غير صحيح';
+        showNotification('خطأ', msg, 'error');
+    }
 }
 
-async function logout() {
+async function login() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!email || !password) {
+        showNotification('خطأ', 'أدخل البريد وكلمة المرور', 'error');
+        return;
+    }
+    
     try {
-        if (userDataListener) { userDataListener.off(); userDataListener = null; }
-        await auth.signOut();
-        showNotification('تم تسجيل الخروج', 'نراك قريباً!', 'success');
-    } catch (e) {}
+        await auth.signInWithEmailAndPassword(email, password);
+        closeAuthModal();
+        showNotification('مرحباً بعودتك!', 'تم تسجيل الدخول بنجاح', 'success');
+    } catch (e) {
+        let msg = 'بيانات خاطئة';
+        if (e.code === 'auth/user-not-found') msg = 'المستخدم غير موجود';
+        else if (e.code === 'auth/wrong-password') msg = 'كلمة مرور خاطئة';
+        showNotification('خطأ', msg, 'error');
+    }
 }
 
-function getErrorMessage(c) {
-    const m = { 'auth/email-already-in-use': 'البريد مستخدم بالفعل', 'auth/invalid-email': 'بريد غير صحيح', 'auth/weak-password': 'كلمة مرور ضعيفة', 'auth/user-not-found': 'مستخدم غير موجود', 'auth/wrong-password': 'كلمة مرور خاطئة', 'auth/invalid-credential': 'بيانات غير صحيحة' };
-    return m[c] || 'حدث خطأ، حاول مرة أخرى';
+function logout() {
+    auth.signOut();
+    if (userDataListener) {
+        database.ref(`users/${currentUser.uid}`).off('value', userDataListener);
+        userDataListener = null;
+    }
+    if (globalStatsListener) {
+        database.ref('global_stats').off('value', globalStatsListener);
+        globalStatsListener = null;
+    }
+    cardFlipped = false;
+    showNotification('تم', 'تم تسجيل الخروج', 'success');
 }
 
 // ==========================================
 // USER DATA
 // ==========================================
-function loadUserData() {
+async function loadUserData() {
     if (!currentUser) return;
-    userDataListener = database.ref(`users/${currentUser.uid}`);
-    userDataListener.on('value', (snap) => {
-        const d = snap.val();
-        if (d) { updateUserUI(d); loadTransactions(); }
+    
+    if (userDataListener) {
+        database.ref(`users/${currentUser.uid}`).off('value', userDataListener);
+    }
+    
+    userDataListener = database.ref(`users/${currentUser.uid}`).on('value', (snap) => {
+        const data = snap.val();
+        if (!data) return;
+        
+        updateElement('userName', data.name);
+        updateElement('userEmail', data.email);
+        updateElement('userReferralCode', data.referralCode);
+        
+        // Dashboard
+        const balance = parseFloat(data.balance || 0).toFixed(2);
+        updateElement('cardBalance', balance + ' DC');
+        updateElement('totalBalance', balance + ' DC');
+        updateElement('cardName', data.name);
+        updateElement('referralCode', data.referralCode);
+        updateElement('referralCount', data.referralCount || 0);
+        updateElement('referralEarnings', parseFloat(data.referralEarnings || 0).toFixed(2) + ' DC');
+        
+        // Card
+        if (data.card) {
+            userCardData = data.card;
+            updateElement('cardNum', formatCardNumber(data.card.number));
+            updateElement('cardCVV', data.card.cvv);
+            updateElement('cardExpiry', data.card.expiry);
+        }
+        
+        // Profile
+        updateElement('profileName', data.name);
+        updateElement('profileNameDisplay', data.name);
+        updateElement('profileEmailValue', data.email);
+        updateElement('profileRefCode', data.referralCode);
+        updateElement('profileBalance', balance + ' DC');
+        updateElement('profileCardNum', formatCardNumber(data.card?.number || '****************'));
+        updateElement('profileCVV', '***');
+        updateElement('profileExpiry', data.card?.expiry || '--/--');
+        
+        if (data.joinDate) {
+            const date = new Date(data.joinDate);
+            updateElement('profileJoinDate', date.toLocaleDateString('ar-IQ', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }));
+        }
+        
+        // Analytics
+        updateElement('analyticBalance', balance + ' DC');
+        updateElement('analyticReferrals', data.referralCount || 0);
+        updateElement('analyticEarnings', parseFloat(data.referralEarnings || 0).toFixed(2) + ' DC');
+        
+        // Avatar
+        const firstLetter = data.name.charAt(0).toUpperCase();
+        updateElement('userAvatar', firstLetter);
+        updateElement('profileAvatar', firstLetter);
+        
+        // QR Code للاستقبال
+        updateElement('receiveCode', data.referralCode);
+        generateQRCode(data.referralCode);
     });
 }
 
-function updateUserUI(d) {
-    // Generate card data if missing
-    if (!d.cardNumber) {
-        const cd = generateCardData(currentUser.uid);
-        database.ref(`users/${currentUser.uid}`).update({
-            cardNumber: cd.fullNumber, cardCVV: cd.cvv,
-            cardExpiry: cd.expiry, cardId: cd.cardId
-        });
-        d.cardNumber = cd.fullNumber;
-        d.cardCVV = cd.cvv;
-        d.cardExpiry = cd.expiry;
-        d.cardId = cd.cardId;
-    }
-
-    userCardData = { number: d.cardNumber, cvv: d.cardCVV, expiry: d.cardExpiry, id: d.cardId };
-
-    // Avatar
-    const av = document.getElementById('userAvatar');
-    if (av) av.textContent = d.name.charAt(0).toUpperCase();
-
-    // Card front
-    const cb = document.getElementById('cardBalance');
-    if (cb) cb.textContent = parseFloat(d.balance || 0).toFixed(2);
-    const ch = document.getElementById('cardHolderName');
-    if (ch) ch.textContent = d.name;
-    const cn = document.getElementById('cardNumber');
-    if (cn) {
-        const parts = d.cardNumber.split(' ');
-        cn.innerHTML = `XXXX &nbsp; XXXX &nbsp; XXXX &nbsp; ${parts[3] || '0000'}`;
-    }
-    const ce = document.getElementById('cardExpiry');
-    if (ce) ce.textContent = d.cardExpiry || '02/30';
-    const cvv = document.getElementById('cardCVV');
-    if (cvv) cvv.textContent = d.cardCVV || '000';
-    const cid = document.getElementById('cardBackId');
-    if (cid) cid.textContent = d.cardId || 'DC-000000';
-
-    // Referral
-    const rc = document.getElementById('referralCode');
-    if (rc) rc.textContent = d.referralCode;
-    const rce = document.getElementById('receiveCode');
-    if (rce) rce.textContent = d.referralCode;
-    const rcnt = document.getElementById('referralCount');
-    if (rcnt) rcnt.textContent = d.referralCount || 0;
-    const re = document.getElementById('referralEarnings');
-    if (re) re.textContent = parseFloat(d.referralEarnings || 0).toFixed(0);
-
-    // Profile screen
-    const pal = document.getElementById('profileAvatarLarge');
-    if (pal) {
-        if (profilePicUrl) {
-            pal.innerHTML = `<img src="${profilePicUrl}" alt="">`;
-        } else {
-            pal.textContent = d.name.charAt(0).toUpperCase();
-        }
-    }
-    setText('profileName', d.name);
-    setText('profileEmail', d.email);
-    setText('profileNameValue', d.name);
-    setText('profileEmailValue', d.email);
-    setText('profileRefCode', d.referralCode);
-    setText('profileBalance', parseFloat(d.balance || 0).toFixed(2) + ' DC');
-    setText('profileExpiry', d.cardExpiry);
-
-    if (d.createdAt) {
-        const jd = new Date(d.createdAt);
-        setText('profileJoinDate', jd.toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long', day: 'numeric' }));
-    }
-
-    // Profile card data (masked)
-    setText('profileCardNum', cardNumVisible ? d.cardNumber : '**** **** **** ' + (d.cardNumber?.split(' ')[3] || '****'));
-    setText('profileCVV', cvvVisible ? d.cardCVV : '***');
-
-    generateQRCode(d.referralCode);
-}
-
-function setText(id, val) {
+function updateElement(id, value) {
     const el = document.getElementById(id);
-    if (el) el.textContent = val;
+    if (el) {
+        if (el.tagName === 'INPUT') el.value = value;
+        else el.textContent = value;
+    }
 }
 
 // ==========================================
-// CARD VISIBILITY TOGGLES
+// CARD
 // ==========================================
+function generateCardData(name) {
+    return {
+        number: generateCardNumber(),
+        cvv: generateCVV(),
+        expiry: generateExpiry(),
+        holder: name
+    };
+}
+
+function generateCardNumber() {
+    let num = '5464';
+    for (let i = 0; i < 12; i++) {
+        num += Math.floor(Math.random() * 10);
+    }
+    return num;
+}
+
+function generateCVV() {
+    return String(Math.floor(100 + Math.random() * 900));
+}
+
+function generateExpiry() {
+    const month = String(Math.floor(1 + Math.random() * 12)).padStart(2, '0');
+    const year = String(new Date().getFullYear() + 5).slice(-2);
+    return `${month}/${year}`;
+}
+
+function formatCardNumber(num) {
+    if (!num) return '**** **** **** ****';
+    return num.match(/.{1,4}/g)?.join(' ') || num;
+}
+
+function flipCard() {
+    cardFlipped = !cardFlipped;
+    const flipper = document.getElementById('cardFlipper');
+    if (flipper) {
+        if (cardFlipped) flipper.classList.add('flipped');
+        else flipper.classList.remove('flipped');
+    }
+}
+
 function toggleCardNumVisibility() {
     cardNumVisible = !cardNumVisible;
     const el = document.getElementById('profileCardNum');
     const icon = document.getElementById('cardNumToggle');
     if (el && userCardData) {
-        el.textContent = cardNumVisible ? userCardData.number : '**** **** **** ' + (userCardData.number?.split(' ')[3] || '****');
+        el.textContent = cardNumVisible ? formatCardNumber(userCardData.number) : formatCardNumber('****************');
+        if (icon) icon.className = cardNumVisible ? 'fas fa-eye-slash settings-arrow' : 'fas fa-eye settings-arrow';
     }
-    if (icon) icon.className = cardNumVisible ? 'fas fa-eye-slash settings-arrow' : 'fas fa-eye settings-arrow';
 }
 
 function toggleCVVVisibility() {
     cvvVisible = !cvvVisible;
     const el = document.getElementById('profileCVV');
     const icon = document.getElementById('cvvToggle');
-    if (el && userCardData) el.textContent = cvvVisible ? userCardData.cvv : '***';
-    if (icon) icon.className = cvvVisible ? 'fas fa-eye-slash settings-arrow' : 'fas fa-eye settings-arrow';
-}
-
-// ==========================================
-// PROFILE MANAGEMENT
-// ==========================================
-function changeProfilePicture() {
-    document.getElementById('profilePicInput')?.click();
-}
-
-function handleProfilePic(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        profilePicUrl = e.target.result;
-        const pal = document.getElementById('profileAvatarLarge');
-        if (pal) pal.innerHTML = `<img src="${profilePicUrl}" alt="">`;
-        showNotification('تم التحديث', 'تم تغيير صورة الملف الشخصي', 'success');
-    };
-    reader.readAsDataURL(file);
-}
-
-function editProfileField(field) {
-    if (field === 'name') {
-        document.getElementById('editNameModal').classList.add('active');
-        document.getElementById('editNameInput').value = '';
+    if (el && userCardData) {
+        el.textContent = cvvVisible ? userCardData.cvv : '***';
+        if (icon) icon.className = cvvVisible ? 'fas fa-eye-slash settings-arrow' : 'fas fa-eye settings-arrow';
     }
-}
-
-function closeEditNameModal() {
-    document.getElementById('editNameModal').classList.remove('active');
-}
-
-async function saveNewName() {
-    const name = document.getElementById('editNameInput').value.trim();
-    if (!name) { showNotification('خطأ', 'الرجاء إدخال الاسم', 'error'); return; }
-    if (!currentUser) return;
-    try {
-        await database.ref(`users/${currentUser.uid}`).update({ name });
-        closeEditNameModal();
-        showNotification('تم التحديث', 'تم تغيير الاسم بنجاح', 'success');
-    } catch (e) { showNotification('خطأ', 'فشل التحديث', 'error'); }
-}
-
-function toggleSetting(key) {
-    const toggle = document.getElementById(`toggle-${key}`);
-    if (!toggle) return;
-    toggle.classList.toggle('active');
-    const isActive = toggle.classList.contains('active');
-    showNotification('الإعدادات', isActive ? 'تم التفعيل' : 'تم الإيقاف', 'success');
-}
-
-// ==========================================
-// NEWS
-// ==========================================
-function renderNewsArticles(filter = 'all') {
-    const list = document.getElementById('newsArticlesList');
-    if (!list) return;
-    const filtered = filter === 'all' ? newsArticles : newsArticles.filter(a => a.cat === filter);
-    list.innerHTML = filtered.map(a => `
-        <div class="news-article-card" onclick="openArticle(${a.id})">
-            <img src="${a.img}" alt="" class="news-article-img">
-            <div class="news-article-info">
-                <h4>${a.title}</h4>
-                <div class="news-article-meta">
-                    <span>${a.date}</span>
-                    <span class="news-article-cat">${{invest:'استثمار',update:'تحديث',guide:'دليل'}[a.cat]}</span>
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
-
-function filterNews(cat, btn) {
-    document.querySelectorAll('.news-cat-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    renderNewsArticles(cat);
-}
-
-function openArticle(id) {
-    const a = newsArticles.find(x => x.id === id);
-    if (!a) return;
-    const content = document.getElementById('articleContent');
-    if (!content) return;
-    const catLabels = {invest:'استثمار',update:'تحديث',guide:'دليل'};
-    content.innerHTML = `
-        <img src="${a.img}" alt="">
-        <span class="article-tag">${catLabels[a.cat]}</span>
-        <h2>${a.title}</h2>
-        <span class="article-date"><i class="fas fa-calendar"></i> ${a.date}</span>
-        ${a.body.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('')}
-    `;
-    document.getElementById('articleModal').classList.add('active');
-}
-
-function closeArticleModal() { document.getElementById('articleModal').classList.remove('active'); }
-
-// ==========================================
-// ANALYTICS CHARTS (Canvas)
-// ==========================================
-function drawAllCharts() {
-    drawLineChart('priceChart', generatePriceData(), '#d4af37', '#1a5f4a');
-    drawBarChart('usersChart', generateUsersData(), '#2a8f6a');
-    drawBarChart('volumeChart', generateVolumeData(), '#d4af37');
-}
-
-function generatePriceData() {
-    const data = [];
-    let price = 980;
-    for (let i = 0; i < 30; i++) {
-        price += (Math.random() - 0.45) * 15;
-        price = Math.max(950, Math.min(1050, price));
-        data.push(price);
-    }
-    return data;
-}
-
-function generateUsersData() {
-    return [12, 18, 25, 32, 28, 45, 52, 48, 65, 78, 85, 92];
-}
-
-function generateVolumeData() {
-    return [150, 220, 180, 310, 260, 400, 350, 420, 380, 510, 480, 550];
-}
-
-function drawLineChart(canvasId, data, lineColor, fillColor) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width * 2;
-    canvas.height = rect.height * 2;
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
-    ctx.scale(2, 2);
-    const w = rect.width, h = rect.height;
-    const pad = { top: 10, right: 10, bottom: 20, left: 10 };
-    const cw = w - pad.left - pad.right;
-    const ch = h - pad.top - pad.bottom;
-
-    const min = Math.min(...data) - 10;
-    const max = Math.max(...data) + 10;
-    const range = max - min;
-    const stepX = cw / (data.length - 1);
-
-    ctx.clearRect(0, 0, w, h);
-
-    // Grid lines
-    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i < 4; i++) {
-        const y = pad.top + (ch / 3) * i;
-        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
-    }
-
-    // Fill
-    ctx.beginPath();
-    ctx.moveTo(pad.left, pad.top + ch - ((data[0] - min) / range) * ch);
-    for (let i = 1; i < data.length; i++) {
-        const x = pad.left + stepX * i;
-        const y = pad.top + ch - ((data[i] - min) / range) * ch;
-        ctx.lineTo(x, y);
-    }
-    ctx.lineTo(pad.left + cw, pad.top + ch);
-    ctx.lineTo(pad.left, pad.top + ch);
-    ctx.closePath();
-    const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + ch);
-    grad.addColorStop(0, fillColor + '40');
-    grad.addColorStop(1, fillColor + '05');
-    ctx.fillStyle = grad;
-    ctx.fill();
-
-    // Line
-    ctx.beginPath();
-    ctx.moveTo(pad.left, pad.top + ch - ((data[0] - min) / range) * ch);
-    for (let i = 1; i < data.length; i++) {
-        const x = pad.left + stepX * i;
-        const y = pad.top + ch - ((data[i] - min) / range) * ch;
-        ctx.lineTo(x, y);
-    }
-    ctx.strokeStyle = lineColor;
-    ctx.lineWidth = 2;
-    ctx.lineJoin = 'round';
-    ctx.stroke();
-
-    // End dot
-    const lastX = pad.left + stepX * (data.length - 1);
-    const lastY = pad.top + ch - ((data[data.length - 1] - min) / range) * ch;
-    ctx.beginPath();
-    ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
-    ctx.fillStyle = lineColor;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(lastX, lastY, 7, 0, Math.PI * 2);
-    ctx.strokeStyle = lineColor + '40';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-}
-
-function drawBarChart(canvasId, data, barColor) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width * 2;
-    canvas.height = rect.height * 2;
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
-    ctx.scale(2, 2);
-    const w = rect.width, h = rect.height;
-    const pad = { top: 10, right: 10, bottom: 24, left: 10 };
-    const cw = w - pad.left - pad.right;
-    const ch = h - pad.top - pad.bottom;
-    const max = Math.max(...data) * 1.15;
-    const barWidth = (cw / data.length) * 0.6;
-    const gap = (cw / data.length) * 0.4;
-
-    ctx.clearRect(0, 0, w, h);
-
-    const months = ['ي','ف','م','أ','م','ي','ي','أ','س','أ','ن','د'];
-
-    data.forEach((val, i) => {
-        const barH = (val / max) * ch;
-        const x = pad.left + (cw / data.length) * i + gap / 2;
-        const y = pad.top + ch - barH;
-
-        const grad = ctx.createLinearGradient(x, y, x, y + barH);
-        grad.addColorStop(0, barColor);
-        grad.addColorStop(1, barColor + '40');
-        ctx.fillStyle = grad;
-
-        const r = 3;
-        ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + barWidth - r, y);
-        ctx.quadraticCurveTo(x + barWidth, y, x + barWidth, y + r);
-        ctx.lineTo(x + barWidth, y + barH);
-        ctx.lineTo(x, y + barH);
-        ctx.lineTo(x, y + r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.fill();
-
-        // Month label
-        ctx.fillStyle = 'rgba(255,255,255,0.3)';
-        ctx.font = '8px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(months[i] || '', x + barWidth / 2, h - 6);
-    });
-}
-
-function setTimeframe(tf, btn) {
-    document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    drawLineChart('priceChart', generatePriceData(), '#d4af37', '#1a5f4a');
-}
-
-async function updateAnalyticsStats() {
-    try {
-        const snap = await database.ref('users').once('value');
-        const count = snap.numChildren();
-        let totalBalance = 0;
-        let totalReferrals = 0;
-        snap.forEach(c => {
-            const d = c.val();
-            totalBalance += parseFloat(d.balance || 0);
-            totalReferrals += (d.referralCount || 0);
-        });
-        setText('analyticsUsers', count);
-        setText('analyticsVolume', totalBalance.toFixed(0));
-        setText('analyticsTx', totalReferrals);
-        const sc = document.getElementById('referralSendCount');
-        if (sc) sc.textContent = totalReferrals;
-    } catch (e) {}
-    setTimeout(updateAnalyticsStats, 60000);
 }
 
 // ==========================================
 // QR CODE
 // ==========================================
-function generateQRCode(data) {
-    const c = document.getElementById('qrCode');
-    if (!c) return;
-    c.innerHTML = '';
+let qrCodeInstance = null;
+
+function generateQRCode(text) {
+    const container = document.getElementById('qrCode');
+    if (!container || !text) return;
+    
+    // مسح الكود القديم
+    container.innerHTML = '';
+    
     try {
-        new QRCode(c, { text: data, width: 160, height: 160, colorDark: '#1a5f3f', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
+        // إنشاء كود QR جديد
+        qrCodeInstance = new QRCode(container, {
+            text: text,
+            width: 200,
+            height: 200,
+            colorDark: '#0a1a14',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
     } catch (e) {
-        c.innerHTML = '<div style="width:160px;height:160px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;"><i class="fas fa-qrcode" style="font-size:2.5rem;color:#1a5f3f;"></i></div>';
+        console.error('Error generating QR code:', e);
+        container.innerHTML = '<p style="text-align:center;padding:20px;">خطأ في إنشاء رمز QR</p>';
     }
 }
 
@@ -711,131 +545,460 @@ async function loadTransactions() {
     if (!currentUser) return;
     const list = document.getElementById('transactionsList');
     if (!list) return;
+    
     try {
         const snap = await database.ref(`transactions/${currentUser.uid}`).orderByChild('timestamp').limitToLast(20).once('value');
         const txs = [];
         snap.forEach(c => txs.push({ id: c.key, ...c.val() }));
         txs.sort((a, b) => b.timestamp - a.timestamp);
-        if (txs.length === 0) { list.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>لا توجد عمليات بعد</p></div>'; return; }
+        
+        if (txs.length === 0) {
+            list.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>لا توجد عمليات بعد</p></div>';
+            return;
+        }
+        
         list.innerHTML = txs.map(tx => {
             const cls = tx.status === 'pending' ? 'pending' : (tx.type === 'send' ? 'negative' : 'positive');
-            const icon = {buy:'shopping-cart',sell:'hand-holding-usd',send:'paper-plane',receive:'download',bonus:'gift',referral:'users'}[tx.type] || 'exchange-alt';
+            const iconMap = {
+                buy: 'shopping-cart',
+                sell: 'hand-holding-usd',
+                send: 'paper-plane',
+                receive: 'download',
+                bonus: 'gift',
+                referral: 'users'
+            };
+            const icon = iconMap[tx.type] || 'exchange-alt';
             const sign = tx.type === 'send' ? '-' : '+';
-            const date = new Date(tx.timestamp).toLocaleDateString('ar-IQ',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-            return `<div class="transaction-item"><div class="transaction-icon ${cls}"><i class="fas fa-${icon}"></i></div><div class="transaction-details"><div class="transaction-type">${tx.description}</div><div class="transaction-date">${date}</div></div><div class="transaction-amount ${cls}">${sign}${parseFloat(tx.amount).toFixed(2)} DC</div></div>`;
+            const date = new Date(tx.timestamp).toLocaleDateString('ar-IQ', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            return `<div class="transaction-item">
+                <div class="transaction-icon ${cls}"><i class="fas fa-${icon}"></i></div>
+                <div class="transaction-details">
+                    <div class="transaction-type">${tx.description}</div>
+                    <div class="transaction-date">${date}</div>
+                </div>
+                <div class="transaction-amount ${cls}">${sign}${parseFloat(tx.amount).toFixed(2)} DC</div>
+            </div>`;
         }).join('');
-    } catch (e) {}
+    } catch (e) {
+        console.error('Error loading transactions:', e);
+    }
 }
 
 async function addTransaction(uid, data) {
-    try { await database.ref(`transactions/${uid}`).push({ ...data, timestamp: firebase.database.ServerValue.TIMESTAMP }); } catch (e) {}
+    try {
+        await database.ref(`transactions/${uid}`).push({
+            ...data,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+    } catch (e) {
+        console.error('Error adding transaction:', e);
+    }
 }
 
 // ==========================================
 // REFERRAL
 // ==========================================
 function generateReferralCode() {
-    const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = 'DC';
-    for (let i = 0; i < 8; i++) code += c.charAt(Math.floor(Math.random() * c.length));
+    for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
     return code;
 }
 
 async function validateReferralCode(code) {
     if (!code || code.length !== 10) return null;
+    
     try {
         const snap = await database.ref('users').orderByChild('referralCode').equalTo(code).once('value');
-        if (snap.exists()) return Object.keys(snap.val())[0];
-    } catch (e) {}
+        if (snap.exists()) {
+            return Object.keys(snap.val())[0];
+        }
+    } catch (e) {
+        console.error('Error validating referral code:', e);
+    }
+    
     return null;
 }
 
-async function processReferral(rUid) {
+async function processReferral(referrerUid) {
     try {
-        const ref = database.ref(`users/${rUid}`);
+        const ref = database.ref(`users/${referrerUid}`);
         const snap = await ref.once('value');
-        const d = snap.val();
-        if (!d) return;
-        const nc = (d.referralCount || 0) + 1;
-        if (nc % 10 === 0) {
-            await ref.update({ referralCount: nc, referralEarnings: parseFloat(d.referralEarnings||0)+REFERRAL_BONUS, balance: parseFloat(d.balance||0)+REFERRAL_BONUS });
-            await addTransaction(rUid, { type:'referral', amount:REFERRAL_BONUS, description:`مكافأة إحالة - ${nc} إحالة`, status:'completed' });
+        const data = snap.val();
+        if (!data) return;
+        
+        const newCount = (data.referralCount || 0) + 1;
+        
+        // كل 10 إحالات يحصل على مكافأة
+        if (newCount % 10 === 0) {
+            const newEarnings = parseFloat(data.referralEarnings || 0) + REFERRAL_BONUS;
+            const newBalance = parseFloat(data.balance || 0) + REFERRAL_BONUS;
+            
+            await ref.update({
+                referralCount: newCount,
+                referralEarnings: newEarnings,
+                balance: newBalance
+            });
+            
+            await addTransaction(referrerUid, {
+                type: 'referral',
+                amount: REFERRAL_BONUS,
+                description: `مكافأة إحالة - ${newCount} إحالة`,
+                status: 'completed'
+            });
+            
+            // تحديث العملات الموزعة
+            await updateGlobalStats(0, REFERRAL_BONUS);
         } else {
-            await ref.update({ referralCount: nc });
+            await ref.update({ referralCount: newCount });
         }
-    } catch (e) {}
+    } catch (e) {
+        console.error('Error processing referral:', e);
+    }
 }
 
-function copyReferralCode() { const c = document.getElementById('referralCode')?.textContent; if(c){copyToClipboard(c);showNotification('تم النسخ','تم نسخ رمز الإحالة','success');} }
-function copyReceiveCode() { const c = document.getElementById('receiveCode')?.textContent; if(c){copyToClipboard(c);showNotification('تم النسخ','تم نسخ الرمز','success');} }
-function copyToClipboard(t) { if(navigator.clipboard){navigator.clipboard.writeText(t).catch(()=>fallbackCopy(t));}else{fallbackCopy(t);} }
-function fallbackCopy(t) { const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a); }
+function copyReferralCode() {
+    const code = document.getElementById('referralCode')?.textContent;
+    if (code) {
+        copyToClipboard(code);
+        showNotification('تم النسخ', 'تم نسخ رمز الإحالة', 'success');
+    }
+}
+
+function copyReceiveCode() {
+    const code = document.getElementById('receiveCode')?.textContent;
+    if (code) {
+        copyToClipboard(code);
+        showNotification('تم النسخ', 'تم نسخ الرمز', 'success');
+    }
+}
+
+function copyToClipboard(text) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+    } else {
+        fallbackCopy(text);
+    }
+}
+
+function fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+}
 
 // ==========================================
 // BUY/SEND/RECEIVE
 // ==========================================
-function showBuyModal() { document.getElementById('buyModal').classList.add('active'); document.getElementById('buyAmount').value=''; document.getElementById('totalIQD').textContent='0 IQD'; }
-function closeBuyModal() { document.getElementById('buyModal').classList.remove('active'); }
-function calculateBuyTotal() { const a=parseFloat(document.getElementById('buyAmount').value)||0; document.getElementById('totalIQD').textContent=(a*PRICE_PER_COIN).toLocaleString('ar-IQ')+' IQD'; }
-
-async function submitBuyRequest() {
-    if(!currentUser)return;
-    const a=parseFloat(document.getElementById('buyAmount').value);
-    if(!a||a<=0){showNotification('خطأ','أدخل كمية صحيحة','error');return;}
-    try {
-        const t=a*PRICE_PER_COIN;
-        await database.ref(`purchase_requests/${currentUser.uid}`).push({userId:currentUser.uid,amount:a,totalIQD:t,status:'pending',timestamp:firebase.database.ServerValue.TIMESTAMP});
-        await addTransaction(currentUser.uid,{type:'buy',amount:a,description:`طلب شراء - ${t.toLocaleString('ar-IQ')} IQD`,status:'pending'});
-        closeBuyModal();
-        showNotification('تم!',`طلب شراء ${a} DC أُرسل بنجاح`,'success');
-    } catch(e){showNotification('خطأ','فشل الطلب','error');}
+function showBuyModal() {
+    document.getElementById('buyModal').classList.add('active');
+    document.getElementById('buyAmount').value = '';
+    document.getElementById('totalIQD').textContent = '0 IQD';
 }
 
-function showSendModal() { document.getElementById('sendModal').classList.add('active'); document.getElementById('recipientCode').value=''; document.getElementById('sendAmount').value=''; document.getElementById('sendNote').value=''; }
-function closeSendModal() { document.getElementById('sendModal').classList.remove('active'); }
-function showReceiveModal() { if(!currentUser){showAuthModal('login');return;} document.getElementById('receiveModal').classList.add('active'); }
-function closeReceiveModal() { document.getElementById('receiveModal').classList.remove('active'); }
+function closeBuyModal() {
+    document.getElementById('buyModal').classList.remove('active');
+}
+
+function calculateBuyTotal() {
+    const amount = parseFloat(document.getElementById('buyAmount').value) || 0;
+    document.getElementById('totalIQD').textContent = (amount * PRICE_PER_COIN).toLocaleString('ar-IQ') + ' IQD';
+}
+
+async function submitBuyRequest() {
+    if (!currentUser) return;
+    
+    const amount = parseFloat(document.getElementById('buyAmount').value);
+    if (!amount || amount <= 0) {
+        showNotification('خطأ', 'أدخل كمية صحيحة', 'error');
+        return;
+    }
+    
+    try {
+        const total = amount * PRICE_PER_COIN;
+        await database.ref(`purchase_requests/${currentUser.uid}`).push({
+            userId: currentUser.uid,
+            amount: amount,
+            totalIQD: total,
+            status: 'pending',
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+        
+        await addTransaction(currentUser.uid, {
+            type: 'buy',
+            amount: amount,
+            description: `طلب شراء - ${total.toLocaleString('ar-IQ')} IQD`,
+            status: 'pending'
+        });
+        
+        closeBuyModal();
+        showNotification('تم!', `طلب شراء ${amount} DC أُرسل بنجاح`, 'success');
+    } catch (e) {
+        showNotification('خطأ', 'فشل الطلب', 'error');
+    }
+}
+
+function showSendModal() {
+    document.getElementById('sendModal').classList.add('active');
+    document.getElementById('recipientCode').value = '';
+    document.getElementById('sendAmount').value = '';
+    document.getElementById('sendNote').value = '';
+}
+
+function closeSendModal() {
+    document.getElementById('sendModal').classList.remove('active');
+}
+
+function showReceiveModal() {
+    if (!currentUser) {
+        showAuthModal('login');
+        return;
+    }
+    document.getElementById('receiveModal').classList.add('active');
+}
+
+function closeReceiveModal() {
+    document.getElementById('receiveModal').classList.remove('active');
+}
 
 async function sendCoins() {
-    if(!currentUser)return;
-    const rc=document.getElementById('recipientCode').value.trim();
-    const a=parseFloat(document.getElementById('sendAmount').value);
-    const n=document.getElementById('sendNote').value.trim()||'تحويل';
-    if(!rc||!a||a<=0){showNotification('خطأ','أدخل جميع البيانات','error');return;}
+    if (!currentUser) return;
+    
+    const recipientCode = document.getElementById('recipientCode').value.trim();
+    const amount = parseFloat(document.getElementById('sendAmount').value);
+    const note = document.getElementById('sendNote').value.trim() || 'تحويل';
+    
+    if (!recipientCode || !amount || amount <= 0) {
+        showNotification('خطأ', 'أدخل جميع البيانات', 'error');
+        return;
+    }
+    
     try {
-        const ss=await database.ref(`users/${currentUser.uid}`).once('value');
-        const sd=ss.val();
-        if(!sd||parseFloat(sd.balance)<a){showNotification('خطأ','رصيد غير كافٍ','error');return;}
-        const ru=await validateReferralCode(rc);
-        if(!ru){showNotification('خطأ','رمز غير صحيح','error');return;}
-        if(ru===currentUser.uid){showNotification('خطأ','لا يمكن الإرسال لنفسك','error');return;}
-        const rs=await database.ref(`users/${ru}`).once('value');
-        const rd=rs.val();
-        if(!rd){showNotification('خطأ','مستخدم غير موجود','error');return;}
-        await database.ref(`users/${currentUser.uid}`).update({balance:parseFloat(sd.balance)-a});
-        await database.ref(`users/${ru}`).update({balance:parseFloat(rd.balance||0)+a});
-        await addTransaction(currentUser.uid,{type:'send',amount:a,description:`إرسال إلى ${rd.name} - ${n}`,status:'completed'});
-        await addTransaction(ru,{type:'receive',amount:a,description:`استلام من ${sd.name} - ${n}`,status:'completed'});
+        const senderSnap = await database.ref(`users/${currentUser.uid}`).once('value');
+        const senderData = senderSnap.val();
+        
+        if (!senderData || parseFloat(senderData.balance) < amount) {
+            showNotification('خطأ', 'رصيد غير كافٍ', 'error');
+            return;
+        }
+        
+        const recipientUid = await validateReferralCode(recipientCode);
+        if (!recipientUid) {
+            showNotification('خطأ', 'رمز غير صحيح', 'error');
+            return;
+        }
+        
+        if (recipientUid === currentUser.uid) {
+            showNotification('خطأ', 'لا يمكن الإرسال لنفسك', 'error');
+            return;
+        }
+        
+        const recipientSnap = await database.ref(`users/${recipientUid}`).once('value');
+        const recipientData = recipientSnap.val();
+        
+        if (!recipientData) {
+            showNotification('خطأ', 'مستخدم غير موجود', 'error');
+            return;
+        }
+        
+        // تحديث الأرصدة
+        await database.ref(`users/${currentUser.uid}`).update({
+            balance: parseFloat(senderData.balance) - amount
+        });
+        
+        await database.ref(`users/${recipientUid}`).update({
+            balance: parseFloat(recipientData.balance || 0) + amount
+        });
+        
+        // إضافة المعاملات
+        await addTransaction(currentUser.uid, {
+            type: 'send',
+            amount: amount,
+            description: `إرسال إلى ${recipientData.name} - ${note}`,
+            status: 'completed'
+        });
+        
+        await addTransaction(recipientUid, {
+            type: 'receive',
+            amount: amount,
+            description: `استلام من ${senderData.name} - ${note}`,
+            status: 'completed'
+        });
+        
         closeSendModal();
-        showNotification('تم!',`أُرسل ${a} DC إلى ${rd.name}`,'success');
-    } catch(e){showNotification('خطأ','فشلت العملية','error');}
+        showNotification('تم!', `أُرسل ${amount} DC إلى ${recipientData.name}`, 'success');
+    } catch (e) {
+        console.error('Error sending coins:', e);
+        showNotification('خطأ', 'فشلت العملية', 'error');
+    }
+}
+
+// ==========================================
+// NEWS
+// ==========================================
+function renderNewsArticles() {
+    const container = document.getElementById('newsArticlesList');
+    if (!container) return;
+    
+    container.innerHTML = newsArticles.map(article => `
+        <div class="news-card" data-category="${article.cat}" onclick="openArticle(${article.id})">
+            <div class="news-card-img" style="background-image:url('${article.img}')"></div>
+            <div class="news-card-content">
+                <span class="news-badge ${article.cat}">${getCategoryLabel(article.cat)}</span>
+                <h3>${article.title}</h3>
+                <p>${article.summary}</p>
+                <div class="news-meta">
+                    <span><i class="fas fa-calendar"></i> ${formatDate(article.date)}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getCategoryLabel(cat) {
+    const labels = {
+        update: 'تحديث',
+        guide: 'دليل',
+        invest: 'استثمار'
+    };
+    return labels[cat] || cat;
+}
+
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function filterNews(category) {
+    const cards = document.querySelectorAll('.news-card');
+    const buttons = document.querySelectorAll('.filter-btn');
+    
+    buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.cat === category) btn.classList.add('active');
+    });
+    
+    cards.forEach(card => {
+        if (category === 'all' || card.dataset.category === category) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function openArticle(id) {
+    const article = newsArticles.find(a => a.id === id);
+    if (!article) return;
+    
+    const content = document.getElementById('articleContent');
+    content.innerHTML = `
+        <div class="article-header-img" style="background-image:url('${article.img}')"></div>
+        <div class="article-body">
+            <span class="news-badge ${article.cat}">${getCategoryLabel(article.cat)}</span>
+            <h2>${article.title}</h2>
+            <div class="article-meta">
+                <span><i class="fas fa-calendar"></i> ${formatDate(article.date)}</span>
+            </div>
+            <div class="article-text">${article.body.replace(/\n/g, '<br>')}</div>
+        </div>
+    `;
+    
+    document.getElementById('articleModal').classList.add('active');
+}
+
+function closeArticleModal() {
+    document.getElementById('articleModal').classList.remove('active');
+}
+
+// ==========================================
+// ANALYTICS
+// ==========================================
+function updateAnalyticsStats() {
+    if (!currentUser) return;
+    // Stats are already updated by loadUserData and loadGlobalStats
+}
+
+// ==========================================
+// PROFILE
+// ==========================================
+function showEditNameModal() {
+    document.getElementById('editNameModal').classList.add('active');
+    document.getElementById('editNameInput').value = document.getElementById('userName').textContent;
+}
+
+function closeEditNameModal() {
+    document.getElementById('editNameModal').classList.remove('active');
+}
+
+async function saveNewName() {
+    if (!currentUser) return;
+    
+    const newName = document.getElementById('editNameInput').value.trim();
+    if (!newName) {
+        showNotification('خطأ', 'أدخل اسماً صحيحاً', 'error');
+        return;
+    }
+    
+    try {
+        await database.ref(`users/${currentUser.uid}`).update({ name: newName });
+        closeEditNameModal();
+        showNotification('تم!', 'تم تحديث الاسم بنجاح', 'success');
+    } catch (e) {
+        showNotification('خطأ', 'فشل التحديث', 'error');
+    }
+}
+
+function toggleSetting(setting) {
+    const toggle = document.getElementById(`toggle-${setting}`);
+    if (toggle) {
+        toggle.classList.toggle('active');
+        showNotification('تم', `تم ${toggle.classList.contains('active') ? 'تفعيل' : 'إلغاء'} ${setting}`, 'success');
+    }
 }
 
 // ==========================================
 // NOTIFICATIONS
 // ==========================================
-function showNotification(title, msg, type='success') {
-    const n=document.getElementById('successNotification');
-    if(!n)return;
-    document.getElementById('notificationTitle').textContent=title;
-    document.getElementById('notificationMessage').textContent=msg;
-    n.className=`toast-notification ${type} active`;
-    setTimeout(()=>n.classList.remove('active'),4000);
+function showNotification(title, msg, type = 'success') {
+    const notification = document.getElementById('successNotification');
+    if (!notification) return;
+    
+    document.getElementById('notificationTitle').textContent = title;
+    document.getElementById('notificationMessage').textContent = msg;
+    
+    notification.className = `toast-notification ${type} active`;
+    setTimeout(() => notification.classList.remove('active'), 4000);
 }
-function closeNotification() { document.getElementById('successNotification')?.classList.remove('active'); }
+
+function closeNotification() {
+    document.getElementById('successNotification')?.classList.remove('active');
+}
 
 // ==========================================
 // UTILS
 // ==========================================
-window.addEventListener('click', e => { if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('active'); });
-document.addEventListener('keypress', e => { if(e.key==='Enter'&&e.target.tagName==='INPUT')e.preventDefault(); });
+window.addEventListener('click', e => {
+    if (e.target.classList.contains('modal-overlay')) {
+        e.target.classList.remove('active');
+    }
+});
+
+document.addEventListener('keypress', e => {
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+        e.preventDefault();
+    }
+});

@@ -1,7 +1,7 @@
 {
   "name": "دينار كوين - Dinar Coin",
   "short_name": "دينار كوين",
-  "description": "العملة الرقمية العراقية الأولى",
+  "description": "العملة الرقمية العراقية الأولى - نظام شامل لإدارة العملات الرقمية مع نظام إحالة ومكافآت",
   "start_url": "/Dinar-Queen/index.html",
   "display": "standalone",
   "background_color": "#0a1f1a",
@@ -27,19 +27,19 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/Dinar-Queen/icon-192.png",
+      "src": "/Dinar-Queen/apple-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png"
     }
   ],
   "screenshots": [
     {
-      "src": "/Dinar-Queen/icon-192.png",
-      "sizes": "1920x1080",
-      "type": "image/jpeg"
+      "src": "/Dinar-Queen/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ],
-  "categories": ["finance", "business"],
+  "categories": ["finance", "business", "productivity"],
   "dir": "rtl",
   "lang": "ar",
   "scope": "/Dinar-Queen/",
