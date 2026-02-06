@@ -12,36 +12,52 @@
       "src": "/Dinar-Queen/logo.png",
       "sizes": "any",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
       "src": "/Dinar-Queen/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
       "src": "/Dinar-Queen/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
-      "src": "/Dinar-Queen/icon-192.png",
+      "src": "/Dinar-Queen/apple-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png"
     }
   ],
   "screenshots": [
     {
-      "src": "/Dinar-Queen/icon-192.png",
-      "sizes": "1920x1080",
-      "type": "image/jpeg"
+      "src": "/Dinar-Queen/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ],
-  "categories": ["finance", "business"],
+  "categories": ["finance", "business", "productivity"],
   "dir": "rtl",
   "lang": "ar",
   "scope": "/Dinar-Queen/",
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "إرسال أموال",
+      "short_name": "إرسال",
+      "description": "إرسال دينار كوين بسرعة",
+      "url": "/Dinar-Queen/index.html?action=send",
+      "icons": [{ "src": "/Dinar-Queen/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "استقبال أموال",
+      "short_name": "استقبال",
+      "description": "استقبال دينار كوين",
+      "url": "/Dinar-Queen/index.html?action=receive",
+      "icons": [{ "src": "/Dinar-Queen/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
 }
