@@ -1,19 +1,18 @@
-// Service Worker - دينار كوين v2.0.0
-const CACHE_NAME = 'dinar-coin-v2-0-0';
+// Service Worker - دينار كوين
+const CACHE_NAME = 'dinar-coin-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/app.js',
-  '/logo.png',
-  '/background.jpg',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/apple-touch-icon.png',
-  '/manifest.json',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+  '/Dinar-Queen/',
+  '/Dinar-Queen/index.html',
+  '/Dinar-Queen/style.css',
+  '/Dinar-Queen/app.js',
+  '/Dinar-Queen/logo.png',
+  '/Dinar-Queen/background.jpg',
+  '/Dinar-Queen/icon-192.png',
+  '/Dinar-Queen/icon-512.png',
+  '/Dinar-Queen/apple-touch-icon.png',
+  '/Dinar-Queen/manifest.json',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
-  'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js',
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js',
   'https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js'
@@ -24,12 +23,10 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('✓ فتح الذاكرة المؤقتة');
-        return cache.addAll(urlsToCache.map(url => new Request(url, {cache: 'reload'})));
+        console.log('فتح الذاكرة المؤقتة');
+        return cache.addAll(urlsToCache);
       })
-      .catch(err => console.error('✗ خطأ في التثبيت:', err))
   );
-  self.skipWaiting();
 });
 
 // التفعيل
@@ -39,52 +36,26 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('✓ حذف الذاكرة المؤقتة القديمة:', cacheName);
+            console.log('حذف الذاكرة المؤقتة القديمة:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
-  return self.clients.claim();
 });
 
-// Fetch - استراتيجية Network First ثم Cache
+// Fetch
 self.addEventListener('fetch', event => {
   event.respondWith(
-    fetch(event.request)
+    caches.match(event.request)
       .then(response => {
-        // إذا نجح الطلب، احفظه في الكاش
-        if (response && response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
+        // إرجاع من الذاكرة المؤقتة أو جلب من الشبكة
+        return response || fetch(event.request);
       })
       .catch(() => {
-        // إذا فشل الطلب، ارجع من الكاش
-        return caches.match(event.request).then(cachedResponse => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // إذا لم يكن في الكاش، ارجع الصفحة الرئيسية
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
-          return new Response('Offline - لا يوجد اتصال بالإنترنت', {
-            status: 503,
-            statusText: 'Service Unavailable'
-          });
-        });
+        // إرجاع صفحة offline إذا كانت متوفرة
+        return caches.match('/Dinar-Queen/index.html');
       })
   );
-});
-
-// رسائل من العميل
-self.addEventListener('message', event => {
-  if (event.data.action === 'skipWaiting') {
-    self.skipWaiting();
-  }
 });
