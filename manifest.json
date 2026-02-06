@@ -2,39 +2,39 @@
   "name": "دينار كوين - Dinar Coin",
   "short_name": "دينار كوين",
   "description": "العملة الرقمية العراقية الأولى",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0a1f1a",
   "theme_color": "#1a5f4a",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "logo.png",
+      "src": "./logo.png",
       "sizes": "any",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "apple-touch-icon.png",
+      "src": "./apple-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png"
     }
   ],
   "screenshots": [
     {
-      "src": "background.jpg",
+      "src": "./background.jpg",
       "sizes": "1920x1080",
       "type": "image/jpeg"
     }
@@ -42,6 +42,6 @@
   "categories": ["finance", "business"],
   "dir": "rtl",
   "lang": "ar",
-  "scope": "/",
+  "scope": "./",
   "prefer_related_applications": false
 }
