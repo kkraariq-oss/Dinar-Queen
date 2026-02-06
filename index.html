@@ -80,7 +80,7 @@
                             </div>
                             <div class="card-back-info">
                                 <p class="card-back-text">هذه البطاقة ملك لمنصة دينار كوين</p>
-                                <p class="card-back-text">support@dinarcoin.iq</p>
+                                <p class="card-back-text"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="087b7d7878677a7c486c6166697a6b676166266179">[email&#160;protected]</a></p>
                             </div>
                             <div class="card-back-bottom">
                                 <span class="card-back-id" id="cardBackId">DC-000000</span>
@@ -195,14 +195,14 @@
                         <input type="file" id="profilePicInput" accept="image/*" style="display:none" onchange="handleProfilePic(event)">
                     </div>
                     <h3 class="profile-name" id="profileName">المستخدم</h3>
-                    <p class="profile-email" id="profileEmail">user@example.com</p>
+                    <p class="profile-email" id="profileEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="235650465163465b424e534f460d404c4e">[email&#160;protected]</a></p>
                     <div class="profile-badges"><span class="profile-badge"><i class="fas fa-check-circle"></i> حساب مفعّل</span><span class="profile-badge gold"><i class="fas fa-star"></i> BETA</span></div>
                 </div>
                 <div class="settings-section">
                     <h4 class="settings-section-title">معلومات الحساب</h4>
                     <div class="settings-card">
                         <div class="settings-item" onclick="editProfileField('name')"><div class="settings-item-icon"><i class="fas fa-user"></i></div><div class="settings-item-content"><span class="settings-item-label">الاسم</span><span class="settings-item-value" id="profileNameValue">المستخدم</span></div><i class="fas fa-chevron-left settings-arrow"></i></div>
-                        <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-envelope"></i></div><div class="settings-item-content"><span class="settings-item-label">البريد الإلكتروني</span><span class="settings-item-value" id="profileEmailValue">user@email.com</span></div><i class="fas fa-lock settings-arrow" style="color:var(--text-muted);font-size:0.7rem;"></i></div>
+                        <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-envelope"></i></div><div class="settings-item-content"><span class="settings-item-label">البريد الإلكتروني</span><span class="settings-item-value" id="profileEmailValue"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="dca9afb9ae9cb9b1bdb5b0f2bfb3b1">[email&#160;protected]</a></span></div><i class="fas fa-lock settings-arrow" style="color:var(--text-muted);font-size:0.7rem;"></i></div>
                         <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-id-card"></i></div><div class="settings-item-content"><span class="settings-item-label">رمز الإحالة</span><span class="settings-item-value" id="profileRefCode">DC12345678</span></div><i class="fas fa-copy settings-arrow" onclick="event.stopPropagation();copyReferralCode()" style="color:var(--gold-primary);"></i></div>
                         <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-wallet"></i></div><div class="settings-item-content"><span class="settings-item-label">الرصيد</span><span class="settings-item-value gold-text" id="profileBalance">0.00 DC</span></div></div>
                         <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-calendar"></i></div><div class="settings-item-content"><span class="settings-item-label">تاريخ الانضمام</span><span class="settings-item-value" id="profileJoinDate">---</span></div></div>
@@ -220,15 +220,18 @@
                     <h4 class="settings-section-title">الإعدادات</h4>
                     <div class="settings-card">
                         <div class="settings-item" onclick="toggleSetting('notifications')"><div class="settings-item-icon"><i class="fas fa-bell"></i></div><div class="settings-item-content"><span class="settings-item-label">الإشعارات</span></div><div class="toggle-switch active" id="toggle-notifications"><div class="toggle-knob"></div></div></div>
+                        <div class="settings-item" onclick="toggleSetting('sound')"><div class="settings-item-icon"><i class="fas fa-volume-up"></i></div><div class="settings-item-content"><span class="settings-item-label">الأصوات</span></div><div class="toggle-switch active" id="toggle-sound"><div class="toggle-knob"></div></div></div>
                         <div class="settings-item" onclick="toggleSetting('darkmode')"><div class="settings-item-icon"><i class="fas fa-moon"></i></div><div class="settings-item-content"><span class="settings-item-label">الوضع الليلي</span></div><div class="toggle-switch active" id="toggle-darkmode"><div class="toggle-knob"></div></div></div>
                         <div class="settings-item" onclick="toggleSetting('biometric')"><div class="settings-item-icon"><i class="fas fa-fingerprint"></i></div><div class="settings-item-content"><span class="settings-item-label">تسجيل بالبصمة</span></div><div class="toggle-switch" id="toggle-biometric"><div class="toggle-knob"></div></div></div>
+                        <div class="settings-item" onclick="toggleSetting('autoUpdate')"><div class="settings-item-icon"><i class="fas fa-sync-alt"></i></div><div class="settings-item-content"><span class="settings-item-label">التحديث التلقائي</span></div><div class="toggle-switch active" id="toggle-autoUpdate"><div class="toggle-knob"></div></div></div>
                         <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-language"></i></div><div class="settings-item-content"><span class="settings-item-label">اللغة</span><span class="settings-item-value">العربية</span></div><i class="fas fa-chevron-left settings-arrow"></i></div>
                         <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-shield-alt"></i></div><div class="settings-item-content"><span class="settings-item-label">الأمان والخصوصية</span></div><i class="fas fa-chevron-left settings-arrow"></i></div>
-                        <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-question-circle"></i></div><div class="settings-item-content"><span class="settings-item-label">المساعدة والدعم</span></div><i class="fas fa-chevron-left settings-arrow"></i></div>
+                        <div class="settings-item" onclick="showContactSupport()"><div class="settings-item-icon"><i class="fas fa-question-circle"></i></div><div class="settings-item-content"><span class="settings-item-label">المساعدة والدعم</span></div><i class="fas fa-chevron-left settings-arrow"></i></div>
+                        <div class="settings-item" onclick="showAboutApp()"><div class="settings-item-icon"><i class="fas fa-info-circle"></i></div><div class="settings-item-content"><span class="settings-item-label">حول التطبيق</span></div><i class="fas fa-chevron-left settings-arrow"></i></div>
                     </div>
                 </div>
                 <button class="btn-logout-full" onclick="logout()"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
-                <div class="app-version-info"><img src="/Dinar-Queen/logo.png" alt="" class="version-logo"><span>Dinar Coin v1.0.0 BETA</span><span>صنع بـ ❤️ في العراق 🇮🇶</span></div>
+                <div class="app-version-info"><img src="/Dinar-Queen/logo.png" alt="" class="version-logo"><span>Dinar Coin v2.0.0 BETA</span><span>صنع بـ ❤️ في العراق 🇮🇶</span><span style="font-size:0.6rem;opacity:0.6;margin-top:4px;">آخر تحديث: فبراير 2026</span></div>
                 <div style="height:100px;"></div>
             </div>
         </div>
