@@ -105,6 +105,14 @@ document.addEventListener('DOMContentLoaded', () => {
     createParticles();
     setupEventListeners();
     renderNewsArticles();
+    
+    // Load saved settings after a short delay
+    setTimeout(loadSavedSettings, 500);
+    
+    // Add smooth scroll behavior
+    document.querySelectorAll('.dash-scroll-content').forEach(el => {
+        el.style.scrollBehavior = 'smooth';
+    });
 });
 
 function initializeApp() {
@@ -558,7 +566,6 @@ function generateVolumeData() {
     const baseVolume = [180, 245, 310, 420, 580, 720, 890, 1050, 1200, 1380, 1560, 1750];
     return baseVolume.map(v => Math.round(v + (Math.random() - 0.5) * 100));
 }
-}
 
 function drawLineChart(canvasId, data, lineColor, fillColor) {
     const canvas = document.getElementById(canvasId);
@@ -946,13 +953,3 @@ function loadSavedSettings() {
         } catch (e) {}
     });
 }
-
-// Call on page load
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(loadSavedSettings, 500);
-});
-
-// Add smooth scroll behavior
-document.querySelectorAll('.dash-scroll-content').forEach(el => {
-    el.style.scrollBehavior = 'smooth';
-});
