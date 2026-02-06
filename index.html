@@ -2,31 +2,41 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دينار كوين - Dinar Coin | العملة الرقمية العراقية الأولى</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a5f4a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="دينار كوين - العملة الرقمية العراقية الأولى">
     
-    <!-- Favicon -->
-    <link rel="icon" type="ogo.png" href="logo.png">
+    <title>دينار كوين - Dinar Coin</title>
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- QRCode.js Library -->
+    <!-- QRCode.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <!-- Custom Styles -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Animated Background Particles -->
+    <!-- Background Overlay -->
+    <div class="background-overlay"></div>
+
+    <!-- Animated Particles -->
     <div class="particles" id="particles"></div>
 
     <!-- Top Banner -->
     <div class="top-banner">
         <div class="banner-content">
-            <i class="fas fa-crown iraq-emblem"></i>
+            <i class="fas fa-landmark"></i>
             <h1 class="banner-title">جمهورية العراق | Republic of Iraq</h1>
-            <i class="fas fa-crown iraq-emblem"></i>
+            <i class="fas fa-landmark"></i>
         </div>
     </div>
 
@@ -34,16 +44,16 @@
     <header class="main-header">
         <div class="container">
             <div class="logo-container">
-                <img src="ogo.png" alt="Dinar Coin Logo" class="logo-image">
+                <img src="logo.png" alt="Dinar Coin Logo" class="logo-image">
                 <div class="logo-text">
-                    <h1>دينار كوين | Dinar Coin</h1>
+                    <h1>دينار كوين</h1>
                     <span class="beta-badge">BETA</span>
                 </div>
             </div>
             <nav class="nav-menu" id="navMenu">
-                <a href="#home" class="nav-link active">الرئيسية</a>
-                <a href="#about" class="nav-link">من نحن</a>
-                <a href="#news" class="nav-link">الأخبار</a>
+                <a href="#home" class="nav-link active" data-section="home">الرئيسية</a>
+                <a href="#about" class="nav-link" data-section="about">من نحن</a>
+                <a href="#news" class="nav-link" data-section="news">الأخبار</a>
             </nav>
             <button class="menu-toggle" id="menuToggle">
                 <i class="fas fa-bars"></i>
@@ -103,7 +113,7 @@
                         <div class="stat-card">
                             <div class="stat-icon"><i class="fas fa-coins"></i></div>
                             <div class="stat-content">
-                                <div class="stat-value">1M</div>
+                                <div class="stat-value">1M+</div>
                                 <div class="stat-label">معاملة ناجحة</div>
                             </div>
                         </div>
@@ -118,6 +128,7 @@
                 <h2 class="section-title">من نحن؟</h2>
                 <div class="about-content">
                     <div class="about-card">
+                        <div class="card-icon"><i class="fas fa-users"></i></div>
                         <h3>نحن فريق من الشباب العراقي</h3>
                         <p>
                             نحن مجموعة من الشباب العراقي المستثمرين والمهتمين في مجال التكنولوجيا والعملات الرقمية. 
@@ -126,6 +137,7 @@
                     </div>
 
                     <div class="about-card">
+                        <div class="card-icon"><i class="fas fa-eye"></i></div>
                         <h3>رؤيتنا</h3>
                         <p>
                             نؤمن بأن الدينار العراقي كان في يوم من الأيام أقوى من الدولار الأمريكي. واليوم، نرى كيف أن 
@@ -135,6 +147,7 @@
                     </div>
 
                     <div class="about-card">
+                        <div class="card-icon"><i class="fas fa-flask"></i></div>
                         <h3>المشروع التجريبي</h3>
                         <p>
                             هذا المشروع هو تجربة أولية لاختبار فكرة العملة الرقمية العراقية. نحن نعمل على تطوير التكنولوجيا 
@@ -143,6 +156,7 @@
                     </div>
 
                     <div class="about-card highlight">
+                        <div class="card-icon"><i class="fas fa-handshake"></i></div>
                         <h3>دعوة للمشاركة</h3>
                         <p>
                             ندعو جميع العرب والعراقيين للانضمام إلى هذا المشروع ودعمه. معاً، يمكننا أن نعيد قوة العملة العربية 
@@ -183,101 +197,68 @@
         <!-- Dashboard Section -->
         <section id="dashboard" class="section dashboard-section">
             <div class="container">
-                <!-- User Profile Card -->
-                <div class="profile-header">
-                    <div class="profile-avatar" id="userAvatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="profile-info">
-                        <h2 id="userName">مستخدم</h2>
-                        <p id="userEmail">email@example.com</p>
-                    </div>
-                    <button class="btn-logout" onclick="logout()">
+                <div class="dashboard-header">
+                    <h2 class="section-title">لوحة التحكم</h2>
+                    <button class="btn btn-danger" onclick="logout()">
                         <i class="fas fa-sign-out-alt"></i>
                         تسجيل الخروج
                     </button>
                 </div>
 
-                <!-- Master Card Wallet -->
-                <div class="mastercard-wallet">
-                    <div class="card-chip"></div>
-                    <div class="card-logo">
-                        <i class="fas fa-coins"></i>
-                    </div>
-                    <div class="card-number">
-                        <span id="cardNumber">**** **** **** ****</span>
-                    </div>
-                    <div class="card-info">
-                        <div class="card-holder">
-                            <div class="label">صاحب البطاقة</div>
-                            <div class="value" id="cardHolderName">CARDHOLDER NAME</div>
+                <!-- Wallet Card -->
+                <div class="wallet-card">
+                    <div class="wallet-header">
+                        <div>
+                            <h3>محفظتك</h3>
+                            <p class="user-name" id="userName">المستخدم</p>
                         </div>
-                        <div class="card-balance">
-                            <div class="label">الرصيد</div>
-                            <div class="value">
-                                <span id="cardBalance">0.00</span>
-                                <span class="currency">DC</span>
-                            </div>
-                        </div>
+                        <i class="fas fa-wallet"></i>
                     </div>
-                    <div class="card-brand">DINAR COIN</div>
+                    <div class="wallet-balance">
+                        <div class="balance-amount" id="userBalance">0.00</div>
+                        <div class="balance-label">دينار كوين</div>
+                    </div>
+                    <div class="wallet-actions">
+                        <button class="action-btn" onclick="showBuyModal()">
+                            <i class="fas fa-shopping-cart"></i>
+                            شراء
+                        </button>
+                        <button class="action-btn" onclick="showSendModal()">
+                            <i class="fas fa-paper-plane"></i>
+                            إرسال
+                        </button>
+                        <button class="action-btn" onclick="showReceiveModal()">
+                            <i class="fas fa-qrcode"></i>
+                            استقبال
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="action-buttons">
-                    <button class="action-btn" onclick="showBuyModal()">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>شراء</span>
-                    </button>
-                    <button class="action-btn" onclick="showSendModal()">
-                        <i class="fas fa-paper-plane"></i>
-                        <span>إرسال</span>
-                    </button>
-                    <button class="action-btn" onclick="showReceiveModal()">
-                        <i class="fas fa-qrcode"></i>
-                        <span>استقبال</span>
-                    </button>
-                </div>
-
-                <!-- Referral Program -->
+                <!-- Referral Card -->
                 <div class="referral-card">
-                    <div class="referral-header">
-                        <i class="fas fa-gift"></i>
-                        <h3>برنامج الإحالة</h3>
-                    </div>
-                    <div class="referral-code-section">
-                        <div class="code-label">رمز الإحالة الخاص بك:</div>
-                        <div class="code-box">
-                            <span id="referralCode">DC12345678</span>
-                            <button class="btn-copy" onclick="copyReferralCode()">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                        </div>
+                    <h3><i class="fas fa-gift"></i> برنامج الإحالة</h3>
+                    <p>ادع أصدقاءك واحصل على مكافآت!</p>
+                    <div class="referral-code">
+                        <span id="userReferralCode">DC12345678</span>
+                        <button class="btn-copy" onclick="copyReferralCode()">
+                            <i class="fas fa-copy"></i>
+                        </button>
                     </div>
                     <div class="referral-stats">
-                        <div class="stat-item">
-                            <i class="fas fa-users"></i>
-                            <div>
-                                <span class="stat-number" id="referralCount">0</span>
-                                <span class="stat-text">إحالة</span>
-                            </div>
+                        <div class="stat">
+                            <div class="stat-value" id="referralCount">0</div>
+                            <div class="stat-label">إحالة ناجحة</div>
                         </div>
-                        <div class="stat-item">
-                            <i class="fas fa-coins"></i>
-                            <div>
-                                <span class="stat-number" id="referralEarnings">0.00</span>
-                                <span class="stat-text">DC مكتسبة</span>
-                            </div>
+                        <div class="stat">
+                            <div class="stat-value" id="referralBonus">0.00</div>
+                            <div class="stat-label">مكافأة DC</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Transaction History -->
-                <div class="transactions-section">
-                    <h3 class="section-subtitle">
-                        <i class="fas fa-history"></i>
-                        سجل العمليات
-                    </h3>
+                <!-- Transactions -->
+                <div class="transactions-card">
+                    <h3><i class="fas fa-history"></i> آخر العمليات</h3>
                     <div id="transactionsList" class="transactions-list">
                         <div class="empty-state">
                             <i class="fas fa-inbox"></i>
@@ -298,19 +279,20 @@
             
             <!-- Login Form -->
             <div id="loginForm" class="auth-form">
-                <h2 class="form-title">
+                <div class="form-header">
                     <i class="fas fa-sign-in-alt"></i>
-                    تسجيل الدخول
-                </h2>
+                    <h2>تسجيل الدخول</h2>
+                </div>
                 <div class="form-group">
                     <label>البريد الإلكتروني</label>
-                    <input type="email" id="loginEmail" placeholder="أدخل بريدك الإلكتروني">
+                    <input type="email" id="loginEmail" placeholder="أدخل بريدك الإلكتروني" required>
                 </div>
                 <div class="form-group">
                     <label>كلمة المرور</label>
-                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور">
+                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" required>
                 </div>
                 <button class="btn btn-primary btn-block" onclick="login()">
+                    <i class="fas fa-sign-in-alt"></i>
                     تسجيل الدخول
                 </button>
                 <p class="form-footer">
@@ -321,27 +303,28 @@
 
             <!-- Signup Form -->
             <div id="signupForm" class="auth-form" style="display: none;">
-                <h2 class="form-title">
+                <div class="form-header">
                     <i class="fas fa-user-plus"></i>
-                    إنشاء حساب جديد
-                </h2>
+                    <h2>إنشاء حساب جديد</h2>
+                </div>
                 <div class="form-group">
                     <label>الاسم الكامل</label>
-                    <input type="text" id="signupName" placeholder="أدخل اسمك الكامل">
+                    <input type="text" id="signupName" placeholder="أدخل اسمك الكامل" required>
                 </div>
                 <div class="form-group">
                     <label>البريد الإلكتروني</label>
-                    <input type="email" id="signupEmail" placeholder="أدخل بريدك الإلكتروني">
+                    <input type="email" id="signupEmail" placeholder="أدخل بريدك الإلكتروني" required>
                 </div>
                 <div class="form-group">
                     <label>كلمة المرور</label>
-                    <input type="password" id="signupPassword" placeholder="أدخل كلمة المرور">
+                    <input type="password" id="signupPassword" placeholder="أدخل كلمة المرور (6 أحرف على الأقل)" required>
                 </div>
                 <div class="form-group">
                     <label>رمز الإحالة (اختياري)</label>
                     <input type="text" id="signupReferralCode" placeholder="أدخل رمز الإحالة إن وجد">
                 </div>
                 <button class="btn btn-primary btn-block" onclick="signup()">
+                    <i class="fas fa-user-plus"></i>
                     إنشاء الحساب
                 </button>
                 <p class="form-footer">
@@ -358,16 +341,16 @@
             <button class="modal-close" onclick="closeBuyModal()">
                 <i class="fas fa-times"></i>
             </button>
-            <h2 class="form-title">
+            <div class="modal-header">
                 <i class="fas fa-shopping-cart"></i>
-                شراء دينار كوين
-            </h2>
+                <h2>شراء دينار كوين</h2>
+            </div>
             <div class="coin-icon-large">
                 <i class="fas fa-coins"></i>
             </div>
             <div class="form-group">
                 <label>الكمية (DC)</label>
-                <input type="number" id="buyAmount" placeholder="0.00" min="0.01" step="0.01">
+                <input type="number" id="buyAmount" placeholder="0.00" min="0.01" step="0.01" required>
             </div>
             <div class="calculation-display">
                 <div class="calc-row">
@@ -396,17 +379,17 @@
             <button class="modal-close" onclick="closeSendModal()">
                 <i class="fas fa-times"></i>
             </button>
-            <h2 class="form-title">
+            <div class="modal-header">
                 <i class="fas fa-paper-plane"></i>
-                إرسال دينار كوين
-            </h2>
+                <h2>إرسال دينار كوين</h2>
+            </div>
             <div class="form-group">
                 <label>رمز إحالة المستلم</label>
-                <input type="text" id="recipientCode" placeholder="DC12345678">
+                <input type="text" id="recipientCode" placeholder="DC12345678" required>
             </div>
             <div class="form-group">
                 <label>الكمية (DC)</label>
-                <input type="number" id="sendAmount" placeholder="0.00" min="0.01" step="0.01">
+                <input type="number" id="sendAmount" placeholder="0.00" min="0.01" step="0.01" required>
             </div>
             <div class="form-group">
                 <label>ملاحظة (اختياري)</label>
@@ -425,10 +408,10 @@
             <button class="modal-close" onclick="closeReceiveModal()">
                 <i class="fas fa-times"></i>
             </button>
-            <h2 class="form-title">
+            <div class="modal-header">
                 <i class="fas fa-qrcode"></i>
-                استقبال دينار كوين
-            </h2>
+                <h2>استقبال دينار كوين</h2>
+            </div>
             <div class="qr-section">
                 <div id="qrCode" class="qr-code-container"></div>
                 <p class="qr-label">امسح الكود لتحويل الأموال</p>
@@ -463,8 +446,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
-    <!-- Custom Script -->
+    
+    <!-- Custom Scripts -->
     <script src="app.js"></script>
 </body>
 </html>
