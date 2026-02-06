@@ -522,21 +522,42 @@ function drawAllCharts() {
 
 function generatePriceData() {
     const data = [];
-    let price = 980;
-    for (let i = 0; i < 30; i++) {
-        price += (Math.random() - 0.45) * 15;
+    let price = 1000; // Starting at stable 1000 IQD
+    const timeframe = document.querySelector('.tf-btn.active')?.textContent || '1D';
+    
+    let points, volatility, trend;
+    switch(timeframe) {
+        case '1D': points = 24; volatility = 5; trend = 0.2; break;
+        case '1W': points = 7; volatility = 15; trend = 0.5; break;
+        case '1M': points = 30; volatility = 20; trend = 1; break;
+        case '1Y': points = 12; volatility = 50; trend = 2; break;
+        default: points = 30; volatility = 20; trend = 1;
+    }
+    
+    for (let i = 0; i < points; i++) {
+        // Add realistic market movement with trend
+        const randomChange = (Math.random() - 0.48) * volatility;
+        const trendChange = trend * (i / points);
+        price += randomChange + trendChange;
+        
+        // Keep price within reasonable bounds
         price = Math.max(950, Math.min(1050, price));
-        data.push(price);
+        data.push(Math.round(price * 100) / 100);
     }
     return data;
 }
 
 function generateUsersData() {
-    return [12, 18, 25, 32, 28, 45, 52, 48, 65, 78, 85, 92];
+    // Realistic user growth with exponential trend
+    const baseUsers = [15, 22, 28, 38, 52, 68, 85, 102, 125, 148, 175, 205];
+    return baseUsers.map(u => Math.round(u + (Math.random() - 0.5) * 10));
 }
 
 function generateVolumeData() {
-    return [150, 220, 180, 310, 260, 400, 350, 420, 380, 510, 480, 550];
+    // Realistic trading volume with market cycles
+    const baseVolume = [180, 245, 310, 420, 580, 720, 890, 1050, 1200, 1380, 1560, 1750];
+    return baseVolume.map(v => Math.round(v + (Math.random() - 0.5) * 100));
+}
 }
 
 function drawLineChart(canvasId, data, lineColor, fillColor) {
@@ -793,7 +814,18 @@ async function submitBuyRequest() {
 
 function showSendModal() { document.getElementById('sendModal').classList.add('active'); document.getElementById('recipientCode').value=''; document.getElementById('sendAmount').value=''; document.getElementById('sendNote').value=''; }
 function closeSendModal() { document.getElementById('sendModal').classList.remove('active'); }
-function showReceiveModal() { if(!currentUser){showAuthModal('login');return;} document.getElementById('receiveModal').classList.add('active'); }
+function showReceiveModal() { 
+    if(!currentUser){showAuthModal('login');return;} 
+    document.getElementById('receiveModal').classList.add('active');
+    // Generate QR code when modal opens
+    database.ref(`users/${currentUser.uid}/referralCode`).once('value').then(snap => {
+        const refCode = snap.val();
+        if (refCode) {
+            generateQRCode(refCode);
+            setText('receiveCode', refCode);
+        }
+    });
+}
 function closeReceiveModal() { document.getElementById('receiveModal').classList.remove('active'); }
 
 async function sendCoins() {
@@ -839,3 +871,88 @@ function closeNotification() { document.getElementById('successNotification')?.c
 // ==========================================
 window.addEventListener('click', e => { if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('active'); });
 document.addEventListener('keypress', e => { if(e.key==='Enter'&&e.target.tagName==='INPUT')e.preventDefault(); });
+
+// ==========================================
+// ADDITIONAL FUNCTIONS - v2.0
+// ==========================================
+function showContactSupport() {
+    showNotification('قريباً', 'ميزة الدعم الفني قيد التطوير', 'success');
+}
+
+function showAboutApp() {
+    const aboutText = `
+دينار كوين - العملة الرقمية العراقية الأولى
+
+النسخة: 2.0.0 BETA
+تاريخ التحديث: فبراير 2026
+
+تطبيق دينار كوين هو منصة رقمية آمنة وسهلة الاستخدام للاستثمار والتداول في العملة الرقمية العراقية الأولى.
+
+المميزات:
+• محفظة رقمية آمنة ومشفرة
+• نظام إحالة مع مكافآت فورية
+• تحليلات مالية متقدمة
+• واجهة عصرية وسهلة الاستخدام
+• دعم كامل للغة العربية
+
+تم التطوير بواسطة: Digital Creativity Company
+جميع الحقوق محفوظة © 2026
+صنع بكل ❤️ في العراق 🇮🇶
+    `;
+    showNotification('حول التطبيق', aboutText, 'success');
+}
+
+// Enhanced toggle settings with persistence
+function toggleSetting(setting) {
+    const toggle = document.getElementById(`toggle-${setting}`);
+    if (!toggle) return;
+    
+    toggle.classList.toggle('active');
+    const isActive = toggle.classList.contains('active');
+    
+    // Save to localStorage
+    try {
+        localStorage.setItem(`setting_${setting}`, isActive ? 'true' : 'false');
+    } catch (e) {}
+    
+    // Show notification
+    const settingNames = {
+        notifications: 'الإشعارات',
+        sound: 'الأصوات',
+        darkmode: 'الوضع الليلي',
+        biometric: 'تسجيل الدخول بالبصمة',
+        autoUpdate: 'التحديث التلقائي'
+    };
+    
+    const settingName = settingNames[setting] || setting;
+    const status = isActive ? 'تم التفعيل' : 'تم التعطيل';
+    showNotification(settingName, status, 'success');
+}
+
+// Load settings from localStorage on init
+function loadSavedSettings() {
+    const settings = ['notifications', 'sound', 'darkmode', 'biometric', 'autoUpdate'];
+    settings.forEach(setting => {
+        try {
+            const saved = localStorage.getItem(`setting_${setting}`);
+            const toggle = document.getElementById(`toggle-${setting}`);
+            if (toggle && saved !== null) {
+                if (saved === 'true') {
+                    toggle.classList.add('active');
+                } else {
+                    toggle.classList.remove('active');
+                }
+            }
+        } catch (e) {}
+    });
+}
+
+// Call on page load
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(loadSavedSettings, 500);
+});
+
+// Add smooth scroll behavior
+document.querySelectorAll('.dash-scroll-content').forEach(el => {
+    el.style.scrollBehavior = 'smooth';
+});
