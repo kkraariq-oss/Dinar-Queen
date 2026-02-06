@@ -1,5 +1,6 @@
 // ==========================================
-// DINAR COIN - Full App JavaScript V2.0
+// DINAR COIN - Full App JavaScript V3.0
+// تطبيق دينار كوين - نسخة محدثة ومحسنة
 // ==========================================
 
 if ('serviceWorker' in navigator) {
@@ -27,9 +28,9 @@ let currentUser = null;
 let userDataListener = null;
 let userCardData = null;
 let cardFlipped = false;
-let profilePicUrl = null;
 let cardNumVisible = false;
 let cvvVisible = false;
+let qrScanner = null;
 
 const PRICE_PER_COIN = 1000;
 const TOTAL_SUPPLY = 1000000;
@@ -46,7 +47,7 @@ const newsArticles = [
         summary: 'تحليل شامل لفرص الاستثمار في العملة الرقمية العراقية الأولى',
         img: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=600&h=300&fit=crop',
         date: '2026-02-06',
-        body: `في عالم يتجه بسرعة نحو الرقمنة، يبرز دينار كوين كفرصة استثمارية فريدة من نوعها في المنطقة العربية. مع تزايد الاهتمام العالمي بالعملات الرقمية، يقدم دينار كوين بديلاً محلياً يراعي خصوصيات السوق العراقي والعربي.\n\nيتميز دينار كوين بعدة مزايا تجعله خياراً مثالياً للمستثمرين: سعر مستقر مرتبط بالدينار العراقي، منصة آمنة وسهلة الاستخدام، فريق عمل عراقي متخصص، ودعم كامل للغة العربية.\n\nمع خطط التوسع المستقبلية التي تشمل إضافة محفظة متعددة العملات وتكامل مع بوابات الدفع المحلية، يُتوقع أن يشهد دينار كوين نمواً كبيراً في الفترة القادمة. انضم الآن وكن جزءاً من هذه الثورة الرقمية العراقية!`
+        body: `في عالم يتجه بسرعة نحو الرقمنة، يبرز دينار كوين كفرصة استثمارية فريدة من نوعها في المنطقة العربية.`
     },
     {
         id: 1, cat: 'update',
@@ -54,47 +55,7 @@ const newsArticles = [
         summary: 'بداية رحلتنا نحو مستقبل رقمي متطور',
         img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=300&fit=crop',
         date: '2026-02-05',
-        body: `يسعدنا الإعلان عن إطلاق النسخة التجريبية من منصة دينار كوين! هذه النسخة تتضمن جميع الميزات الأساسية التي يحتاجها المستخدمون.\n\nالميزات المتاحة في النسخة التجريبية:\n• محفظة رقمية آمنة لحفظ عملات دينار كوين\n• إمكانية إرسال واستقبال العملات بسهولة\n• نظام إحالة مع مكافآت فورية\n• لوحة تحكم شاملة مع إحصائيات حية\n• تصميم عصري يعمل على جميع الأجهزة\n\nندعو جميع المهتمين للتسجيل والبدء باستخدام المنصة ومشاركة ملاحظاتهم لتحسين التجربة.`
-    },
-    {
-        id: 2, cat: 'guide',
-        title: 'دليل المبتدئين: كيف تبدأ مع دينار كوين خطوة بخطوة',
-        summary: 'كل ما تحتاج معرفته للبدء بالاستثمار في دينار كوين',
-        img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=300&fit=crop',
-        date: '2026-02-04',
-        body: `إذا كنت جديداً في عالم العملات الرقمية، فهذا الدليل مخصص لك! سنشرح لك كل خطوة بالتفصيل.\n\nالخطوة الأولى - إنشاء الحساب: قم بالتسجيل باستخدام بريدك الإلكتروني وكلمة مرور قوية. ستحصل فوراً على مكافأة ترحيبية!\n\nالخطوة الثانية - تأمين حسابك: تأكد من استخدام كلمة مرور فريدة ولا تشاركها مع أحد.\n\nالخطوة الثالثة - شراء العملات: يمكنك تقديم طلب شراء وسيتم مراجعته من قبل فريق الإدارة.\n\nالخطوة الرابعة - إرسال واستقبال: استخدم رمز الإحالة الخاص بك لاستقبال العملات، أو أدخل رمز شخص آخر لإرسال العملات إليه.\n\nالخطوة الخامسة - دعوة الأصدقاء: شارك رمز الإحالة واحصل على مكافآت مجانية!`
-    },
-    {
-        id: 3, cat: 'invest',
-        title: '5 أسباب تجعل العملات الرقمية العربية مستقبل الاقتصاد',
-        summary: 'لماذا العملات الرقمية المحلية أفضل من العملات العالمية؟',
-        img: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&h=300&fit=crop',
-        date: '2026-02-03',
-        body: `العملات الرقمية العربية تتميز بعدة مزايا فريدة تجعلها خياراً استراتيجياً للمستثمرين في المنطقة:\n\n1. فهم السوق المحلي: العملات المحلية مصممة لتلبية احتياجات المجتمع العربي.\n\n2. الاستقرار: ربط القيمة بالعملات المحلية يقلل من التقلبات الحادة.\n\n3. سهولة الاستخدام: واجهات عربية بالكامل مع دعم فني محلي.\n\n4. التكامل المحلي: إمكانية الربط مع البنوك وبوابات الدفع المحلية مستقبلاً.\n\n5. المجتمع: مجتمع عربي نشط يدعم نمو العملة.`
-    },
-    {
-        id: 4, cat: 'update',
-        title: 'تحديث جديد: نظام البطاقة الرقمية الذكية',
-        summary: 'كل مستخدم يحصل الآن على بطاقة رقمية فريدة',
-        img: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&h=300&fit=crop',
-        date: '2026-02-02',
-        body: `نحن متحمسون للإعلان عن إطلاق نظام البطاقة الرقمية الذكية! كل مستخدم جديد سيحصل تلقائياً على بطاقة رقمية فريدة برقم عشوائي خاص به.\n\nمميزات البطاقة الرقمية:\n• رقم بطاقة فريد لكل مستخدم\n• رمز CVV للأمان\n• تاريخ انتهاء\n• تصميم أنيق بألوان دينار كوين\n• إمكانية عرض تفاصيل البطاقة بقلبها\n\nهذه البطاقة هي خطوة نحو تقديم تجربة مصرفية رقمية كاملة في المستقبل القريب.`
-    },
-    {
-        id: 5, cat: 'invest',
-        title: 'كيف تحقق أرباحاً من نظام الإحالة في دينار كوين',
-        summary: 'استراتيجيات ذكية لزيادة أرباحك من دعوة الأصدقاء',
-        img: 'https://images.unsplash.com/photo-1553729459-afe8f2e2ed65?w=600&h=300&fit=crop',
-        date: '2026-02-01',
-        body: `نظام الإحالة في دينار كوين مصمم لمكافأة المستخدمين النشطين. إليك بعض الاستراتيجيات لتعظيم أرباحك:\n\nشارك على وسائل التواصل الاجتماعي: انشر رمز الإحالة الخاص بك على فيسبوك وإنستغرام وتويتر مع شرح مبسط عن دينار كوين.\n\nأنشئ محتوى تعليمي: اصنع فيديوهات قصيرة تشرح فيها كيفية استخدام المنصة.\n\nاستهدف المجتمعات المهتمة: انضم لمجموعات الاستثمار والتكنولوجيا.\n\nكل 10 إحالات ناجحة = 0.25 DC مكافأة مجانية! كلما زاد عدد إحالاتك، زادت مكافآتك.`
-    },
-    {
-        id: 6, cat: 'guide',
-        title: 'أمان حسابك: نصائح ذهبية لحماية عملاتك الرقمية',
-        summary: 'تعلم أفضل ممارسات الأمان لحماية استثماراتك',
-        img: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=600&h=300&fit=crop',
-        date: '2026-01-30',
-        body: `حماية حسابك وعملاتك الرقمية أمر بالغ الأهمية. إليك أهم النصائح:\n\n• استخدم كلمة مرور قوية وفريدة لا تقل عن 12 حرفاً\n• لا تشارك بيانات تسجيل الدخول مع أي شخص\n• تأكد من عنوان الموقع قبل تسجيل الدخول\n• لا تنقر على روابط مشبوهة تدعي أنها من دينار كوين\n• قم بتحديث متصفحك باستمرار\n• فعّل تسجيل الدخول بالبصمة عند توفره\n\nتذكر: فريق دينار كوين لن يطلب منك أبداً كلمة المرور الخاصة بك!`
+        body: `يسعدنا الإعلان عن إطلاق النسخة التجريبية من منصة دينار كوين!`
     }
 ];
 
@@ -106,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     createParticles();
     setupEventListeners();
     renderNewsArticles();
-    loadGlobalStats(); // تحميل الإحصائيات العامة
+    loadGlobalStats();
 });
 
 function initializeApp() {
@@ -147,55 +108,173 @@ function setupEventListeners() {
 // ==========================================
 let globalStatsListener = null;
 
-function loadGlobalStats() {
-    // إنشاء العقدة إذا لم تكن موجودة
-    database.ref('global_stats').once('value').then(snap => {
+async function loadGlobalStats() {
+    try {
+        // التحقق من وجود العقدة وإنشاءها إذا لم تكن موجودة
+        const snap = await database.ref('global_stats').once('value');
         if (!snap.exists()) {
-            database.ref('global_stats').set({
+            await database.ref('global_stats').set({
                 totalUsers: 0,
                 totalDistributed: 0,
-                totalRemaining: TOTAL_SUPPLY
+                totalRemaining: TOTAL_SUPPLY,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP
             });
         }
-    });
-
-    // الاستماع للتحديثات
-    globalStatsListener = database.ref('global_stats').on('value', (snap) => {
-        const data = snap.val() || { totalUsers: 0, totalDistributed: 0, totalRemaining: TOTAL_SUPPLY };
         
-        // تحديث شاشة الصفحة الرئيسية
-        updateElement('homeUsersCount', data.totalUsers.toLocaleString('ar-IQ'));
-        updateElement('homeCoinsRemaining', data.totalRemaining.toLocaleString('ar-IQ'));
+        // حساب الإحصائيات الفعلية من المستخدمين
+        await updateGlobalStatsFromUsers();
         
-        // تحديث شاشة الداشبورد
-        updateElement('dashUsersCount', data.totalUsers.toLocaleString('ar-IQ'));
-        updateElement('dashCoinsRemaining', data.totalRemaining.toLocaleString('ar-IQ'));
-        
-        // تحديث شاشة التحليلات
-        updateElement('statTotalUsers', data.totalUsers.toLocaleString('ar-IQ'));
-        updateElement('statCirculating', data.totalDistributed.toLocaleString('ar-IQ'));
-        updateElement('statRemaining', data.totalRemaining.toLocaleString('ar-IQ'));
-        updateElement('statTotalSupply', TOTAL_SUPPLY.toLocaleString('ar-IQ'));
-        
-        const distributionPercent = ((data.totalDistributed / TOTAL_SUPPLY) * 100).toFixed(2);
-        updateElement('distributionPercent', distributionPercent + '%');
-    });
+        // الاستماع للتحديثات
+        globalStatsListener = database.ref('global_stats').on('value', (snapshot) => {
+            const data = snapshot.val() || { 
+                totalUsers: 0, 
+                totalDistributed: 0, 
+                totalRemaining: TOTAL_SUPPLY 
+            };
+            
+            updateStatsDisplay(data);
+        });
+    } catch (e) {
+        console.error('Error loading global stats:', e);
+    }
 }
 
-async function updateGlobalStats(userCountDelta, coinsDelta) {
+async function updateGlobalStatsFromUsers() {
     try {
-        const ref = database.ref('global_stats');
-        const snap = await ref.once('value');
-        const current = snap.val() || { totalUsers: 0, totalDistributed: 0, totalRemaining: TOTAL_SUPPLY };
+        const usersSnap = await database.ref('users').once('value');
+        let totalUsers = 0;
+        let totalDistributed = 0;
         
-        await ref.update({
-            totalUsers: Math.max(0, current.totalUsers + userCountDelta),
-            totalDistributed: Math.max(0, current.totalDistributed + coinsDelta),
-            totalRemaining: Math.max(0, TOTAL_SUPPLY - (current.totalDistributed + coinsDelta))
+        if (usersSnap.exists()) {
+            usersSnap.forEach(userSnap => {
+                totalUsers++;
+                const userData = userSnap.val();
+                if (userData.balance) {
+                    totalDistributed += parseFloat(userData.balance);
+                }
+            });
+        }
+        
+        const remaining = Math.max(0, TOTAL_SUPPLY - totalDistributed);
+        
+        await database.ref('global_stats').update({
+            totalUsers: totalUsers,
+            totalDistributed: totalDistributed,
+            totalRemaining: remaining,
+            lastUpdated: firebase.database.ServerValue.TIMESTAMP
         });
     } catch (e) {
         console.error('Error updating global stats:', e);
     }
+}
+
+function updateStatsDisplay(data) {
+    const totalUsers = data.totalUsers || 0;
+    const totalRemaining = data.totalRemaining || TOTAL_SUPPLY;
+    const totalDistributed = data.totalDistributed || 0;
+    
+    // تحديث شاشة الصفحة الرئيسية
+    updateElement('homeUsersCount', totalUsers.toLocaleString('ar-IQ'));
+    updateElement('homeCoinsRemaining', totalRemaining.toLocaleString('ar-IQ'));
+    
+    // تحديث شاشة الداشبورد
+    updateElement('dashUsersCount', totalUsers.toLocaleString('ar-IQ'));
+    updateElement('dashCoinsRemaining', totalRemaining.toLocaleString('ar-IQ'));
+    
+    // تحديث شاشة التحليلات
+    updateElement('statTotalUsers', totalUsers.toLocaleString('ar-IQ'));
+    updateElement('statCirculating', totalDistributed.toLocaleString('ar-IQ'));
+    updateElement('statRemaining', totalRemaining.toLocaleString('ar-IQ'));
+    updateElement('statTotalSupply', TOTAL_SUPPLY.toLocaleString('ar-IQ'));
+    
+    const distributionPercent = ((totalDistributed / TOTAL_SUPPLY) * 100).toFixed(2);
+    updateElement('distributionPercent', distributionPercent + '%');
+    
+    // تحديث الرسم البياني
+    updateCharts(data);
+}
+
+// ==========================================
+// CHARTS - الرسوم البيانية
+// ==========================================
+function updateCharts(data) {
+    updateDistributionChart(data);
+    updateUsersChart();
+}
+
+function updateDistributionChart(data) {
+    const distributed = data.totalDistributed || 0;
+    const remaining = data.totalRemaining || TOTAL_SUPPLY;
+    const percentage = ((distributed / TOTAL_SUPPLY) * 100).toFixed(1);
+    
+    const chartEl = document.getElementById('distributionChart');
+    if (chartEl) {
+        chartEl.style.background = `conic-gradient(
+            var(--gold-primary) 0% ${percentage}%,
+            var(--bg-card) ${percentage}% 100%
+        )`;
+    }
+    
+    updateElement('chartDistributed', distributed.toLocaleString('ar-IQ'));
+    updateElement('chartRemaining', remaining.toLocaleString('ar-IQ'));
+    updateElement('chartPercentage', percentage + '%');
+}
+
+async function updateUsersChart() {
+    try {
+        const usersSnap = await database.ref('users').limitToLast(7).once('value');
+        const labels = [];
+        const values = [];
+        
+        usersSnap.forEach(snap => {
+            const userData = snap.val();
+            if (userData.joinDate) {
+                const date = new Date(userData.joinDate);
+                labels.push(date.toLocaleDateString('ar-IQ', { month: 'short', day: 'numeric' }));
+                values.push(parseFloat(userData.balance || 0));
+            }
+        });
+        
+        renderSimpleBarChart('usersGrowthChart', labels, values);
+    } catch (e) {
+        console.error('Error updating users chart:', e);
+    }
+}
+
+function renderSimpleBarChart(elementId, labels, values) {
+    const canvas = document.getElementById(elementId);
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const padding = 30;
+    const barWidth = (width - 2 * padding) / labels.length;
+    const maxValue = Math.max(...values, 1);
+    
+    ctx.clearRect(0, 0, width, height);
+    
+    // رسم الأعمدة
+    values.forEach((value, i) => {
+        const barHeight = (value / maxValue) * (height - 2 * padding);
+        const x = padding + i * barWidth + barWidth * 0.1;
+        const y = height - padding - barHeight;
+        const w = barWidth * 0.8;
+        
+        // تدرج لوني
+        const gradient = ctx.createLinearGradient(x, y, x, y + barHeight);
+        gradient.addColorStop(0, '#d4af37');
+        gradient.addColorStop(1, '#1a5f4a');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x, y, w, barHeight);
+        
+        // النص
+        ctx.fillStyle = '#c8d6d0';
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(labels[i], x + w/2, height - 10);
+    });
 }
 
 // ==========================================
@@ -216,25 +295,25 @@ function showDashboard() {
 
 function switchTab(tab) {
     const screens = ['dashboardScreen', 'newsScreen', 'analyticsScreen', 'profileScreen'];
-    screens.forEach(s => document.getElementById(s).classList.remove('active-screen'));
+    screens.forEach(s => document.getElementById(s)?.classList.remove('active-screen'));
     
     const tabs = document.querySelectorAll('.nav-tab');
     tabs.forEach(t => t.classList.remove('active'));
     
     if (tab === 'home') {
         document.getElementById('dashboardScreen').classList.add('active-screen');
-        document.querySelector('[data-tab="home"]').classList.add('active');
+        document.querySelector('[data-tab="home"]')?.classList.add('active');
         loadTransactions();
     } else if (tab === 'news') {
         document.getElementById('newsScreen').classList.add('active-screen');
-        document.querySelector('[data-tab="news"]').classList.add('active');
+        document.querySelector('[data-tab="news"]')?.classList.add('active');
     } else if (tab === 'analytics') {
         document.getElementById('analyticsScreen').classList.add('active-screen');
-        document.querySelector('[data-tab="analytics"]').classList.add('active');
+        document.querySelector('[data-tab="analytics"]')?.classList.add('active');
         updateAnalyticsStats();
     } else if (tab === 'profile') {
         document.getElementById('profileScreen').classList.add('active-screen');
-        document.querySelector('[data-tab="profile"]').classList.add('active');
+        document.querySelector('[data-tab="profile"]')?.classList.add('active');
     }
 }
 
@@ -286,10 +365,8 @@ async function signup() {
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const uid = userCredential.user.uid;
         
-        // إنشاء بيانات البطاقة
         const cardData = generateCardData(name);
         
-        // بيانات المستخدم الأساسية
         const userData = {
             name: name,
             email: email,
@@ -303,7 +380,6 @@ async function signup() {
         
         await database.ref(`users/${uid}`).set(userData);
         
-        // إضافة معاملة المكافأة الترحيبية
         await addTransaction(uid, {
             type: 'bonus',
             amount: WELCOME_BONUS,
@@ -311,10 +387,9 @@ async function signup() {
             status: 'completed'
         });
         
-        // تحديث الإحصائيات العامة - إضافة مستخدم وتوزيع المكافأة
-        await updateGlobalStats(1, WELCOME_BONUS);
+        // تحديث الإحصائيات
+        await updateGlobalStatsFromUsers();
         
-        // معالجة رمز الإحالة إن وُجد
         if (refCode) {
             const referrerUid = await validateReferralCode(refCode);
             if (referrerUid && referrerUid !== uid) {
@@ -355,8 +430,7 @@ async function login() {
 }
 
 function logout() {
-    auth.signOut();
-    if (userDataListener) {
+    if (userDataListener && currentUser) {
         database.ref(`users/${currentUser.uid}`).off('value', userDataListener);
         userDataListener = null;
     }
@@ -364,6 +438,7 @@ function logout() {
         database.ref('global_stats').off('value', globalStatsListener);
         globalStatsListener = null;
     }
+    auth.signOut();
     cardFlipped = false;
     showNotification('تم', 'تم تسجيل الخروج', 'success');
 }
@@ -386,10 +461,14 @@ async function loadUserData() {
         updateElement('userEmail', data.email);
         updateElement('userReferralCode', data.referralCode);
         
+        const balance = parseFloat(data.balance || 0);
+        const balanceFormatted = balance.toFixed(2);
+        const balanceIQD = (balance * PRICE_PER_COIN).toLocaleString('ar-IQ');
+        
         // Dashboard
-        const balance = parseFloat(data.balance || 0).toFixed(2);
-        updateElement('cardBalance', balance + ' DC');
-        updateElement('totalBalance', balance + ' DC');
+        updateElement('cardBalance', balanceFormatted + ' DC');
+        updateElement('totalBalance', balanceFormatted + ' DC');
+        updateElement('balanceIQD', balanceIQD + ' IQD');
         updateElement('cardName', data.name);
         updateElement('referralCode', data.referralCode);
         updateElement('referralCount', data.referralCount || 0);
@@ -399,6 +478,7 @@ async function loadUserData() {
         if (data.card) {
             userCardData = data.card;
             updateElement('cardNum', formatCardNumber(data.card.number));
+            updateElement('cardNumFull', data.card.number);
             updateElement('cardCVV', data.card.cvv);
             updateElement('cardExpiry', data.card.expiry);
         }
@@ -408,7 +488,7 @@ async function loadUserData() {
         updateElement('profileNameDisplay', data.name);
         updateElement('profileEmailValue', data.email);
         updateElement('profileRefCode', data.referralCode);
-        updateElement('profileBalance', balance + ' DC');
+        updateElement('profileBalance', balanceFormatted + ' DC');
         updateElement('profileCardNum', formatCardNumber(data.card?.number || '****************'));
         updateElement('profileCVV', '***');
         updateElement('profileExpiry', data.card?.expiry || '--/--');
@@ -423,7 +503,7 @@ async function loadUserData() {
         }
         
         // Analytics
-        updateElement('analyticBalance', balance + ' DC');
+        updateElement('analyticBalance', balanceFormatted + ' DC');
         updateElement('analyticReferrals', data.referralCount || 0);
         updateElement('analyticEarnings', parseFloat(data.referralEarnings || 0).toFixed(2) + ' DC');
         
@@ -432,7 +512,7 @@ async function loadUserData() {
         updateElement('userAvatar', firstLetter);
         updateElement('profileAvatar', firstLetter);
         
-        // QR Code للاستقبال
+        // QR Code
         updateElement('receiveCode', data.referralCode);
         generateQRCode(data.referralCode);
     });
@@ -511,20 +591,18 @@ function toggleCVVVisibility() {
 }
 
 // ==========================================
-// QR CODE
+// QR CODE - إصلاح شامل
 // ==========================================
-let qrCodeInstance = null;
-
 function generateQRCode(text) {
     const container = document.getElementById('qrCode');
     if (!container || !text) return;
     
-    // مسح الكود القديم
+    // مسح المحتوى القديم
     container.innerHTML = '';
     
     try {
-        // إنشاء كود QR جديد
-        qrCodeInstance = new QRCode(container, {
+        // استخدام مكتبة QRCode.js
+        new QRCode(container, {
             text: text,
             width: 200,
             height: 200,
@@ -532,9 +610,93 @@ function generateQRCode(text) {
             colorLight: '#ffffff',
             correctLevel: QRCode.CorrectLevel.H
         });
+        
+        console.log('QR Code generated successfully:', text);
     } catch (e) {
         console.error('Error generating QR code:', e);
-        container.innerHTML = '<p style="text-align:center;padding:20px;">خطأ في إنشاء رمز QR</p>';
+        // Fallback: استخدام API خارجي
+        container.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}" alt="QR Code" style="width:200px;height:200px;">`;
+    }
+}
+
+// ==========================================
+// QR SCANNER - قارئ QR Code
+// ==========================================
+function showQRScanner() {
+    if (!currentUser) {
+        showNotification('تنبيه', 'يجب تسجيل الدخول أولاً', 'error');
+        return;
+    }
+    
+    document.getElementById('qrScannerModal').classList.add('active');
+    startQRScanner();
+}
+
+function closeQRScanner() {
+    stopQRScanner();
+    document.getElementById('qrScannerModal').classList.remove('active');
+}
+
+async function startQRScanner() {
+    const video = document.getElementById('qrVideo');
+    
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'environment' } 
+        });
+        video.srcObject = stream;
+        video.play();
+        
+        scanQRCode(video);
+    } catch (e) {
+        console.error('Camera error:', e);
+        showNotification('خطأ', 'لا يمكن الوصول للكاميرا', 'error');
+    }
+}
+
+function stopQRScanner() {
+    const video = document.getElementById('qrVideo');
+    if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+    }
+    if (qrScanner) {
+        clearInterval(qrScanner);
+        qrScanner = null;
+    }
+}
+
+function scanQRCode(video) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    
+    qrScanner = setInterval(() => {
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            
+            if (code) {
+                handleQRCodeScanned(code.data);
+            }
+        }
+    }, 300);
+}
+
+async function handleQRCodeScanned(data) {
+    stopQRScanner();
+    closeQRScanner();
+    
+    // التحقق من أن البيانات هي رمز إحالة
+    if (data.startsWith('DC') && data.length === 10) {
+        document.getElementById('recipientCode').value = data;
+        showSendModal();
+        showNotification('تم!', 'تم مسح رمز الإحالة بنجاح', 'success');
+    } else {
+        showNotification('خطأ', 'رمز QR غير صحيح', 'error');
     }
 }
 
@@ -547,7 +709,11 @@ async function loadTransactions() {
     if (!list) return;
     
     try {
-        const snap = await database.ref(`transactions/${currentUser.uid}`).orderByChild('timestamp').limitToLast(20).once('value');
+        const snap = await database.ref(`transactions/${currentUser.uid}`)
+            .orderByChild('timestamp')
+            .limitToLast(20)
+            .once('value');
+        
         const txs = [];
         snap.forEach(c => txs.push({ id: c.key, ...c.val() }));
         txs.sort((a, b) => b.timestamp - a.timestamp);
@@ -637,7 +803,6 @@ async function processReferral(referrerUid) {
         
         const newCount = (data.referralCount || 0) + 1;
         
-        // كل 10 إحالات يحصل على مكافأة
         if (newCount % 10 === 0) {
             const newEarnings = parseFloat(data.referralEarnings || 0) + REFERRAL_BONUS;
             const newBalance = parseFloat(data.balance || 0) + REFERRAL_BONUS;
@@ -655,8 +820,7 @@ async function processReferral(referrerUid) {
                 status: 'completed'
             });
             
-            // تحديث العملات الموزعة
-            await updateGlobalStats(0, REFERRAL_BONUS);
+            await updateGlobalStatsFromUsers();
         } else {
             await ref.update({ referralCount: newCount });
         }
@@ -753,7 +917,6 @@ async function submitBuyRequest() {
 
 function showSendModal() {
     document.getElementById('sendModal').classList.add('active');
-    document.getElementById('recipientCode').value = '';
     document.getElementById('sendAmount').value = '';
     document.getElementById('sendNote').value = '';
 }
@@ -814,7 +977,6 @@ async function sendCoins() {
             return;
         }
         
-        // تحديث الأرصدة
         await database.ref(`users/${currentUser.uid}`).update({
             balance: parseFloat(senderData.balance) - amount
         });
@@ -823,7 +985,6 @@ async function sendCoins() {
             balance: parseFloat(recipientData.balance || 0) + amount
         });
         
-        // إضافة المعاملات
         await addTransaction(currentUser.uid, {
             type: 'send',
             amount: amount,
@@ -869,11 +1030,7 @@ function renderNewsArticles() {
 }
 
 function getCategoryLabel(cat) {
-    const labels = {
-        update: 'تحديث',
-        guide: 'دليل',
-        invest: 'استثمار'
-    };
+    const labels = { update: 'تحديث', guide: 'دليل', invest: 'استثمار' };
     return labels[cat] || cat;
 }
 
@@ -929,11 +1086,11 @@ function closeArticleModal() {
 // ==========================================
 function updateAnalyticsStats() {
     if (!currentUser) return;
-    // Stats are already updated by loadUserData and loadGlobalStats
+    updateCharts({ totalDistributed: 0, totalRemaining: TOTAL_SUPPLY });
 }
 
 // ==========================================
-// PROFILE
+// PROFILE & SETTINGS
 // ==========================================
 function showEditNameModal() {
     document.getElementById('editNameModal').classList.add('active');
@@ -966,8 +1123,30 @@ function toggleSetting(setting) {
     const toggle = document.getElementById(`toggle-${setting}`);
     if (toggle) {
         toggle.classList.toggle('active');
-        showNotification('تم', `تم ${toggle.classList.contains('active') ? 'تفعيل' : 'إلغاء'} ${setting}`, 'success');
+        const isActive = toggle.classList.contains('active');
+        
+        // حفظ الإعداد
+        if (currentUser) {
+            database.ref(`users/${currentUser.uid}/settings`).update({
+                [setting]: isActive
+            });
+        }
+        
+        showNotification('تم', `تم ${isActive ? 'تفعيل' : 'إلغاء'} الإعداد`, 'success');
     }
+}
+
+// صفحات الإعدادات
+function showLanguageSettings() {
+    showNotification('قريباً', 'خيارات اللغة ستكون متاحة قريباً', 'success');
+}
+
+function showSecuritySettings() {
+    showNotification('قريباً', 'إعدادات الأمان ستكون متاحة قريباً', 'success');
+}
+
+function showHelpSupport() {
+    showNotification('الدعم', 'للمساعدة تواصل معنا عبر support@dinarcoin.iq', 'success');
 }
 
 // ==========================================
@@ -994,6 +1173,9 @@ function closeNotification() {
 window.addEventListener('click', e => {
     if (e.target.classList.contains('modal-overlay')) {
         e.target.classList.remove('active');
+        if (e.target.id === 'qrScannerModal') {
+            stopQRScanner();
+        }
     }
 });
 
@@ -1002,3 +1184,8 @@ document.addEventListener('keypress', e => {
         e.preventDefault();
     }
 });
+
+// تحميل مكتبة jsQR للمسح
+const script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+document.head.appendChild(script);
