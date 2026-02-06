@@ -1,47 +1,72 @@
 {
   "name": "دينار كوين - Dinar Coin",
   "short_name": "دينار كوين",
-  "description": "العملة الرقمية العراقية الأولى",
-  "start_url": "/Dinar-Queen/index.html",
+  "description": "العملة الرقمية العراقية الأولى - منصة آمنة لشراء وإرسال واستقبال العملات الرقمية",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0a1f1a",
   "theme_color": "#1a5f4a",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/Dinar-Queen/logo.png",
+      "src": "logo.png",
       "sizes": "any",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
-      "src": "/Dinar-Queen/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
-      "src": "/Dinar-Queen/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
-      "src": "/Dinar-Queen/icon-192.png",
+      "src": "apple-touch-icon.png",
       "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "/Dinar-Queen/icon-192.png",
-      "sizes": "1920x1080",
-      "type": "image/jpeg"
+      "src": "icon-512.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "720x540",
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ],
-  "categories": ["finance", "business"],
+  "categories": ["finance", "business", "productivity"],
   "dir": "rtl",
   "lang": "ar",
-  "scope": "/Dinar-Queen/",
-  "prefer_related_applications": false
+  "scope": "/",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "shortcuts": [
+    {
+      "name": "إرسال عملات",
+      "short_name": "إرسال",
+      "description": "إرسال دينار كوين بسرعة",
+      "url": "/?action=send",
+      "icons": [{ "src": "logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "استقبال عملات",
+      "short_name": "استقبال",
+      "description": "عرض رمز QR للاستقبال",
+      "url": "/?action=receive",
+      "icons": [{ "src": "logo.png", "sizes": "192x192" }]
+    }
+  ]
 }

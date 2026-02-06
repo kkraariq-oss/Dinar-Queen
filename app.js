@@ -105,14 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
     createParticles();
     setupEventListeners();
     renderNewsArticles();
-    
-    // Load saved settings after a short delay
-    setTimeout(loadSavedSettings, 500);
-    
-    // Add smooth scroll behavior
-    document.querySelectorAll('.dash-scroll-content').forEach(el => {
-        el.style.scrollBehavior = 'smooth';
-    });
 });
 
 function initializeApp() {
@@ -530,41 +522,21 @@ function drawAllCharts() {
 
 function generatePriceData() {
     const data = [];
-    let price = 1000; // Starting at stable 1000 IQD
-    const timeframe = document.querySelector('.tf-btn.active')?.textContent || '1D';
-    
-    let points, volatility, trend;
-    switch(timeframe) {
-        case '1D': points = 24; volatility = 5; trend = 0.2; break;
-        case '1W': points = 7; volatility = 15; trend = 0.5; break;
-        case '1M': points = 30; volatility = 20; trend = 1; break;
-        case '1Y': points = 12; volatility = 50; trend = 2; break;
-        default: points = 30; volatility = 20; trend = 1;
-    }
-    
-    for (let i = 0; i < points; i++) {
-        // Add realistic market movement with trend
-        const randomChange = (Math.random() - 0.48) * volatility;
-        const trendChange = trend * (i / points);
-        price += randomChange + trendChange;
-        
-        // Keep price within reasonable bounds
+    let price = 980;
+    for (let i = 0; i < 30; i++) {
+        price += (Math.random() - 0.45) * 15;
         price = Math.max(950, Math.min(1050, price));
-        data.push(Math.round(price * 100) / 100);
+        data.push(price);
     }
     return data;
 }
 
 function generateUsersData() {
-    // Realistic user growth with exponential trend
-    const baseUsers = [15, 22, 28, 38, 52, 68, 85, 102, 125, 148, 175, 205];
-    return baseUsers.map(u => Math.round(u + (Math.random() - 0.5) * 10));
+    return [12, 18, 25, 32, 28, 45, 52, 48, 65, 78, 85, 92];
 }
 
 function generateVolumeData() {
-    // Realistic trading volume with market cycles
-    const baseVolume = [180, 245, 310, 420, 580, 720, 890, 1050, 1200, 1380, 1560, 1750];
-    return baseVolume.map(v => Math.round(v + (Math.random() - 0.5) * 100));
+    return [150, 220, 180, 310, 260, 400, 350, 420, 380, 510, 480, 550];
 }
 
 function drawLineChart(canvasId, data, lineColor, fillColor) {
@@ -821,18 +793,7 @@ async function submitBuyRequest() {
 
 function showSendModal() { document.getElementById('sendModal').classList.add('active'); document.getElementById('recipientCode').value=''; document.getElementById('sendAmount').value=''; document.getElementById('sendNote').value=''; }
 function closeSendModal() { document.getElementById('sendModal').classList.remove('active'); }
-function showReceiveModal() { 
-    if(!currentUser){showAuthModal('login');return;} 
-    document.getElementById('receiveModal').classList.add('active');
-    // Generate QR code when modal opens
-    database.ref(`users/${currentUser.uid}/referralCode`).once('value').then(snap => {
-        const refCode = snap.val();
-        if (refCode) {
-            generateQRCode(refCode);
-            setText('receiveCode', refCode);
-        }
-    });
-}
+function showReceiveModal() { if(!currentUser){showAuthModal('login');return;} document.getElementById('receiveModal').classList.add('active'); }
 function closeReceiveModal() { document.getElementById('receiveModal').classList.remove('active'); }
 
 async function sendCoins() {
@@ -880,76 +841,348 @@ window.addEventListener('click', e => { if(e.target.classList.contains('modal-ov
 document.addEventListener('keypress', e => { if(e.key==='Enter'&&e.target.tagName==='INPUT')e.preventDefault(); });
 
 // ==========================================
-// ADDITIONAL FUNCTIONS - v2.0
+// FIXED: QR CODE GENERATION
 // ==========================================
-function showContactSupport() {
-    showNotification('قريباً', 'ميزة الدعم الفني قيد التطوير', 'success');
-}
-
-function showAboutApp() {
-    const aboutText = `
-دينار كوين - العملة الرقمية العراقية الأولى
-
-النسخة: 2.0.0 BETA
-تاريخ التحديث: فبراير 2026
-
-تطبيق دينار كوين هو منصة رقمية آمنة وسهلة الاستخدام للاستثمار والتداول في العملة الرقمية العراقية الأولى.
-
-المميزات:
-• محفظة رقمية آمنة ومشفرة
-• نظام إحالة مع مكافآت فورية
-• تحليلات مالية متقدمة
-• واجهة عصرية وسهلة الاستخدام
-• دعم كامل للغة العربية
-
-تم التطوير بواسطة: Digital Creativity Company
-جميع الحقوق محفوظة © 2026
-صنع بكل ❤️ في العراق 🇮🇶
-    `;
-    showNotification('حول التطبيق', aboutText, 'success');
-}
-
-// Enhanced toggle settings with persistence
-function toggleSetting(setting) {
-    const toggle = document.getElementById(`toggle-${setting}`);
-    if (!toggle) return;
+function showReceiveModal() {
+    const modal = document.getElementById('receiveModal');
+    if (!modal) return;
     
-    toggle.classList.toggle('active');
-    const isActive = toggle.classList.contains('active');
+    modal.classList.add('show');
     
-    // Save to localStorage
-    try {
-        localStorage.setItem(`setting_${setting}`, isActive ? 'true' : 'false');
-    } catch (e) {}
-    
-    // Show notification
-    const settingNames = {
-        notifications: 'الإشعارات',
-        sound: 'الأصوات',
-        darkmode: 'الوضع الليلي',
-        biometric: 'تسجيل الدخول بالبصمة',
-        autoUpdate: 'التحديث التلقائي'
-    };
-    
-    const settingName = settingNames[setting] || setting;
-    const status = isActive ? 'تم التفعيل' : 'تم التعطيل';
-    showNotification(settingName, status, 'success');
-}
-
-// Load settings from localStorage on init
-function loadSavedSettings() {
-    const settings = ['notifications', 'sound', 'darkmode', 'biometric', 'autoUpdate'];
-    settings.forEach(setting => {
+    // Clear previous QR code
+    const qrBox = document.getElementById('qrCode');
+    if (qrBox) {
+        qrBox.innerHTML = '';
+        
+        // Get user referral code
+        const refCode = document.getElementById('userReferralCode')?.innerText || 'DC12345678';
+        document.getElementById('receiveCode').innerText = refCode;
+        
+        // Generate new QR code with proper settings
         try {
-            const saved = localStorage.getItem(`setting_${setting}`);
-            const toggle = document.getElementById(`toggle-${setting}`);
-            if (toggle && saved !== null) {
-                if (saved === 'true') {
-                    toggle.classList.add('active');
-                } else {
-                    toggle.classList.remove('active');
+            new QRCode(qrBox, {
+                text: refCode,
+                width: 200,
+                height: 200,
+                colorDark: '#0a1a14',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        } catch (error) {
+            console.error('Error generating QR code:', error);
+            qrBox.innerHTML = '<p style="color: #e74c3c;">خطأ في إنشاء رمز QR</p>';
+        }
+    }
+}
+
+function closeReceiveModal() {
+    const modal = document.getElementById('receiveModal');
+    if (modal) modal.classList.remove('show');
+}
+
+function copyReceiveCode() {
+    const code = document.getElementById('receiveCode')?.innerText;
+    if (code) {
+        navigator.clipboard.writeText(code).then(() => {
+            showNotification('تم النسخ!', 'تم نسخ رمز الإحالة بنجاح');
+        }).catch(() => {
+            showNotification('خطأ', 'فشل نسخ الرمز');
+        });
+    }
+}
+
+// ==========================================
+// ENHANCED ANALYTICS CHARTS
+// ==========================================
+let priceChart = null;
+let volumeChart = null;
+let distributionChart = null;
+
+function drawAllCharts() {
+    drawPriceChart();
+    drawVolumeChart();
+    drawDistributionChart();
+    updateAnalyticsStats();
+}
+
+function drawPriceChart() {
+    const canvas = document.getElementById('priceChart');
+    if (!canvas || !window.Chart) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    // Destroy previous chart
+    if (priceChart) {
+        priceChart.destroy();
+    }
+    
+    // Generate realistic price data
+    const labels = [];
+    const data = [];
+    const basePrice = 1000;
+    
+    for (let i = 23; i >= 0; i--) {
+        labels.push(`${i}:00`);
+        const variation = (Math.random() - 0.48) * 20;
+        data.push(basePrice + variation);
+    }
+    
+    priceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'السعر (IQD)',
+                data: data,
+                borderColor: '#d4af37',
+                backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    grid: {
+                        color: 'rgba(26, 74, 53, 0.2)'
+                    },
+                    ticks: {
+                        color: '#7a9a8a'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#7a9a8a',
+                        maxTicksLimit: 8
+                    }
                 }
             }
-        } catch (e) {}
+        }
     });
 }
+
+function drawVolumeChart() {
+    const canvas = document.getElementById('volumeChart');
+    if (!canvas || !window.Chart) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    if (volumeChart) {
+        volumeChart.destroy();
+    }
+    
+    const labels = [];
+    const data = [];
+    
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        labels.push(date.toLocaleDateString('ar-IQ', { weekday: 'short' }));
+        data.push(Math.floor(Math.random() * 500) + 200);
+    }
+    
+    volumeChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'حجم التداول (DC)',
+                data: data,
+                backgroundColor: 'rgba(26, 95, 74, 0.8)',
+                borderColor: '#1a5f4a',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    grid: {
+                        color: 'rgba(26, 74, 53, 0.2)'
+                    },
+                    ticks: {
+                        color: '#7a9a8a'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#7a9a8a'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function drawDistributionChart() {
+    const canvas = document.getElementById('distributionChart');
+    if (!canvas || !window.Chart) return;
+    
+    const ctx = canvas.getContext('2d');
+    
+    if (distributionChart) {
+        distributionChart.destroy();
+    }
+    
+    distributionChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['إرسال', 'استقبال', 'شراء', 'مكافآت'],
+            datasets: [{
+                data: [35, 25, 30, 10],
+                backgroundColor: [
+                    'rgba(231, 76, 60, 0.8)',
+                    'rgba(42, 143, 106, 0.8)',
+                    'rgba(212, 175, 55, 0.8)',
+                    'rgba(26, 95, 74, 0.8)'
+                ],
+                borderColor: '#0a1a14',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#c8d6d0',
+                        padding: 15
+                    }
+                }
+            }
+        }
+    });
+}
+
+function changePeriod(period) {
+    // Remove active class from all tabs
+    document.querySelectorAll('.period-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Add active to clicked tab
+    event.target.classList.add('active');
+    
+    // Redraw chart with new data
+    drawPriceChart();
+}
+
+function refreshAnalytics() {
+    drawAllCharts();
+    showNotification('تم التحديث', 'تم تحديث البيانات بنجاح');
+}
+
+function updateAnalyticsStats() {
+    // Update portfolio value
+    const balance = parseFloat(document.getElementById('cardBalance')?.innerText || '0');
+    document.getElementById('portfolioValueDC').innerText = balance.toFixed(2);
+    document.getElementById('portfolioValueIQD').innerText = (balance * 1000).toLocaleString('ar-IQ');
+    
+    // Update last update time
+    const now = new Date();
+    document.getElementById('lastUpdateTime').innerText = now.toLocaleTimeString('ar-IQ', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+}
+
+// ==========================================
+// NEWS FILTERING
+// ==========================================
+let currentFilter = 'all';
+
+function filterNews(category) {
+    currentFilter = category;
+    
+    // Update active tab
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Filter articles
+    renderNewsArticles();
+}
+
+// ==========================================
+// ENHANCED REFERRAL SYSTEM
+// ==========================================
+function copyRefCode() {
+    const code = document.getElementById('dashRefCode')?.innerText;
+    if (code) {
+        navigator.clipboard.writeText(code).then(() => {
+            showNotification('تم النسخ!', 'تم نسخ رمز الإحالة بنجاح');
+        }).catch(() => {
+            showNotification('خطأ', 'فشل نسخ الرمز');
+        });
+    }
+}
+
+function copyReferralCode() {
+    const code = document.getElementById('profileRefCode')?.innerText;
+    if (code) {
+        navigator.clipboard.writeText(code).then(() => {
+            showNotification('تم النسخ!', 'تم نسخ رمز الإحالة بنجاح');
+        }).catch(() => {
+            showNotification('خطأ', 'فشل نسخ الرمز');
+        });
+    }
+}
+
+// ==========================================
+// VIEW ALL TRANSACTIONS
+// ==========================================
+function viewAllTransactions() {
+    showNotification('قريباً', 'ستتوفر هذه الميزة قريباً');
+}
+
+// Update home page stats
+function updateHomeStats() {
+    // Animate counters
+    animateCounter('totalUsers', 1247);
+    animateCounter('totalCoins', 15420);
+    animateCounter('totalTx', 3892);
+}
+
+function animateCounter(id, target) {
+    const element = document.getElementById(id);
+    if (!element) return;
+    
+    let current = 0;
+    const increment = target / 50;
+    const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+            element.innerText = target.toLocaleString('ar-IQ');
+            clearInterval(timer);
+        } else {
+            element.innerText = Math.floor(current).toLocaleString('ar-IQ');
+        }
+    }, 30);
+}
+
+// Call on page load
+setTimeout(updateHomeStats, 500);
+
