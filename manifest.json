@@ -27,14 +27,14 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/Dinar-Queen/apple-touch-icon.png",
+      "src": "/Dinar-Queen/icon-192.png",
       "sizes": "180x180",
       "type": "image/png"
     }
   ],
   "screenshots": [
     {
-      "src": "/Dinar-Queen/background.jpg",
+      "src": "/Dinar-Queen/icon-192.png",
       "sizes": "1920x1080",
       "type": "image/jpeg"
     }
