@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0a1a14">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="دينار كوين - العملة الرقمية العراقية الأولى">
+    <title>دينار كوين - Dinar Coin</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="particles-container" id="particles"></div>
+    <div class="app-wrapper">
+
+        <!-- HOME SCREEN -->
+        <div id="homeScreen" class="screen active-screen">
+            <div class="home-top-area"><span class="beta-badge">BETA</span></div>
+            <div class="home-logo-section">
+                <div class="logo-glow-ring"><img src="logo.png" alt="Dinar Coin" class="home-logo-img"></div>
+                <h1 class="home-app-name">Dinar Coin</h1>
+            </div>
+            <div class="price-display-card">
+                <div class="price-card-inner">
+                    <div class="price-line"><span class="price-amount">1</span><span class="price-unit">DC</span></div>
+                    <div class="price-equals">=</div>
+                    <div class="price-line"><span class="price-amount">1,000</span><span class="price-unit">IQD</span></div>
+                </div>
+            </div>
+            <div class="home-auth-buttons">
+                <button class="btn-auth btn-signup" onclick="showAuthModal('signup')">إنشاء حساب</button>
+                <button class="btn-auth btn-login" onclick="showAuthModal('login')">تسجيل الدخول</button>
+            </div>
+            <div class="flag-decoration"><div class="flag-stripe red"></div><div class="flag-stripe white"></div><div class="flag-stripe black"></div></div>
+        </div>
+
+        <!-- DASHBOARD SCREEN -->
+        <div id="dashboardScreen" class="screen">
+            <div class="dash-header">
+                <button class="dash-header-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+                <h2 class="dash-title">Dinar Coin</h2>
+                <div class="dash-header-btn user-avatar-btn" id="userAvatar" onclick="switchTab('profile')">أ</div>
+            </div>
+            <div class="dash-scroll-content">
+                <!-- Flippable Card -->
+                <div class="credit-card-wrapper" onclick="flipCard()">
+                    <div class="card-flipper" id="cardFlipper">
+                        <div class="credit-card card-front">
+                            <div class="card-top-row">
+                                <div class="card-dc-logo"><span class="dc-letter">D</span><span class="dc-sub">Dinar<br>Coin</span></div>
+                                <div class="card-balance-section">
+                                    <div class="card-balance-label">مرحباً</div>
+                                    <div class="card-balance-value" id="cardBalance">0.00</div>
+                                    <div class="card-balance-unit">DC</div>
+                                </div>
+                            </div>
+                            <div class="card-chip-row">
+                                <div class="card-chip"><div class="chip-lines"><div class="chip-line"></div><div class="chip-line"></div><div class="chip-line"></div></div></div>
+                                <div class="card-contactless"><i class="fas fa-wifi"></i></div>
+                            </div>
+                            <div class="card-number" id="cardNumber">XXXX &nbsp; XXXX &nbsp; XXXX &nbsp; 1234</div>
+                            <div class="card-bottom-row">
+                                <div class="card-holder" id="cardHolderName">المستخدم</div>
+                                <div class="card-meta">
+                                    <div class="card-expiry-block"><span class="card-expiry-label">Expiry<br>Date</span><span class="card-expiry-value" id="cardExpiry">02/30</span></div>
+                                    <div class="card-brand"><div class="mastercard-logo"><div class="mc-circle mc-red"></div><div class="mc-circle mc-yellow"></div></div><span class="mc-text">mastercard</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="credit-card card-back">
+                            <div class="card-magnetic-strip"></div>
+                            <div class="card-signature-strip">
+                                <div class="card-cvv-box"><span class="cvv-label">CVV</span><span class="cvv-value" id="cardCVV">123</span></div>
+                            </div>
+                            <div class="card-back-info">
+                                <p class="card-back-text">هذه البطاقة ملك لمنصة دينار كوين</p>
+                                <p class="card-back-text">support@dinarcoin.iq</p>
+                            </div>
+                            <div class="card-back-bottom">
+                                <span class="card-back-id" id="cardBackId">DC-000000</span>
+                                <div class="card-brand"><div class="mastercard-logo"><div class="mc-circle mc-red"></div><div class="mc-circle mc-yellow"></div></div><span class="mc-text">mastercard</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-flip-hint"><i class="fas fa-sync-alt"></i> انقر لقلب البطاقة</div>
+                </div>
+                <div class="action-buttons-row">
+                    <button class="action-btn" onclick="showReceiveModal()"><div class="action-icon"><i class="fas fa-download"></i></div><span>استقبال</span></button>
+                    <button class="action-btn" onclick="showSendModal()"><div class="action-icon"><i class="fas fa-paper-plane"></i></div><span>إرسال</span></button>
+                    <button class="action-btn" onclick="showBuyModal()"><div class="action-icon"><i class="fas fa-shopping-cart"></i></div><span>شراء</span></button>
+                </div>
+                <div class="referral-section">
+                    <div class="referral-header"><h3>برنامج الإحالة</h3><span class="referral-code-display" id="referralCode">DC1234S6</span></div>
+                    <div class="referral-stats-row">
+                        <div class="ref-stat"><div class="ref-stat-value" id="referralCount">0</div><div class="ref-stat-label">إحالة ناجحة</div></div>
+                        <div class="ref-stat"><div class="ref-stat-value" id="referralSendCount">0</div><div class="ref-stat-label">عمليات إرسال</div></div>
+                        <div class="ref-stat"><div class="ref-stat-value" id="referralEarnings">0</div><div class="ref-stat-label">مكافآت DC</div></div>
+                    </div>
+                    <button class="btn-copy-referral" onclick="copyReferralCode()"><i class="fas fa-copy"></i> نسخ كود الإحالة</button>
+                </div>
+                <div class="transactions-section">
+                    <div class="transactions-header"><h3>آخر العمليات</h3><span class="see-all">المعاملات</span></div>
+                    <div id="transactionsList" class="transactions-list"><div class="empty-state"><i class="fas fa-inbox"></i><p>لا توجد عمليات بعد</p></div></div>
+                </div>
+                <div style="height:100px;"></div>
+            </div>
+        </div>
+
+        <!-- NEWS SCREEN -->
+        <div id="newsScreen" class="screen">
+            <div class="dash-header"><div style="width:38px"></div><h2 class="dash-title">الأخبار والمقالات</h2><div style="width:38px"></div></div>
+            <div class="dash-scroll-content">
+                <div class="news-featured" onclick="openArticle(0)">
+                    <img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=600&h=300&fit=crop" alt="Crypto" class="news-featured-img">
+                    <div class="news-featured-overlay"><span class="news-tag">مقال مميز</span><h3>لماذا دينار كوين هو مستقبل الاستثمار الرقمي العراقي؟</h3><p>2026-02-06</p></div>
+                </div>
+                <div class="news-cats-row">
+                    <button class="news-cat-btn active" onclick="filterNews('all',this)">الكل</button>
+                    <button class="news-cat-btn" onclick="filterNews('invest',this)">استثمار</button>
+                    <button class="news-cat-btn" onclick="filterNews('update',this)">تحديثات</button>
+                    <button class="news-cat-btn" onclick="filterNews('guide',this)">أدلة</button>
+                </div>
+                <div id="newsArticlesList" class="news-articles-list"></div>
+                <div style="height:100px;"></div>
+            </div>
+        </div>
+
+        <!-- ANALYTICS SCREEN -->
+        <div id="analyticsScreen" class="screen">
+            <div class="dash-header"><div style="width:38px"></div><h2 class="dash-title">التحليل المالي</h2><div style="width:38px"></div></div>
+            <div class="dash-scroll-content">
+                <div class="ticker-bar">
+                    <div class="ticker-item positive"><span class="ticker-symbol">DC/IQD</span><span class="ticker-price">1,000</span><span class="ticker-change">+0.00%</span></div>
+                    <div class="ticker-item positive"><span class="ticker-symbol">DC/USD</span><span class="ticker-price">0.76</span><span class="ticker-change">+2.4%</span></div>
+                    <div class="ticker-item negative"><span class="ticker-symbol">BTC/DC</span><span class="ticker-price">125K</span><span class="ticker-change">-0.8%</span></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div><h3>سعر دينار كوين</h3><span class="chart-current-price">1,000 IQD</span></div>
+                        <div class="chart-timeframe-btns">
+                            <button class="tf-btn active" onclick="setTimeframe('1D',this)">1D</button>
+                            <button class="tf-btn" onclick="setTimeframe('1W',this)">1W</button>
+                            <button class="tf-btn" onclick="setTimeframe('1M',this)">1M</button>
+                            <button class="tf-btn" onclick="setTimeframe('1Y',this)">1Y</button>
+                        </div>
+                    </div>
+                    <div class="chart-container"><canvas id="priceChart"></canvas></div>
+                </div>
+                <div class="analytics-stats-grid">
+                    <div class="analytics-stat-card"><div class="analytics-stat-icon" style="background:rgba(42,143,106,0.15);color:var(--green-light);"><i class="fas fa-users"></i></div><div class="analytics-stat-info"><span class="analytics-stat-value" id="analyticsUsers">0</span><span class="analytics-stat-label">مستخدم مسجل</span></div></div>
+                    <div class="analytics-stat-card"><div class="analytics-stat-icon" style="background:rgba(212,175,55,0.15);color:var(--gold-primary);"><i class="fas fa-coins"></i></div><div class="analytics-stat-info"><span class="analytics-stat-value" id="analyticsVolume">0</span><span class="analytics-stat-label">حجم التداول DC</span></div></div>
+                    <div class="analytics-stat-card"><div class="analytics-stat-icon" style="background:rgba(52,152,219,0.15);color:#3498db;"><i class="fas fa-exchange-alt"></i></div><div class="analytics-stat-info"><span class="analytics-stat-value" id="analyticsTx">0</span><span class="analytics-stat-label">عملية مكتملة</span></div></div>
+                    <div class="analytics-stat-card"><div class="analytics-stat-icon" style="background:rgba(231,76,60,0.15);color:#e74c3c;"><i class="fas fa-chart-line"></i></div><div class="analytics-stat-info"><span class="analytics-stat-value">+12.5%</span><span class="analytics-stat-label">نمو شهري</span></div></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-card-header"><h3>نمو المستخدمين</h3><span class="chart-badge positive"><i class="fas fa-arrow-up"></i> 24%</span></div>
+                    <div class="chart-container"><canvas id="usersChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-card-header"><h3>حجم التداول اليومي</h3><span class="chart-badge positive"><i class="fas fa-arrow-up"></i> 18%</span></div>
+                    <div class="chart-container"><canvas id="volumeChart"></canvas></div>
+                </div>
+                <div class="market-info-card">
+                    <h3><i class="fas fa-info-circle"></i> معلومات السوق</h3>
+                    <div class="market-info-rows">
+                        <div class="market-row"><span>القيمة السوقية</span><span class="gold-text">1,250,000 IQD</span></div>
+                        <div class="market-row"><span>العملات المتداولة</span><span>1,250 DC</span></div>
+                        <div class="market-row"><span>أعلى سعر (24س)</span><span class="green-text">1,020 IQD</span></div>
+                        <div class="market-row"><span>أدنى سعر (24س)</span><span class="red-text">980 IQD</span></div>
+                        <div class="market-row"><span>حجم التداول (24س)</span><span>350 DC</span></div>
+                    </div>
+                </div>
+                <div style="height:100px;"></div>
+            </div>
+        </div>
+
+        <!-- PROFILE SCREEN -->
+        <div id="profileScreen" class="screen">
+            <div class="dash-header">
+                <button class="dash-header-btn" onclick="switchTab('home')"><i class="fas fa-arrow-right"></i></button>
+                <h2 class="dash-title">الملف الشخصي</h2>
+                <div style="width:38px"></div>
+            </div>
+            <div class="dash-scroll-content">
+                <div class="profile-header-card">
+                    <div class="profile-avatar-wrapper" onclick="changeProfilePicture()">
+                        <div class="profile-avatar" id="profileAvatarLarge">أ</div>
+                        <div class="profile-avatar-edit"><i class="fas fa-camera"></i></div>
+                        <input type="file" id="profilePicInput" accept="image/*" style="display:none" onchange="handleProfilePic(event)">
+                    </div>
+                    <h3 class="profile-name" id="profileName">المستخدم</h3>
+                    <p class="profile-email" id="profileEmail">user@example.com</p>
+                    <div class="profile-badges"><span class="profile-badge"><i class="fas fa-check-circle"></i> حساب مفعّل</span><span class="profile-badge gold"><i class="fas fa-star"></i> BETA</span></div>
+                </div>
+                <div class="settings-section">
+                    <h4 class="settings-section-title">معلومات الحساب</h4>
+                    <div class="settings-card">
+                        <div class="settings-item" onclick="editProfileField('name')"><div class="settings-item-icon"><i class="fas fa-user"></i></div><div class="settings-item-content"><span class="settings-item-label">الاسم</span><span class="settings-item-value" id="profileNameValue">المستخدم</span></div><i class="fas fa-chevron-left settings-arrow"></i></div>
+                        <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-envelope"></i></div><div class="settings-item-content"><span class="settings-item-label">البريد الإلكتروني</span><span class="settings-item-value" id="profileEmailValue">user@email.com</span></div><i class="fas fa-lock settings-arrow" style="color:var(--text-muted);font-size:0.7rem;"></i></div>
+                        <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-id-card"></i></div><div class="settings-item-content"><span class="settings-item-label">رمز الإحالة</span><span class="settings-item-value" id="profileRefCode">DC12345678</span></div><i class="fas fa-copy settings-arrow" onclick="event.stopPropagation();copyReferralCode()" style="color:var(--gold-primary);"></i></div>
+                        <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-wallet"></i></div><div class="settings-item-content"><span class="settings-item-label">الرصيد</span><span class="settings-item-value gold-text" id="profileBalance">0.00 DC</span></div></div>
+                        <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-calendar"></i></div><div class="settings-item-content"><span class="settings-item-label">تاريخ الانضمام</span><span class="settings-item-value" id="profileJoinDate">---</span></div></div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h4 class="settings-section-title">بيانات البطاقة</h4>
+                    <div class="settings-card">
+                        <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-credit-card"></i></div><div class="settings-item-content"><span class="settings-item-label">رقم البطاقة</span><span class="settings-item-value" id="profileCardNum" style="direction:ltr;text-align:right;">**** **** **** ****</span></div><i class="fas fa-eye settings-arrow" onclick="event.stopPropagation();toggleCardNumVisibility()" id="cardNumToggle" style="color:var(--gold-primary);cursor:pointer;"></i></div>
+                        <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-key"></i></div><div class="settings-item-content"><span class="settings-item-label">CVV</span><span class="settings-item-value" id="profileCVV">***</span></div><i class="fas fa-eye settings-arrow" onclick="event.stopPropagation();toggleCVVVisibility()" id="cvvToggle" style="color:var(--gold-primary);cursor:pointer;"></i></div>
+                        <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-calendar-alt"></i></div><div class="settings-item-content"><span class="settings-item-label">تاريخ الانتهاء</span><span class="settings-item-value" id="profileExpiry">--/--</span></div></div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h4 class="settings-section-title">الإعدادات</h4>
+                    <div class="settings-card">
+                        <div class="settings-item" onclick="toggleSetting('notifications')"><div class="settings-item-icon"><i class="fas fa-bell"></i></div><div class="settings-item-content"><span class="settings-item-label">الإشعارات</span></div><div class="toggle-switch active" id="toggle-notifications"><div class="toggle-knob"></div></div></div>
+                        <div class="settings-item" onclick="toggleSetting('darkmode')"><div class="settings-item-icon"><i class="fas fa-moon"></i></div><div class="settings-item-content"><span class="settings-item-label">الوضع الليلي</span></div><div class="toggle-switch active" id="toggle-darkmode"><div class="toggle-knob"></div></div></div>
+                        <div class="settings-item" onclick="toggleSetting('biometric')"><div class="settings-item-icon"><i class="fas fa-fingerprint"></i></div><div class="settings-item-content"><span class="settings-item-label">تسجيل بالبصمة</span></div><div class="toggle-switch" id="toggle-biometric"><div class="toggle-knob"></div></div></div>
+                        <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-language"></i></div><div class="settings-item-content"><span class="settings-item-label">اللغة</span><span class="settings-item-value">العربية</span></div><i class="fas fa-chevron-left settings-arrow"></i></div>
+                        <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-shield-alt"></i></div><div class="settings-item-content"><span class="settings-item-label">الأمان والخصوصية</span></div><i class="fas fa-chevron-left settings-arrow"></i></div>
+                        <div class="settings-item"><div class="settings-item-icon"><i class="fas fa-question-circle"></i></div><div class="settings-item-content"><span class="settings-item-label">المساعدة والدعم</span></div><i class="fas fa-chevron-left settings-arrow"></i></div>
+                    </div>
+                </div>
+                <button class="btn-logout-full" onclick="logout()"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+                <div class="app-version-info"><img src="logo.png" alt="" class="version-logo"><span>Dinar Coin v1.0.0 BETA</span><span>صنع بـ ❤️ في العراق 🇮🇶</span></div>
+                <div style="height:100px;"></div>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAV -->
+        <nav class="bottom-nav" id="bottomNav">
+            <button class="nav-tab active" data-tab="home" onclick="switchTab('home')"><i class="fas fa-home"></i><span>الرئيسية</span></button>
+            <button class="nav-tab" data-tab="news" onclick="switchTab('news')"><i class="fas fa-newspaper"></i><span>الأخبار</span></button>
+            <button class="nav-tab center-tab" data-tab="qr" onclick="showReceiveModal()"><div class="center-tab-circle"><img src="logo.png" alt="DC" class="center-logo"></div></button>
+            <button class="nav-tab" data-tab="analytics" onclick="switchTab('analytics')"><i class="fas fa-chart-line"></i><span>التحليل</span></button>
+            <button class="nav-tab" data-tab="profile" onclick="switchTab('profile')"><i class="fas fa-user"></i><span>حسابي</span></button>
+        </nav>
+    </div>
+
+    <!-- MODALS -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-sheet"><div class="modal-handle"></div><button class="modal-close-btn" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
+            <div id="loginForm" class="auth-form-content"><div class="auth-form-header"><div class="auth-icon-circle"><i class="fas fa-sign-in-alt"></i></div><h2>تسجيل الدخول</h2><p>مرحباً بعودتك</p></div><div class="form-field"><label>البريد الإلكتروني</label><div class="input-wrapper"><i class="fas fa-envelope"></i><input type="email" id="loginEmail" placeholder="example@email.com"></div></div><div class="form-field"><label>كلمة المرور</label><div class="input-wrapper"><i class="fas fa-lock"></i><input type="password" id="loginPassword" placeholder="••••••••"></div></div><button class="btn-submit" onclick="login()">تسجيل الدخول</button><p class="auth-switch-text">ليس لديك حساب؟ <a href="#" onclick="switchAuthForm('signup')">إنشاء حساب جديد</a></p></div>
+            <div id="signupForm" class="auth-form-content" style="display:none;"><div class="auth-form-header"><div class="auth-icon-circle"><i class="fas fa-user-plus"></i></div><h2>إنشاء حساب جديد</h2><p>انضم إلى دينار كوين</p></div><div class="form-field"><label>الاسم الكامل</label><div class="input-wrapper"><i class="fas fa-user"></i><input type="text" id="signupName" placeholder="أدخل اسمك"></div></div><div class="form-field"><label>البريد الإلكتروني</label><div class="input-wrapper"><i class="fas fa-envelope"></i><input type="email" id="signupEmail" placeholder="example@email.com"></div></div><div class="form-field"><label>كلمة المرور</label><div class="input-wrapper"><i class="fas fa-lock"></i><input type="password" id="signupPassword" placeholder="6 أحرف على الأقل"></div></div><div class="form-field"><label>رمز الإحالة (اختياري)</label><div class="input-wrapper"><i class="fas fa-gift"></i><input type="text" id="signupReferralCode" placeholder="DC12345678"></div></div><button class="btn-submit" onclick="signup()">إنشاء الحساب</button><p class="auth-switch-text">لديك حساب؟ <a href="#" onclick="switchAuthForm('login')">تسجيل الدخول</a></p></div>
+        </div>
+    </div>
+    <div id="buyModal" class="modal-overlay"><div class="modal-sheet modal-small"><div class="modal-handle"></div><button class="modal-close-btn" onclick="closeBuyModal()"><i class="fas fa-times"></i></button><div class="modal-icon-header"><div class="modal-icon-circle buy"><i class="fas fa-shopping-cart"></i></div><h2>شراء دينار كوين</h2></div><div class="form-field"><label>الكمية (DC)</label><div class="input-wrapper"><i class="fas fa-coins"></i><input type="number" id="buyAmount" placeholder="0.00" min="0.01" step="0.01"></div></div><div class="calc-box"><div class="calc-row"><span>السعر:</span><span>1 DC = 1,000 IQD</span></div><div class="calc-row total-row"><span>الإجمالي:</span><span id="totalIQD">0 IQD</span></div></div><div class="info-banner"><i class="fas fa-info-circle"></i><p>سيتم مراجعة طلبك من قبل الإدارة</p></div><button class="btn-submit" onclick="submitBuyRequest()">إرسال الطلب</button></div></div>
+    <div id="sendModal" class="modal-overlay"><div class="modal-sheet modal-small"><div class="modal-handle"></div><button class="modal-close-btn" onclick="closeSendModal()"><i class="fas fa-times"></i></button><div class="modal-icon-header"><div class="modal-icon-circle send"><i class="fas fa-paper-plane"></i></div><h2>إرسال دينار كوين</h2></div><div class="form-field"><label>رمز المستلم</label><div class="input-wrapper"><i class="fas fa-user-tag"></i><input type="text" id="recipientCode" placeholder="DC12345678"></div></div><div class="form-field"><label>الكمية (DC)</label><div class="input-wrapper"><i class="fas fa-coins"></i><input type="number" id="sendAmount" placeholder="0.00" min="0.01" step="0.01"></div></div><div class="form-field"><label>ملاحظة</label><div class="input-wrapper"><i class="fas fa-comment"></i><input type="text" id="sendNote" placeholder="اكتب ملاحظة..."></div></div><button class="btn-submit" onclick="sendCoins()">إرسال</button></div></div>
+    <div id="receiveModal" class="modal-overlay"><div class="modal-sheet modal-small"><div class="modal-handle"></div><button class="modal-close-btn" onclick="closeReceiveModal()"><i class="fas fa-times"></i></button><div class="modal-icon-header"><div class="modal-icon-circle receive"><i class="fas fa-qrcode"></i></div><h2>استقبال دينار كوين</h2></div><div class="qr-display"><div id="qrCode" class="qr-box"></div><p class="qr-hint">امسح الكود لتحويل الأموال</p></div><div class="receive-code-box"><label>رمز الإحالة:</label><div class="code-copy-row"><span id="receiveCode">DC12345678</span><button class="btn-copy-sm" onclick="copyReceiveCode()"><i class="fas fa-copy"></i></button></div></div></div></div>
+    <div id="editNameModal" class="modal-overlay"><div class="modal-sheet modal-small"><div class="modal-handle"></div><button class="modal-close-btn" onclick="closeEditNameModal()"><i class="fas fa-times"></i></button><div class="modal-icon-header"><div class="modal-icon-circle receive"><i class="fas fa-edit"></i></div><h2>تعديل الاسم</h2></div><div class="form-field"><label>الاسم الجديد</label><div class="input-wrapper"><i class="fas fa-user"></i><input type="text" id="editNameInput" placeholder="أدخل الاسم الجديد"></div></div><button class="btn-submit" onclick="saveNewName()">حفظ</button></div></div>
+    <div id="articleModal" class="modal-overlay"><div class="modal-sheet"><div class="modal-handle"></div><button class="modal-close-btn" onclick="closeArticleModal()"><i class="fas fa-times"></i></button><div id="articleContent" class="article-full-content"></div></div></div>
+
+    <div id="successNotification" class="toast-notification"><div class="toast-icon"><i class="fas fa-check-circle"></i></div><div class="toast-content"><h4 id="notificationTitle">نجاح!</h4><p id="notificationMessage">تمت العملية بنجاح</p></div><button class="toast-close" onclick="closeNotification()"><i class="fas fa-times"></i></button></div>
+
+    <span id="userName" style="display:none;">المستخدم</span><span id="userEmail" style="display:none;"></span><span id="userReferralCode" style="display:none;"></span>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
