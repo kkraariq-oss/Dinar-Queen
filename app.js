@@ -9,8 +9,9 @@ if ('serviceWorker' in navigator) {
 }
 
 // إعدادات Supabase
-const SUPABASE_URL = 'https://yusbdsss8rgrgpwv5gl71da.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1c2Jkc3NzOHJncmdwd3Y1Z2w3MWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTc0NzU2MDAsImV4cCI6MjAxMzA1MTYwMH0.vO8bqu-J';
+const SUPABASE_URL = 'https://umlbxdcgpdifxzijujvj.supabase.co
+';
+const SUPABASE_ANON_KEY = 'sb_publishable_H9UQUj6cvu5kdzJAuIJj9Q_vO8bqu';
 
 // إنشاء عميل Supabase
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
