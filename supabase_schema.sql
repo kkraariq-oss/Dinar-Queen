@@ -1,5 +1,6 @@
 -- ==========================================
 -- جداول قاعدة البيانات لتطبيق دينار كوين
+-- تم التصحيح - النسخة 3.1
 -- ==========================================
 
 -- جدول المستخدمين
@@ -57,8 +58,8 @@ CREATE TABLE IF NOT EXISTS transactions (
     
     -- تفاصيل المعاملة
     amount DECIMAL(20, 2) NOT NULL,
-    transaction_type VARCHAR(20) NOT NULL, -- 'send', 'receive', 'buy', 'bonus', 'referral'
-    status VARCHAR(20) DEFAULT 'completed', -- 'pending', 'completed', 'failed', 'cancelled'
+    transaction_type VARCHAR(20) NOT NULL,
+    status VARCHAR(20) DEFAULT 'completed',
     
     -- معلومات إضافية
     note TEXT,
@@ -77,7 +78,7 @@ CREATE TABLE IF NOT EXISTS buy_requests (
     -- تفاصيل الطلب
     amount DECIMAL(20, 2) NOT NULL,
     total_iqd DECIMAL(20, 2) NOT NULL,
-    status VARCHAR(20) DEFAULT 'pending', -- 'pending', 'approved', 'rejected', 'completed'
+    status VARCHAR(20) DEFAULT 'pending',
     
     -- ملاحظات
     user_note TEXT,
@@ -131,23 +132,23 @@ ON CONFLICT DO NOTHING;
 -- الفهارس لتحسين الأداء
 -- ==========================================
 
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_referral_code ON users(referral_code);
-CREATE INDEX idx_users_auth_id ON users(auth_id);
-CREATE INDEX idx_users_country ON users(country);
-CREATE INDEX idx_users_created_at ON users(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_referral_code ON users(referral_code);
+CREATE INDEX IF NOT EXISTS idx_users_auth_id ON users(auth_id);
+CREATE INDEX IF NOT EXISTS idx_users_country ON users(country);
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at DESC);
 
-CREATE INDEX idx_transactions_sender ON transactions(sender_id);
-CREATE INDEX idx_transactions_receiver ON transactions(receiver_id);
-CREATE INDEX idx_transactions_created_at ON transactions(created_at DESC);
-CREATE INDEX idx_transactions_type ON transactions(transaction_type);
+CREATE INDEX IF NOT EXISTS idx_transactions_sender ON transactions(sender_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_receiver ON transactions(receiver_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_created_at ON transactions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_transactions_type ON transactions(transaction_type);
 
-CREATE INDEX idx_buy_requests_user ON buy_requests(user_id);
-CREATE INDEX idx_buy_requests_status ON buy_requests(status);
-CREATE INDEX idx_buy_requests_created_at ON buy_requests(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_buy_requests_user ON buy_requests(user_id);
+CREATE INDEX IF NOT EXISTS idx_buy_requests_status ON buy_requests(status);
+CREATE INDEX IF NOT EXISTS idx_buy_requests_created_at ON buy_requests(created_at DESC);
 
-CREATE INDEX idx_referrals_referrer ON referrals(referrer_id);
-CREATE INDEX idx_referrals_referred ON referrals(referred_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON referrals(referrer_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_referred ON referrals(referred_id);
 
 -- ==========================================
 -- الـ Triggers لتحديث updated_at
@@ -175,7 +176,6 @@ CREATE TRIGGER update_buy_requests_updated_at
 -- الـ Functions لتحديث الإحصائيات
 -- ==========================================
 
--- دالة لتحديث إحصائيات المنصة
 CREATE OR REPLACE FUNCTION update_platform_stats()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -190,7 +190,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Triggers لتحديث الإحصائيات
 CREATE TRIGGER trigger_update_stats_on_user
     AFTER INSERT OR UPDATE OR DELETE ON users
     FOR EACH STATEMENT
@@ -205,7 +204,6 @@ CREATE TRIGGER trigger_update_stats_on_transaction
 -- Row Level Security (RLS) Policies
 -- ==========================================
 
--- تفعيل RLS على الجداول
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE buy_requests ENABLE ROW LEVEL SECURITY;
@@ -278,12 +276,12 @@ CREATE OR REPLACE FUNCTION generate_referral_code()
 RETURNS TEXT AS $$
 DECLARE
     code TEXT;
-    exists BOOLEAN;
+    code_exists BOOLEAN;
 BEGIN
     LOOP
         code := 'DC' || LPAD(FLOOR(RANDOM() * 100000000)::TEXT, 8, '0');
-        SELECT EXISTS(SELECT 1 FROM users WHERE referral_code = code) INTO exists;
-        EXIT WHEN NOT exists;
+        SELECT EXISTS(SELECT 1 FROM users WHERE referral_code = code) INTO code_exists;
+        EXIT WHEN NOT code_exists;
     END LOOP;
     RETURN code;
 END;
@@ -294,15 +292,15 @@ CREATE OR REPLACE FUNCTION generate_card_number()
 RETURNS TEXT AS $$
 DECLARE
     card TEXT;
-    exists BOOLEAN;
+    card_exists BOOLEAN;
 BEGIN
     LOOP
         card := LPAD(FLOOR(RANDOM() * 10000)::TEXT, 4, '0') || ' ' ||
                 LPAD(FLOOR(RANDOM() * 10000)::TEXT, 4, '0') || ' ' ||
                 LPAD(FLOOR(RANDOM() * 10000)::TEXT, 4, '0') || ' ' ||
                 LPAD(FLOOR(RANDOM() * 10000)::TEXT, 4, '0');
-        SELECT EXISTS(SELECT 1 FROM users WHERE card_number = card) INTO exists;
-        EXIT WHEN NOT exists;
+        SELECT EXISTS(SELECT 1 FROM users WHERE card_number = card) INTO card_exists;
+        EXIT WHEN NOT card_exists;
     END LOOP;
     RETURN card;
 END;
@@ -339,3 +337,7 @@ BEGIN
     RETURN total_supply - distributed;
 END;
 $$ LANGUAGE plpgsql;
+
+-- ==========================================
+-- تم إنشاء قاعدة البيانات بنجاح!
+-- ==========================================
