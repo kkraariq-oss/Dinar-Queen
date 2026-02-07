@@ -1,7 +1,14 @@
 -- ==========================================
 -- جداول قاعدة البيانات لتطبيق دينار كوين
--- تم التصحيح - النسخة 3.1
+-- النسخة المصححة 3.2
 -- ==========================================
+
+-- حذف الجداول القديمة إذا كانت موجودة (اختياري)
+-- DROP TABLE IF EXISTS referrals CASCADE;
+-- DROP TABLE IF EXISTS buy_requests CASCADE;
+-- DROP TABLE IF EXISTS transactions CASCADE;
+-- DROP TABLE IF EXISTS users CASCADE;
+-- DROP TABLE IF EXISTS platform_stats CASCADE;
 
 -- جدول المستخدمين
 CREATE TABLE IF NOT EXISTS users (
@@ -123,11 +130,6 @@ CREATE TABLE IF NOT EXISTS platform_stats (
     last_updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- إضافة صف واحد للإحصائيات
-INSERT INTO platform_stats (id, total_users, total_coins_distributed)
-VALUES (gen_random_uuid(), 0, 0.00)
-ON CONFLICT DO NOTHING;
-
 -- ==========================================
 -- الفهارس لتحسين الأداء
 -- ==========================================
@@ -187,16 +189,20 @@ BEGIN
         total_coins_distributed = (SELECT COALESCE(SUM(balance), 0) FROM users),
         total_transactions = (SELECT COUNT(*) FROM transactions WHERE status = 'completed'),
         total_buy_requests = (SELECT COUNT(*) FROM buy_requests),
-        last_updated = CURRENT_TIMESTAMP;
+        last_updated = CURRENT_TIMESTAMP
+    WHERE id = (SELECT id FROM platform_stats LIMIT 1);
+    
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_update_stats_on_user ON users;
 CREATE TRIGGER trigger_update_stats_on_user
     AFTER INSERT OR UPDATE OR DELETE ON users
     FOR EACH STATEMENT
     EXECUTE FUNCTION update_platform_stats();
 
+DROP TRIGGER IF EXISTS trigger_update_stats_on_transaction ON transactions;
 CREATE TRIGGER trigger_update_stats_on_transaction
     AFTER INSERT OR UPDATE OR DELETE ON transactions
     FOR EACH STATEMENT
@@ -210,6 +216,12 @@ ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE buy_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE platform_stats ENABLE ROW LEVEL SECURITY;
+
+-- حذف السياسات القديمة
+DROP POLICY IF EXISTS "Users can view their own data" ON users;
+DROP POLICY IF EXISTS "Users can update their own data" ON users;
+DROP POLICY IF EXISTS "Users can insert their own data" ON users;
 
 -- سياسات المستخدمين
 CREATE POLICY "Users can view their own data"
@@ -219,6 +231,14 @@ CREATE POLICY "Users can view their own data"
 CREATE POLICY "Users can update their own data"
     ON users FOR UPDATE
     USING (auth.uid() = auth_id);
+
+CREATE POLICY "Users can insert their own data"
+    ON users FOR INSERT
+    WITH CHECK (auth.uid() = auth_id);
+
+-- حذف سياسات المعاملات القديمة
+DROP POLICY IF EXISTS "Users can view their own transactions" ON transactions;
+DROP POLICY IF EXISTS "Users can create transactions" ON transactions;
 
 -- سياسات المعاملات
 CREATE POLICY "Users can view their own transactions"
@@ -237,6 +257,10 @@ CREATE POLICY "Users can create transactions"
         )
     );
 
+-- حذف سياسات طلبات الشراء القديمة
+DROP POLICY IF EXISTS "Users can view their own buy requests" ON buy_requests;
+DROP POLICY IF EXISTS "Users can create buy requests" ON buy_requests;
+
 -- سياسات طلبات الشراء
 CREATE POLICY "Users can view their own buy requests"
     ON buy_requests FOR SELECT
@@ -254,6 +278,9 @@ CREATE POLICY "Users can create buy requests"
         )
     );
 
+-- حذف سياسات الإحالات القديمة
+DROP POLICY IF EXISTS "Users can view their own referrals" ON referrals;
+
 -- سياسات الإحالات
 CREATE POLICY "Users can view their own referrals"
     ON referrals FOR SELECT
@@ -263,10 +290,13 @@ CREATE POLICY "Users can view their own referrals"
         )
     );
 
+-- حذف سياسات الإحصائيات القديمة
+DROP POLICY IF EXISTS "Anyone can view platform stats" ON platform_stats;
+
 -- السماح لجميع المستخدمين بقراءة الإحصائيات العامة
 CREATE POLICY "Anyone can view platform stats"
     ON platform_stats FOR SELECT
-    TO authenticated
+    TO authenticated, anon
     USING (true);
 
 -- ==========================================
@@ -339,6 +369,19 @@ BEGIN
     RETURN total_supply - distributed;
 END;
 $$ LANGUAGE plpgsql;
+
+-- ==========================================
+-- إدراج صف واحد للإحصائيات
+-- IMPORTANT: هذا يجب تنفيذه مرة واحدة فقط!
+-- ==========================================
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM platform_stats LIMIT 1) THEN
+        INSERT INTO platform_stats (id, total_users, total_coins_distributed, total_transactions, total_buy_requests)
+        VALUES (gen_random_uuid(), 0, 0.00, 0, 0);
+    END IF;
+END $$;
 
 -- ==========================================
 -- تم إنشاء قاعدة البيانات بنجاح!

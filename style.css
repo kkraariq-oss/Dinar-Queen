@@ -1051,3 +1051,71 @@ body.dark-mode input {
 }
 
 /* END OF ENHANCED CSS V3.0 */
+/* إصلاح عرض نماذج التسجيل/تسجيل الدخول */
+
+/* إخفاء النموذج غير النشط بشكل كامل */
+.auth-form {
+    display: none !important;
+}
+
+.auth-form.active {
+    display: block !important;
+}
+
+/* تحسين المسافات */
+.form-section-title:first-of-type {
+    margin-top: 0 !important;
+}
+
+/* تحسين عرض خانات الهاتف */
+.form-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.form-field.phone-code {
+    flex: 0 0 90px !important;
+}
+
+.form-field.phone-number {
+    flex: 1 !important;
+}
+
+@media (max-width: 380px) {
+    .form-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .form-field.phone-code,
+    .form-field.phone-number {
+        flex: 1 !important;
+        width: 100%;
+    }
+}
+
+/* تحسين التمرير في النموذج */
+.modal-sheet {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.auth-form {
+    max-height: none;
+    overflow-y: visible;
+}
+
+/* إصلاح عرض Select */
+.input-wrapper select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23f0d060' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 12px center;
+    padding-left: 40px;
+}
+
+[dir="ltr"] .input-wrapper select {
+    background-position: right 12px center;
+    padding-right: 40px;
+    padding-left: 12px;
+}

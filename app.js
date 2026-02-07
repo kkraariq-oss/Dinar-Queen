@@ -10,7 +10,8 @@ if ('serviceWorker' in navigator) {
 
 // إعدادات Supabase
 const SUPABASE_URL = 'https://umlbxdcgpdifxzijujvj.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbGJ4ZGNncGRpZnh6aWp1anZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQzODUsImV4cCI6MjA4NjA1MDM4NX0.Ld3fU2_B4eu803BsDYKQ0ofg69WxQPJcscGf93lnM3w';
+const SUPABASE_ANON_KEY = 'sb_publishable_H9UQUj6cvu5kdzJAuIJj9Q_vO8bqu-J';
+
 
 // إنشاء عميل Supabase
 var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -280,24 +281,41 @@ async function loadPlatformStats() {
         const { data: stats, error } = await supabase
             .from('platform_stats')
             .select('*')
-            .single();
+            .limit(1)
+            .maybeSingle();
         
-        if (error) throw error;
-        
-        const remainingCoins = TOTAL_SUPPLY - (stats.total_coins_distributed || 0);
-        
-        // تحديث إحصائيات الصفحة الرئيسية
-        document.getElementById('homeUsersCount').textContent = formatNumber(stats.total_users || 0);
-        document.getElementById('homeCoinsRemaining').textContent = formatNumber(remainingCoins);
-        
-        // تحديث إحصائيات لوحة التحكم
-        if (document.getElementById('dashUsersCount')) {
-            document.getElementById('dashUsersCount').textContent = formatNumber(stats.total_users || 0);
-            document.getElementById('dashCoinsRemaining').textContent = formatNumber(remainingCoins);
+        if (error) {
+            console.error('Error fetching stats:', error);
+            return;
         }
+        
+        const statsData = stats || {
+            total_users: 0,
+            total_coins_distributed: 0,
+            total_transactions: 0,
+            total_buy_requests: 0
+        };
+        
+        const remainingCoins = TOTAL_SUPPLY - (statsData.total_coins_distributed || 0);
+        
+        const homeUsersEl = document.getElementById('homeUsersCount');
+        const homeCoinsEl = document.getElementById('homeCoinsRemaining');
+        
+        if (homeUsersEl) homeUsersEl.textContent = formatNumber(statsData.total_users || 0);
+        if (homeCoinsEl) homeCoinsEl.textContent = formatNumber(remainingCoins);
+        
+        const dashUsersEl = document.getElementById('dashUsersCount');
+        const dashCoinsEl = document.getElementById('dashCoinsRemaining');
+        
+        if (dashUsersEl) dashUsersEl.textContent = formatNumber(statsData.total_users || 0);
+        if (dashCoinsEl) dashCoinsEl.textContent = formatNumber(remainingCoins);
         
     } catch (error) {
         console.error('Error loading stats:', error);
+        const homeUsersEl = document.getElementById('homeUsersCount');
+        const homeCoinsEl = document.getElementById('homeCoinsRemaining');
+        if (homeUsersEl) homeUsersEl.textContent = '0';
+        if (homeCoinsEl) homeCoinsEl.textContent = formatNumber(TOTAL_SUPPLY);
     }
 }
 
