@@ -969,9 +969,255 @@ async function saveNewName() {
 function toggleSetting(setting) {
     const toggle = document.getElementById(`toggle-${setting}`);
     if (toggle) {
-        toggle.classList.toggle('active');
-        showNotification('تم', `تم ${toggle.classList.contains('active') ? 'تفعيل' : 'إلغاء'} ${setting}`, 'success');
+        const isActive = toggle.classList.toggle('active');
+        
+        // حفظ الإعدادات في localStorage
+        localStorage.setItem(`setting-${setting}`, isActive ? 'true' : 'false');
+        
+        // تطبيق الإعدادات
+        if (setting === 'darkmode') {
+            applyDarkMode(isActive);
+        } else if (setting === 'notifications') {
+            applyNotifications(isActive);
+        } else if (setting === 'biometric') {
+            applyBiometric(isActive);
+        }
+        
+        showNotification('تم', `تم ${isActive ? 'تفعيل' : 'إلغاء'} ${getSettingName(setting)}`, 'success');
     }
+}
+
+function getSettingName(setting) {
+    const names = {
+        'darkmode': 'الوضع الليلي',
+        'notifications': 'الإشعارات',
+        'biometric': 'تسجيل الدخول بالبصمة'
+    };
+    return names[setting] || setting;
+}
+
+function applyDarkMode(isActive) {
+    if (isActive) {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
+}
+
+function applyNotifications(isActive) {
+    if (isActive && 'Notification' in window) {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log('تم تفعيل الإشعارات');
+            }
+        });
+    }
+}
+
+function applyBiometric(isActive) {
+    if (isActive) {
+        console.log('تم تفعيل البصمة (متاح في التحديث القادم)');
+    }
+}
+
+// استعادة الإعدادات عند تحميل الصفحة
+function loadSettings() {
+    const darkmode = localStorage.getItem('setting-darkmode') === 'true';
+    const notifications = localStorage.getItem('setting-notifications') === 'true';
+    const biometric = localStorage.getItem('setting-biometric') === 'true';
+    
+    if (darkmode) {
+        document.getElementById('toggle-darkmode')?.classList.add('active');
+        applyDarkMode(true);
+    }
+    if (notifications) {
+        document.getElementById('toggle-notifications')?.classList.add('active');
+    }
+    if (biometric) {
+        document.getElementById('toggle-biometric')?.classList.add('active');
+    }
+}
+
+// تحميل الإعدادات عند بدء التطبيق
+setTimeout(loadSettings, 100);
+
+
+// ==========================================
+// LANGUAGE FUNCTIONS
+// ==========================================
+function showLanguageModal() {
+    const languages = [
+        { code: 'ar', name: 'العربية', flag: '🇮🇶' },
+        { code: 'en', name: 'English', flag: '🇺🇸' },
+        { code: 'ku', name: 'کوردی', flag: '🇮🇶' }
+    ];
+    
+    const currentLang = localStorage.getItem('app-language') || 'ar';
+    
+    let html = `
+        <div class="modal-overlay active">
+            <div class="modal-sheet modal-small">
+                <div class="modal-handle"></div>
+                <button class="modal-close-btn" onclick="closeLanguageModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-icon-header">
+                    <div class="modal-icon-circle receive">
+                        <i class="fas fa-language"></i>
+                    </div>
+                    <h2>اختر اللغة</h2>
+                </div>
+                <div class="settings-card" style="margin-top:20px;">
+    `;
+    
+    languages.forEach(lang => {
+        const active = lang.code === currentLang ? 'style="background:var(--gold-light);"' : '';
+        html += `
+            <div class="settings-item" onclick="changeLanguage('${lang.code}')" ${active}>
+                <div class="settings-item-icon">${lang.flag}</div>
+                <div class="settings-item-content">
+                    <span class="settings-item-label">${lang.name}</span>
+                </div>
+                ${lang.code === currentLang ? '<i class="fas fa-check" style="color:var(--gold-primary);"></i>' : ''}
+            </div>
+        `;
+    });
+    
+    html += `
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeLanguageModal() {
+    const modal = document.querySelector('.modal-overlay:last-child');
+    if (modal) modal.remove();
+}
+
+function changeLanguage(langCode) {
+    localStorage.setItem('app-language', langCode);
+    showNotification('تم', 'سيتم تطبيق اللغة في التحديث القادم', 'success');
+    closeLanguageModal();
+    
+    // تحديث عرض اللغة في الإعدادات
+    const langNames = { ar: 'العربية', en: 'English', ku: 'کوردی' };
+    const langValueEl = document.querySelector('.settings-item:has(.fa-language) .settings-item-value');
+    if (langValueEl) {
+        langValueEl.textContent = langNames[langCode];
+    }
+}
+
+// ==========================================
+// SECURITY & PRIVACY MODAL
+// ==========================================
+function showSecurityModal() {
+    const html = `
+        <div class="modal-overlay active">
+            <div class="modal-sheet">
+                <div class="modal-handle"></div>
+                <button class="modal-close-btn" onclick="closeSecurityModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-icon-header">
+                    <div class="modal-icon-circle receive">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h2>الأمان والخصوصية</h2>
+                </div>
+                <div style="padding:20px;">
+                    <h3 style="color:var(--gold-primary);margin-bottom:15px;">نصائح الأمان</h3>
+                    <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:12px;margin-bottom:15px;">
+                        <p style="line-height:1.8;">
+                            🔐 استخدم كلمة مرور قوية<br>
+                            🔒 لا تشارك بياناتك مع أحد<br>
+                            📱 فعّل المصادقة الثنائية<br>
+                            🛡️ تحقق من عنوان الموقع<br>
+                            ⚠️ احذر من الروابط المشبوهة
+                        </p>
+                    </div>
+                    <h3 style="color:var(--gold-primary);margin-bottom:15px;">سياسة الخصوصية</h3>
+                    <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:12px;">
+                        <p style="line-height:1.8;">
+                            نحن نحترم خصوصيتك ونحمي بياناتك الشخصية. 
+                            جميع المعلومات مشفرة ومخزنة بشكل آمن.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeSecurityModal() {
+    const modal = document.querySelector('.modal-overlay:last-child');
+    if (modal) modal.remove();
+}
+
+// ==========================================
+// HELP & SUPPORT MODAL
+// ==========================================
+function showHelpModal() {
+    const html = `
+        <div class="modal-overlay active">
+            <div class="modal-sheet">
+                <div class="modal-handle"></div>
+                <button class="modal-close-btn" onclick="closeHelpModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-icon-header">
+                    <div class="modal-icon-circle receive">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h2>المساعدة والدعم</h2>
+                </div>
+                <div style="padding:20px;">
+                    <h3 style="color:var(--gold-primary);margin-bottom:15px;">الأسئلة الشائعة</h3>
+                    
+                    <div style="margin-bottom:20px;">
+                        <h4 style="color:#fff;margin-bottom:8px;">❓ كيف أشتري دينار كوين؟</h4>
+                        <p style="color:rgba(255,255,255,0.7);line-height:1.6;">
+                            انقر على زر "شراء" وأدخل الكمية المطلوبة. سيتم مراجعة طلبك من الإدارة.
+                        </p>
+                    </div>
+                    
+                    <div style="margin-bottom:20px;">
+                        <h4 style="color:#fff;margin-bottom:8px;">❓ كيف أحصل على مكافأة الإحالة؟</h4>
+                        <p style="color:rgba(255,255,255,0.7);line-height:1.6;">
+                            شارك رمز الإحالة الخاص بك. ستحصل على 0.25 DC عن كل صديق يسجل.
+                        </p>
+                    </div>
+                    
+                    <div style="margin-bottom:20px;">
+                        <h4 style="color:#fff;margin-bottom:8px;">❓ هل التطبيق آمن؟</h4>
+                        <p style="color:rgba(255,255,255,0.7);line-height:1.6;">
+                            نعم، نستخدم تشفير عالي المستوى وFirebase لحماية بياناتك.
+                        </p>
+                    </div>
+                    
+                    <h3 style="color:var(--gold-primary);margin:20px 0 15px;">تواصل معنا</h3>
+                    <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:12px;">
+                        <p style="line-height:1.8;">
+                            📧 البريد: support@dinarcoin.iq<br>
+                            📱 الهاتف: +964 XXX XXX XXXX<br>
+                            💬 الدردشة: متاحة قريباً
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeHelpModal() {
+    const modal = document.querySelector('.modal-overlay:last-child');
+    if (modal) modal.remove();
 }
 
 // ==========================================
