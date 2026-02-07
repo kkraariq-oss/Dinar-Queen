@@ -9,7 +9,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // إعدادات Supabase
-const SUPABASE_URL = 'https://yusbdsss8rgrgpwv5gl71da.supabase.co';
+const SUPABASE_URL = 'https://umlbxdcgpdifxzijujvj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbGJ4ZGNncGRpZnh6aWp1anZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQzODUsImV4cCI6MjA4NjA1MDM4NX0.Ld3fU2_B4eu803BsDYKQ0ofg69WxQPJcscGf93lnM3w';
 
 // إنشاء عميل Supabase
@@ -674,14 +674,24 @@ function closeAuthModal() {
 function switchAuthForm(type) {
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
-    
+    const authModal = document.getElementById('authModal');
+
     if (type === 'login') {
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
         loginForm.classList.add('active');
         signupForm.classList.remove('active');
     } else {
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'block';
         loginForm.classList.remove('active');
         signupForm.classList.add('active');
         populateCountryOptions();
+        // تحسين التنسيق للهواتف
+        authModal.style.maxWidth = '420px';
+        authModal.style.width = '100%';
+        authModal.style.height = 'auto';
+        authModal.style.overflowY = 'auto';
     }
 }
 
