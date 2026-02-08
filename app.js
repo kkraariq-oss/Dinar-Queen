@@ -15,7 +15,12 @@ async function signUpWithProfile(form) {
     const userId = data.user?.id;
     if (!userId) throw new Error("لم يتم الحصول على user id");
 
-    // 2) حفظ بيانات المستخدم في profiles
+    // 2) توليد بيانات البطاقة
+    const cardNumber = generateCardNumber();
+    const cardCVV = generateCVV();
+    const cardExpiry = generateExpiry();
+
+    // 3) حفظ بيانات المستخدم في profiles
     const { error: pErr } = await supabase
         .from("profiles")
         .upsert({
@@ -23,7 +28,10 @@ async function signUpWithProfile(form) {
             first_name: form.firstName,
             last_name: form.lastName,
             phone: form.phone,
-            country: form.country
+            country: form.country,
+            card_number: cardNumber,
+            card_cvv: cardCVV,
+            card_expiry: cardExpiry
         });
     if (pErr) throw pErr;
 
@@ -63,18 +71,34 @@ async function loadMyProfileAndWallet() {
     // إذا لم يوجد profile (أول مرة)
     let profile = profiles[0];
     if (!profile) {
+        // توليد بيانات البطاقة تلقائيًا
+        const cardNumber = generateCardNumber();
+        const cardCVV = generateCVV();
+        const cardExpiry = generateExpiry();
         // إنشاء profile تلقائيًا
-      const { error: createErr } = await supabase.from("profiles").upsert({
-  id: user.id,
-  first_name: "",
-  last_name: "",
-  phone: "",
-  country: "IQ"
-});
+        const { error: createErr } = await supabase.from("profiles").upsert({
+            id: user.id,
+            first_name: "",
+            last_name: "",
+            phone: "",
+            country: "IQ",
+            card_number: cardNumber,
+            card_cvv: cardCVV,
+            card_expiry: cardExpiry
+        });
 
         if (createErr) throw createErr;
 
-        profile = { id: user.id };
+        profile = {
+            id: user.id,
+            first_name: "",
+            last_name: "",
+            phone: "",
+            country: "IQ",
+            card_number: cardNumber,
+            card_cvv: cardCVV,
+            card_expiry: cardExpiry
+        };
     }
 
     // ---- WALLET ----
@@ -191,20 +215,9 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDGpAHia_wEmrhnmYjrPf1n1TrAzwEMiAI",
-    authDomain: "messageemeapp.firebaseapp.com",
-    databaseURL: "https://messageemeapp-default-rtdb.firebaseio.com",
-    projectId: "messageemeapp",
-    storageBucket: "messageemeapp.appspot.com",
-    messagingSenderId: "255034474844",
-    appId: "1:255034474844:web:5e3b7a6bc4b2fb94cc4199",
-    measurementId: "G-4QBEWRC583"
-};
-
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const database = firebase.database();
+var SUPABASE_URL = "https://umlbxdcgpdifxzijujvj.supabase.co";
+var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbGJ4ZGNncGRpZnh6aWp1anZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQzODUsImV4cCI6MjA4NjA1MDM4NX0.Ld3fU2_B4eu803BsDYKQ0ofg69WxQPJcscGf93lnM3w";
+var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
 let userDataListener = null;
@@ -375,58 +388,8 @@ function setupEventListeners() {
 // ==========================================
 // GLOBAL STATISTICS
 // ==========================================
-let globalStatsListener = null;
 
-function loadGlobalStats() {
-    // إنشاء العقدة إذا لم تكن موجودة
-    database.ref('global_stats').once('value').then(snap => {
-        if (!snap.exists()) {
-            database.ref('global_stats').set({
-                totalUsers: 0,
-                totalDistributed: 0,
-                totalRemaining: TOTAL_SUPPLY
-            });
-        }
-    });
-
-    // الاستماع للتحديثات
-    globalStatsListener = database.ref('global_stats').on('value', (snap) => {
-        const data = snap.val() || { totalUsers: 0, totalDistributed: 0, totalRemaining: TOTAL_SUPPLY };
-        
-        // تحديث شاشة الصفحة الرئيسية
-        updateElement('homeUsersCount', data.totalUsers.toLocaleString('ar-IQ'));
-        updateElement('homeCoinsRemaining', data.totalRemaining.toLocaleString('ar-IQ'));
-        
-        // تحديث شاشة الداشبورد
-        updateElement('dashUsersCount', data.totalUsers.toLocaleString('ar-IQ'));
-        updateElement('dashCoinsRemaining', data.totalRemaining.toLocaleString('ar-IQ'));
-        
-        // تحديث شاشة التحليلات
-        updateElement('statTotalUsers', data.totalUsers.toLocaleString('ar-IQ'));
-        updateElement('statCirculating', data.totalDistributed.toLocaleString('ar-IQ'));
-        updateElement('statRemaining', data.totalRemaining.toLocaleString('ar-IQ'));
-        updateElement('statTotalSupply', TOTAL_SUPPLY.toLocaleString('ar-IQ'));
-        
-        const distributionPercent = ((data.totalDistributed / TOTAL_SUPPLY) * 100).toFixed(2);
-        updateElement('distributionPercent', distributionPercent + '%');
-    });
-}
-
-async function updateGlobalStats(userCountDelta, coinsDelta) {
-    try {
-        const ref = database.ref('global_stats');
-        const snap = await ref.once('value');
-        const current = snap.val() || { totalUsers: 0, totalDistributed: 0, totalRemaining: TOTAL_SUPPLY };
-        
-        await ref.update({
-            totalUsers: Math.max(0, current.totalUsers + userCountDelta),
-            totalDistributed: Math.max(0, current.totalDistributed + coinsDelta),
-            totalRemaining: Math.max(0, TOTAL_SUPPLY - (current.totalDistributed + coinsDelta))
-        });
-    } catch (e) {
-        console.error('Error updating global stats:', e);
-    }
-}
+// Supabase-only: Removed Firebase global stats functions
 
 // ==========================================
 // SCREENS
@@ -546,73 +509,8 @@ function logout() {
 // ==========================================
 // USER DATA
 // ==========================================
-async function loadUserData() {
-    if (!currentUser) return;
-    
-    if (userDataListener) {
-        database.ref(`users/${currentUser.uid}`).off('value', userDataListener);
-    }
-    
-    userDataListener = database.ref(`users/${currentUser.uid}`).on('value', (snap) => {
-        const data = snap.val();
-        if (!data) return;
-        
-        updateElement('userName', data.name);
-        updateElement('userEmail', data.email);
-        updateElement('userReferralCode', data.referralCode);
-        
-        // Dashboard
-        const balance = parseFloat(data.balance || 0).toFixed(2);
-        updateElement('cardBalance', balance + ' DC');
-        updateElement('totalBalance', balance + ' DC');
-        updateElement('cardName', data.name);
-        updateElement('referralCode', data.referralCode);
-        updateElement('referralCount', data.referralCount || 0);
-        updateElement('referralEarnings', parseFloat(data.referralEarnings || 0).toFixed(2) + ' DC');
 
-        // Card
-        if (data.card) {
-            userCardData = data.card;
-            updateElement('cardNum', formatCardNumber(data.card.number));
-            updateElement('cardNumFront', formatCardNumber(data.card.number)); // تحديث رقم البطاقة في الواجهة الأمامية
-            updateElement('cardCVV', data.card.cvv);
-            updateElement('cardExpiry', data.card.expiry);
-        }
-        
-        // Profile
-        updateElement('profileName', data.name);
-        updateElement('profileNameDisplay', data.name);
-        updateElement('profileEmailValue', data.email);
-        updateElement('profileRefCode', data.referralCode);
-        updateElement('profileBalance', balance + ' DC');
-        updateElement('profileCardNum', formatCardNumber(data.card?.number || '****************'));
-        updateElement('profileCVV', '***');
-        updateElement('profileExpiry', data.card?.expiry || '--/--');
-        
-        if (data.joinDate) {
-            const date = new Date(data.joinDate);
-            updateElement('profileJoinDate', date.toLocaleDateString('ar-IQ', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            }));
-        }
-        
-        // Analytics
-        updateElement('analyticBalance', balance + ' DC');
-        updateElement('analyticReferrals', data.referralCount || 0);
-        updateElement('analyticEarnings', parseFloat(data.referralEarnings || 0).toFixed(2) + ' DC');
-        
-        // Avatar
-        const firstLetter = data.name.charAt(0).toUpperCase();
-        updateElement('userAvatar', firstLetter);
-        updateElement('profileAvatar', firstLetter);
-        
-        // QR Code للاستقبال
-        updateElement('receiveCode', data.referralCode);
-        generateQRCode(data.referralCode);
-    });
-}
+// Supabase-only: Removed Firebase loadUserData function
 
 function updateElement(id, value) {
     const el = document.getElementById(id);
