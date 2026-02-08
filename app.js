@@ -1,14 +1,14 @@
 // Supabase setup
-var SUPABASE_URL = "https://umlbxdcgpdifxzijujvj.supabase.co";
-var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbGJ4ZGNncGRpZnh6aWp1anZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQzODUsImV4cCI6MjA4NjA1MDM4NX0.Ld3fU2_B4eu803BsDYKQ0ofg69WxQPJcscGf93lnM3w";
-var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL = "https://umlbxdcgpdifxzijujvj.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbGJ4ZGNncGRpZnh6aWp1anZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQzODUsImV4cCI6MjA4NjA1MDM4NX0.Ld3fU2_B4eu803BsDYKQ0ofg69WxQPJcscGf93lnM3w";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Supabase Auth & Profile
 async function signUpWithProfile(form) {
     // 1) إنشاء حساب Auth
     const { data, error } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
+           email: form.email,
+           password: form.password,
     });
     if (error) throw error;
 
@@ -21,8 +21,8 @@ async function signUpWithProfile(form) {
     const cardExpiry = generateExpiry();
 
     // 3) حفظ بيانات المستخدم في profiles
-    const { error: pErr } = await supabase
-        .from("profiles")
+        const { error: pErr } = await sb
+           .from("profiles")
         .upsert({
             id: userId,
             first_name: form.firstName,
@@ -36,8 +36,8 @@ async function signUpWithProfile(form) {
     if (pErr) throw pErr;
 
     // 3) إنشاء محفظة للمستخدم
-    const { error: wErr } = await supabase
-        .from("wallets")
+        const { error: wErr } = await sb
+           .from("wallets")
         .upsert({ user_id: userId, balance: 0 });
     if (wErr) throw wErr;
 
@@ -45,13 +45,13 @@ async function signUpWithProfile(form) {
 }
 
 async function signIn(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) throw error;
     return data;
 }
 
 async function getCurrentUser() {
-    const { data } = await supabase.auth.getUser();
+    const { data } = await sb.auth.getUser();
     return data.user; // null إذا غير مسجل
 }
 
@@ -60,8 +60,8 @@ async function loadMyProfileAndWallet() {
     if (!user) throw new Error("غير مسجل دخول");
 
     // ---- PROFILE ----
-    const { data: profiles, error: pErr } = await supabase
-        .from("profiles")
+        const { data: profiles, error: pErr } = await sb
+            .from("profiles")
         .select("*")
         .eq("id", user.id)
         .limit(1);
@@ -76,7 +76,7 @@ async function loadMyProfileAndWallet() {
         const cardCVV = generateCVV();
         const cardExpiry = generateExpiry();
         // إنشاء profile تلقائيًا
-        const { error: createErr } = await supabase.from("profiles").upsert({
+            const { error: createErr } = await sb.from("profiles").upsert({
             id: user.id,
             first_name: "",
             last_name: "",
@@ -102,8 +102,8 @@ async function loadMyProfileAndWallet() {
     }
 
     // ---- WALLET ----
-    const { data: wallets, error: wErr } = await supabase
-        .from("wallets")
+        const { data: wallets, error: wErr } = await sb
+            .from("wallets")
         .select("*")
         .eq("user_id", user.id)
         .limit(1);
@@ -112,7 +112,7 @@ async function loadMyProfileAndWallet() {
 
     let wallet = wallets[0];
     if (!wallet) {
-        const { error: wCreateErr } = await supabase.from("wallets").insert({
+            const { error: wCreateErr } = await sb.from("wallets").insert({
             user_id: user.id,
             balance: 0
         });
@@ -129,7 +129,7 @@ async function loadMyProfileAndWallet() {
 
 function initializeApp() {
   // مراقبة جلسة Supabase بدل Firebase
-  supabase.auth.onAuthStateChange(async (event, session) => {
+        sb.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
       currentUser = session.user;
       try {
@@ -145,7 +145,7 @@ function initializeApp() {
   });
 
   // فحص جلسة عند التشغيل
-  supabase.auth.getSession().then(({ data }) => {
+    sb.auth.getSession().then(({ data }) => {
     if (data?.session?.user) {
       currentUser = data.session.user;
       showDashboard();
@@ -183,10 +183,10 @@ function applyUserDataFromSupabase(profile, wallet) {
 
 
 async function sendMoney(toUserId, amount, note = "") {
-    const { error } = await supabase.rpc("send_money", {
-        p_to: toUserId,
-        p_amount: amount,
-        p_note: note
+    const { error } = await sb.rpc("send_money", {
+           p_to: toUserId,
+           p_amount: amount,
+           p_note: note
     });
     if (error) throw error;
 }
@@ -195,8 +195,8 @@ async function loadMyTransactions(limit = 50) {
     const user = await getCurrentUser();
     if (!user) throw new Error("غير مسجل دخول");
 
-    const { data, error } = await supabase
-        .from("transactions")
+        const { data, error } = await sb
+           .from("transactions")
         .select("*")
         .or(`from_user.eq.${user.id},to_user.eq.${user.id}`)
         .order("created_at", { ascending: false })
@@ -214,10 +214,6 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/Dinar-Queen/sw.js').catch(() => {});
     });
 }
-
-var SUPABASE_URL = "https://umlbxdcgpdifxzijujvj.supabase.co";
-var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbGJ4ZGNncGRpZnh6aWp1anZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQzODUsImV4cCI6MjA4NjA1MDM4NX0.Ld3fU2_B4eu803BsDYKQ0ofg69WxQPJcscGf93lnM3w";
-var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
 let userDataListener = null;
@@ -302,69 +298,8 @@ document.addEventListener('DOMContentLoaded', () => {
     createParticles();
     setupEventListeners();
     renderNewsArticles();
-    loadGlobalStats(); // تحميل الإحصائيات العامة
+    // loadGlobalStats(); // تحميل الإحصائيات العامة (تمت إزالته لأنه غير معرف)
 });
-
-supabase.auth.onAuthStateChange(async (event, session) => {
-    if (session?.user) {
-        currentUser = session.user;
-        try {
-            const { profile, wallet } = await loadMyProfileAndWallet();
-            const data = mapSupabaseToUI(profile, wallet);
-
-            // تحديث بيانات البطاقة
-            userCardData = data.card;
-
-            // تحديث عناصر واجهة المستخدم الأساسية
-            updateElement('userName', data.name);
-            updateElement('userEmail', data.email);
-            updateElement('userReferralCode', data.referralCode);
-
-            const balance = data.balance.toFixed(2);
-            updateElement('cardBalance', balance + ' DC');
-            updateElement('totalBalance', balance + ' DC');
-            updateElement('cardName', data.name);
-            updateElement('referralCode', data.referralCode);
-
-            // تحديث بيانات الملف الشخصي
-            updateElement('profileName', data.name);
-            updateElement('profileNameDisplay', data.name);
-            updateElement('profileEmailValue', data.email);
-            updateElement('profileRefCode', data.referralCode);
-            updateElement('profileBalance', balance + ' DC');
-
-            // تحديث بيانات البطاقة
-            updateElement('cardNum', formatCardNumber(data.card.number));
-            updateElement('cardNumFront', formatCardNumber(data.card.number));
-            updateElement('cardCVV', data.card.cvv);
-            updateElement('cardExpiry', data.card.expiry);
-
-            // تحديث تاريخ الانضمام
-            if (data.joinDate) {
-                const date = new Date(data.joinDate);
-                updateElement('profileJoinDate', date.toLocaleDateString('ar-IQ', {
-                    year: 'numeric', month: 'long', day: 'numeric'
-                }));
-            }
-
-            // تحديث رمز الاستقبال و QR
-            updateElement('receiveCode', data.referralCode);
-            generateQRCode(data.referralCode);
-
-            // حمّل معاملات Supabase
-            await loadTransactionsSupabase();
-
-            showDashboard();
-        } catch (e) {
-            console.error('Error loading user data:', e);
-            showNotification('خطأ', 'فشل تحميل البيانات', 'error');
-        }
-    } else {
-        currentUser = null;
-        showHome();
-    }
-});
-
 
 function createParticles() {
     const c = document.getElementById('particles');
@@ -495,15 +430,13 @@ async function login() {
     }
 }
 
-function logout() {
-    async function logout() {
-        await supabase.auth.signOut();
-        currentUser = null;
-        userCardData = null;
-        cardFlipped = false;
-        showHome();
-        showNotification('تم', 'تم تسجيل الخروج', 'success');
-    }
+async function logout() {
+    await sb.auth.signOut();
+    currentUser = null;
+    userCardData = null;
+    cardFlipped = false;
+    showHome();
+    showNotification('تم', 'تم تسجيل الخروج', 'success');
 }
 
 // ==========================================
@@ -1402,3 +1335,4 @@ document.addEventListener('keypress', e => {
         e.preventDefault();
     }
 });
+// نهاية الملف
