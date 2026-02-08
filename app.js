@@ -64,13 +64,14 @@ async function loadMyProfileAndWallet() {
     let profile = profiles[0];
     if (!profile) {
         // إنشاء profile تلقائيًا
-        const { error: createErr } = await supabase.from("profiles").insert({
-            id: user.id,
-            first_name: "",
-            last_name: "",
-            phone: "",
-            country: "IQ"
-        });
+      const { error: createErr } = await supabase.from("profiles").upsert({
+  id: user.id,
+  first_name: "",
+  last_name: "",
+  phone: "",
+  country: "IQ"
+});
+
         if (createErr) throw createErr;
 
         profile = { id: user.id };
@@ -130,6 +131,31 @@ function initializeApp() {
   });
 }
 
+function applyUserDataFromSupabase(profile, wallet) {
+  const name = (profile?.first_name || 'مستخدم') + (profile?.last_name ? ' ' + profile.last_name : '');
+  const email = currentUser?.email || '';
+
+  const balance = Number(wallet?.balance ?? 0).toFixed(2);
+
+  updateElement('userName', name);
+  updateElement('userEmail', email);
+
+  // الرصيد بالداشبورد
+  updateElement('cardBalance', balance + ' DC');
+  updateElement('totalBalance', balance + ' DC');
+  updateElement('cardName', name);
+
+  // بروفايل
+  updateElement('profileName', name);
+  updateElement('profileNameDisplay', name);
+  updateElement('profileEmailValue', email);
+  updateElement('profileBalance', balance + ' DC');
+
+  // افاتار
+  const firstLetter = name?.charAt(0)?.toUpperCase() || 'U';
+  updateElement('userAvatar', firstLetter);
+  updateElement('profileAvatar', firstLetter);
+}
 
 
 async function sendMoney(toUserId, amount, note = "") {
@@ -269,7 +295,12 @@ document.addEventListener('DOMContentLoaded', () => {
 supabase.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
         currentUser = session.user;
-        const data = await loadMyProfileAndWallet();
+        const { profile, wallet } = await loadMyProfileAndWallet();
+        applyUserDataFromSupabase(profile, wallet);
+
+        // حمّل معاملات Supabase بدل Firebase
+        await loadTransactionsSupabase();
+
         showDashboard();
     } else {
         currentUser = null;
@@ -380,7 +411,7 @@ function switchTab(tab) {
     if (tab === 'home') {
         document.getElementById('dashboardScreen').classList.add('active-screen');
         document.querySelector('[data-tab="home"]').classList.add('active');
-        loadTransactions();
+        loadTransactionsSupabase();
     } else if (tab === 'news') {
         document.getElementById('newsScreen').classList.add('active-screen');
         document.querySelector('[data-tab="news"]').classList.add('active');
@@ -704,6 +735,36 @@ async function addTransaction(uid, data) {
     } catch (e) {
         console.error('Error adding transaction:', e);
     }
+}
+
+// معاملات Supabase
+async function loadTransactionsSupabase() {
+    const list = document.getElementById('transactionsList');
+    if (!list || !currentUser) return;
+
+    const txs = await loadMyTransactions(20); // هذه عندك جاهزة
+
+    if (!txs || txs.length === 0) {
+        list.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>لا توجد عمليات بعد</p></div>';
+        return;
+    }
+
+    list.innerHTML = txs.map(tx => {
+        const cls = (tx.type === 'send') ? 'negative' : 'positive';
+        const sign = (tx.type === 'send') ? '-' : '+';
+        const date = new Date(tx.created_at).toLocaleDateString('ar-IQ', {
+            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+
+        return `<div class="transaction-item">
+            <div class="transaction-icon ${cls}"><i class="fas fa-exchange-alt"></i></div>
+            <div class="transaction-details">
+                <div class="transaction-type">${tx.note || tx.type}</div>
+                <div class="transaction-date">${date}</div>
+            </div>
+            <div class="transaction-amount ${cls}">${sign}${Number(tx.amount).toFixed(2)} DC</div>
+        </div>`;
+    }).join('');
 }
 
 // ==========================================
