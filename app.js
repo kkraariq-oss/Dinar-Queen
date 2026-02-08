@@ -1,1134 +1,1155 @@
 // ==========================================
-// DINAR COIN - Complete App JavaScript V3.0
-// Supabase Only - No Firebase
+// DINAR COIN - Full App JavaScript V3.0 (Supabase Only - NO FIREBASE)
 // ==========================================
+
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/Dinar-Queen/sw.js').catch(() => {});
+    });
+}
 
 // ==========================================
 // SUPABASE CONFIGURATION
 // ==========================================
-const SUPABASE_URL = "https://umlbxdcgpdifxzijujvj.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbGJ4ZGNncGRpZnh6aWp1anZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQzODUsImV4cCI6MjA4NjA1MDM4NX0.Ld3fU2_B4eu803BsDYKQ0ofg69WxQPJcscGf93lnM3w";
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-// لا يوجد أي تعريف آخر باسم supabase هنا
-// لا يوجد أي تعريف آخر باسم supabase هنا
+var SUPABASE_URL = "https://umlbxdcgpdifxzijujvj.supabase.co";
+var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbGJ4ZGNncGRpZnh6aWp1anZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQzODUsImV4cCI6MjA4NjA1MDM4NX0.Ld3fU2_B4eu803BsDYKQ0ofg69WxQPJcscGf93lnM3w";
+var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ==========================================
-// CONSTANTS
+// GLOBAL VARIABLES
 // ==========================================
+let currentUser = null;
+let userCardData = null;
+let cardFlipped = false;
+let cardNumVisible = false;
+let cvvVisible = false;
+
 const PRICE_PER_COIN = 1000;
 const TOTAL_SUPPLY = 1000000;
 const WELCOME_BONUS = 1.0;
 const REFERRAL_BONUS = 0.25;
 
 // ==========================================
-// GLOBAL VARIABLES
-// ==========================================
-let currentUser = null;
-let currentProfile = null;
-let currentWallet = null;
-let cardFlipped = false;
-let cardNumVisible = false;
-let cvvVisible = false;
-
-// ==========================================
-// SERVICE WORKER REGISTRATION
-// ==========================================
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/Dinar-Queen/sw.js')
-            .then(() => console.log('SW registered'))
-            .catch(err => console.error('SW registration failed:', err));
-    });
-}
-
-// ==========================================
 // UTILITY FUNCTIONS
 // ==========================================
 
-// Generate unique card number
+// توليد رقم بطاقة عشوائي
 function generateCardNumber() {
-    const prefix = '5428'; // Mastercard prefix
-    let number = prefix;
+    let num = '5464';
     for (let i = 0; i < 12; i++) {
-        number += Math.floor(Math.random() * 10);
+        num += Math.floor(Math.random() * 10);
     }
-    return number;
+    return num;
 }
 
-// Generate CVV
+// توليد CVV عشوائي
 function generateCVV() {
-    return Math.floor(100 + Math.random() * 900).toString();
+    return String(Math.floor(100 + Math.random() * 900));
 }
 
-// Generate card expiry (3 years from now)
+// توليد تاريخ انتهاء البطاقة
 function generateExpiry() {
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = String(now.getFullYear() + 3).slice(-2);
+    const month = String(Math.floor(1 + Math.random() * 12)).padStart(2, '0');
+    const year = String(new Date().getFullYear() + 5).slice(-2);
     return `${month}/${year}`;
 }
 
-// Generate unique referral code (8 chars)
+// توليد رمز إحالة فريد
 function generateReferralCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = '';
+    const numbers = '0123456789';
+    let code = 'DC';
     for (let i = 0; i < 8; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
+        code += numbers.charAt(Math.floor(Math.random() * numbers.length));
     }
     return code;
 }
 
-// Format number with commas
-function formatNumber(num) {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+// تنسيق رقم البطاقة
+function formatCardNumber(num) {
+    if (!num) return '**** **** **** ****';
+    return num.match(/.{1,4}/g)?.join(' ') || num;
 }
 
-// Update element text safely
+// تحديث عنصر HTML
 function updateElement(id, value) {
     const el = document.getElementById(id);
-    if (el) el.textContent = value;
-}
-
-// Update element HTML safely
-function updateElementHTML(id, html) {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = html;
+    if (el) {
+        if (el.tagName === 'INPUT') el.value = value;
+        else el.textContent = value;
+    }
 }
 
 // ==========================================
-// AUTHENTICATION FUNCTIONS
+// SUPABASE AUTH FUNCTIONS
 // ==========================================
 
-// Sign Up with complete profile creation
-async function signUpWithProfile(formData) {
-    try {
-        // 1. Create auth account
-        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-            email: formData.email,
-            password: formData.password
-        });
-
-        if (authError) throw authError;
-        if (!authData.user) throw new Error('Failed to create user');
-
-        const userId = authData.user.id;
-
-        // 2. Generate card and referral data
-        const cardNumber = generateCardNumber();
-        const cardCVV = generateCVV();
-        const cardExpiry = generateExpiry();
-        const referralCode = await generateUniqueReferralCode();
-
-        // 3. Create profile with all data
-        const { error: profileError } = await supabaseClient
-            .from('profiles')
-            .insert({
-                id: userId,
-                email: formData.email,
-                first_name: formData.firstName || '',
-                last_name: formData.lastName || '',
-                phone: formData.phone || '',
-                country: formData.country || 'IQ',
-                card_number: cardNumber,
-                card_cvv: cardCVV,
-                card_expiry: cardExpiry,
-                referral_code: referralCode,
-                join_date: new Date().toISOString()
-            });
-
-        if (profileError) throw profileError;
-
-        // 4. Create wallet
-        const { error: walletError } = await supabaseClient
-            .from('wallets')
-            .insert({
-                user_id: userId,
-                balance: 0
-            });
-
-        if (walletError) throw walletError;
-
-        // 5. Add welcome bonus (using RPC for security)
-        // Note: This requires service_role, so we'll do it via edge function or admin
-        // For now, we'll add it directly (you should use Edge Function in production)
-        const { error: bonusError } = await supabaseClient.rpc('add_welcome_bonus', {
-            p_user_id: userId,
-            p_amount: WELCOME_BONUS
-        });
-
-        // If RPC fails (permission issue), add manually for demo
-        if (bonusError) {
-            console.warn('RPC failed, adding bonus manually:', bonusError);
-            await supabaseClient.from('wallets')
-                .update({ balance: WELCOME_BONUS })
-                .eq('user_id', userId);
-            
-            await supabaseClient.from('transactions')
-                .insert({
-                    to_user: userId,
-                    amount: WELCOME_BONUS,
-                    type: 'welcome',
-                    status: 'completed',
-                    note: 'مكافأة الترحيب'
-                });
-        }
-
-        // 6. Handle referral if provided
-        if (formData.referredBy) {
-            await processReferralBonus(formData.referredBy);
-        }
-
-        return { success: true, user: authData.user };
-
-    } catch (error) {
-        console.error('Signup error:', error);
-        throw error;
-    }
-}
-
-// Generate unique referral code (check for duplicates)
-async function generateUniqueReferralCode() {
-    let attempts = 0;
-    while (attempts < 10) {
-        const code = generateReferralCode();
-        
-        // Check if code exists
-        const { data } = await supabaseClient
-            .from('profiles')
-            .select('referral_code')
-            .eq('referral_code', code)
-            .maybeSingle();
-        
-        if (!data) return code; // Code is unique
-        attempts++;
-    }
-    
-    // Fallback: add timestamp
-    return generateReferralCode() + Date.now().toString().slice(-4);
-}
-
-// Process referral bonus for referrer
-async function processReferralBonus(referralCode) {
-    try {
-        // Find referrer
-        const { data: referrer } = await supabaseClient
-            .from('profiles')
-            .select('id')
-            .eq('referral_code', referralCode)
-            .maybeSingle();
-        
-        if (!referrer) return;
-
-        // Add bonus using RPC
-        const { error } = await supabaseClient.rpc('add_referral_bonus', {
-            p_referrer_id: referrer.id,
-            p_amount: REFERRAL_BONUS
-        });
-
-        if (error) {
-            console.warn('Referral bonus RPC failed:', error);
-            // Manual fallback
-            await supabaseClient.from('wallets')
-                .update({ balance: supabase.raw(`balance + ${REFERRAL_BONUS}`) })
-                .eq('user_id', referrer.id);
-            
-            await supabaseClient.from('transactions')
-                .insert({
-                    to_user: referrer.id,
-                    amount: REFERRAL_BONUS,
-                    type: 'referral',
-                    status: 'completed',
-                    note: 'مكافأة إحالة صديق'
-                });
-        }
-    } catch (error) {
-        console.error('Referral processing error:', error);
-    }
-}
-
-// Sign In
-async function signIn(email, password) {
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email,
-        password
+// تسجيل مستخدم جديد مع ملف تعريف كامل
+async function signUpWithProfile(form) {
+    // 1) إنشاء حساب Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
     });
     
+    if (authError) throw authError;
+    
+    const userId = authData.user?.id;
+    if (!userId) throw new Error("لم يتم الحصول على user id");
+
+    // 2) توليد بيانات البطاقة ورمز الإحالة
+    const cardNumber = generateCardNumber();
+    const cardCVV = generateCVV();
+    const cardExpiry = generateExpiry();
+    const referralCode = generateReferralCode();
+
+    // 3) إنشاء ملف تعريف في profiles
+    const { error: profileError } = await supabase
+        .from("profiles")
+        .insert({
+            id: userId,
+            email: form.email,
+            first_name: form.firstName,
+            last_name: form.lastName || '',
+            phone: form.phone || '',
+            country: form.country || 'IQ',
+            card_number: cardNumber,
+            card_cvv: cardCVV,
+            card_expiry: cardExpiry,
+            referral_code: referralCode,
+            join_date: new Date().toISOString(),
+            referred_by: form.referredBy || null
+        });
+    
+    if (profileError) throw profileError;
+
+    // 4) إنشاء محفظة مع مكافأة الترحيب
+    const { error: walletError } = await supabase
+        .from("wallets")
+        .insert({ 
+            user_id: userId, 
+            balance: WELCOME_BONUS 
+        });
+    
+    if (walletError) throw walletError;
+
+    // 5) تسجيل معاملة مكافأة الترحيب
+    const { error: txError } = await supabase
+        .from("transactions")
+        .insert({
+            from_user: null,
+            to_user: userId,
+            type: 'welcome_bonus',
+            amount: WELCOME_BONUS,
+            note: 'مكافأة الترحيب',
+            status: 'completed'
+        });
+    
+    if (txError) console.error('Error adding welcome transaction:', txError);
+
+    // 6) إضافة مكافأة إحالة إن وجدت
+    if (form.referredBy) {
+        try {
+            await supabase.rpc('add_referral_bonus', {
+                p_referrer_code: form.referredBy,
+                p_new_user_id: userId
+            });
+        } catch (e) {
+            console.error('Error adding referral bonus:', e);
+        }
+    }
+
+    // 7) تحديث الإحصائيات العامة
+    try {
+        await supabase.rpc('update_global_stats');
+    } catch (e) {
+        console.error('Error updating global stats:', e);
+    }
+
+    return authData;
+}
+
+// تسجيل الدخول
+async function signIn(email, password) {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     return data;
 }
 
-// Sign Out
-async function signOut() {
-    const { error } = await supabaseClient.auth.signOut();
-    if (error) throw error;
-    
-    // Clear local data
-    currentUser = null;
-    currentProfile = null;
-    currentWallet = null;
-}
-
-// Get current user
+// الحصول على المستخدم الحالي
 async function getCurrentUser() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    return user;
+    const { data } = await supabase.auth.getUser();
+    return data.user;
 }
 
-// ==========================================
-// DATA LOADING FUNCTIONS
-// ==========================================
+// تحميل ملف تعريف ومحفظة المستخدم
+async function loadMyProfileAndWallet() {
+    const user = await getCurrentUser();
+    if (!user) throw new Error("غير مسجل دخول");
 
-// Load profile and wallet
-async function loadUserData() {
-    try {
-        const user = await getCurrentUser();
-        if (!user) throw new Error('Not authenticated');
+    // تحميل الملف الشخصي
+    const { data: profiles, error: pErr } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .limit(1);
 
-        // Load profile
-        const { data: profile, error: profileError } = await supabaseClient
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .maybeSingle();
+    if (pErr) throw pErr;
 
-        if (profileError) throw profileError;
+    let profile = profiles?.[0];
+    if (!profile) {
+        // إنشاء profile تلقائيًا إذا لم يكن موجودًا
+        const cardNumber = generateCardNumber();
+        const cardCVV = generateCVV();
+        const cardExpiry = generateExpiry();
+        const referralCode = generateReferralCode();
 
-        // If no profile exists, create one (shouldn't happen after signup fix)
-        if (!profile) {
-            const referralCode = await generateUniqueReferralCode();
-            const { data: newProfile, error: createError } = await supabaseClient
-                .from('profiles')
-                .insert({
-                    id: user.id,
-                    email: user.email,
-                    first_name: '',
-                    last_name: '',
-                    phone: '',
-                    country: 'IQ',
-                    card_number: generateCardNumber(),
-                    card_cvv: generateCVV(),
-                    card_expiry: generateExpiry(),
-                    referral_code: referralCode,
-                    join_date: new Date().toISOString()
-                })
-                .select()
-                .single();
+        const { error: createErr } = await supabase.from("profiles").insert({
+            id: user.id,
+            email: user.email,
+            first_name: "",
+            last_name: "",
+            phone: "",
+            country: "IQ",
+            card_number: cardNumber,
+            card_cvv: cardCVV,
+            card_expiry: cardExpiry,
+            referral_code: referralCode,
+            join_date: new Date().toISOString()
+        });
 
-            if (createError) throw createError;
-            currentProfile = newProfile;
-        } else {
-            currentProfile = profile;
-        }
+        if (createErr) throw createErr;
 
-        // Load wallet
-        const { data: wallet, error: walletError } = await supabaseClient
-            .from('wallets')
-            .select('*')
-            .eq('user_id', user.id)
-            .maybeSingle();
-
-        if (walletError) throw walletError;
-
-        // If no wallet exists, create one
-        if (!wallet) {
-            const { data: newWallet, error: createError } = await supabaseClient
-                .from('wallets')
-                .insert({
-                    user_id: user.id,
-                    balance: 0
-                })
-                .select()
-                .single();
-
-            if (createError) throw createError;
-            currentWallet = newWallet;
-        } else {
-            currentWallet = wallet;
-        }
-
-        currentUser = user;
-        return { profile: currentProfile, wallet: currentWallet };
-
-    } catch (error) {
-        console.error('Load user data error:', error);
-        throw error;
+        profile = {
+            id: user.id,
+            email: user.email,
+            card_number: cardNumber,
+            card_cvv: cardCVV,
+            card_expiry: cardExpiry,
+            referral_code: referralCode
+        };
     }
-}
 
-// Load transactions
-async function loadTransactions(limit = 50) {
-    try {
-        const user = await getCurrentUser();
-        if (!user) throw new Error('Not authenticated');
+    // تحميل المحفظة
+    const { data: wallets, error: wErr } = await supabase
+        .from("wallets")
+        .select("*")
+        .eq("user_id", user.id)
+        .limit(1);
 
-        const { data, error } = await supabaseClient
-            .from('transactions')
-            .select('*')
-            .or(`from_user.eq.${user.id},to_user.eq.${user.id}`)
-            .order('created_at', { ascending: false })
-            .limit(limit);
+    if (wErr) throw wErr;
 
-        if (error) throw error;
-        return data || [];
-
-    } catch (error) {
-        console.error('Load transactions error:', error);
-        return [];
+    let wallet = wallets?.[0];
+    if (!wallet) {
+        const { error: wCreateErr } = await supabase.from("wallets").insert({
+            user_id: user.id,
+            balance: 0
+        });
+        if (wCreateErr) throw wCreateErr;
+        wallet = { user_id: user.id, balance: 0 };
     }
+
+    return { profile, wallet };
 }
 
-// Load global stats
+// تحميل المعاملات
+async function loadMyTransactions(limit = 50) {
+    const user = await getCurrentUser();
+    if (!user) throw new Error("غير مسجل دخول");
+
+    const { data, error } = await supabase
+        .from("transactions")
+        .select("*")
+        .or(`from_user.eq.${user.id},to_user.eq.${user.id}`)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+    if (error) throw error;
+    return data || [];
+}
+
+// تحميل الإحصائيات العامة
 async function loadGlobalStats() {
     try {
-        const { data, error } = await supabaseClient
-            .from('global_stats')
-            .select('*')
-            .eq('id', 1)
-            .maybeSingle();
+        const { data, error } = await supabase
+            .from("global_stats")
+            .select("*")
+            .eq("id", 1)
+            .limit(1);
 
         if (error) throw error;
-        
-        return data || {
-            total_users: 0,
-            total_distributed: 0,
-            total_remaining: TOTAL_SUPPLY
-        };
 
-    } catch (error) {
-        console.error('Load global stats error:', error);
-        return {
-            total_users: 0,
-            total_distributed: 0,
-            total_remaining: TOTAL_SUPPLY
-        };
+        const stats = data?.[0] || { total_users: 0, total_distributed: 0, total_remaining: TOTAL_SUPPLY };
+
+        // تحديث شاشة الرئيسية
+        updateElement('homeUsersCount', Number(stats.total_users).toLocaleString('ar-IQ'));
+        updateElement('homeCoinsRemaining', Number(stats.total_remaining).toLocaleString('ar-IQ'));
+
+        // تحديث شاشة الداشبورد
+        updateElement('dashUsersCount', Number(stats.total_users).toLocaleString('ar-IQ'));
+        updateElement('dashCoinsRemaining', Number(stats.total_remaining).toLocaleString('ar-IQ'));
+
+        // تحديث شاشة التحليلات
+        updateElement('statTotalUsers', Number(stats.total_users).toLocaleString('ar-IQ'));
+        updateElement('statCirculating', Number(stats.total_distributed).toLocaleString('ar-IQ'));
+        updateElement('statRemaining', Number(stats.total_remaining).toLocaleString('ar-IQ'));
+        updateElement('statTotalSupply', TOTAL_SUPPLY.toLocaleString('ar-IQ'));
+
+        const distributionPercent = ((stats.total_distributed / TOTAL_SUPPLY) * 100).toFixed(2);
+        updateElement('distributionPercent', distributionPercent + '%');
+
+    } catch (e) {
+        console.error('Error loading global stats:', e);
     }
 }
+
 
 // ==========================================
-// TRANSACTION FUNCTIONS
+// NEWS ARTICLES DATA
 // ==========================================
-
-// Send money by referral code
-async function sendMoneyByReferral(referralCode, amount, note = '') {
-    try {
-        const { data, error } = await supabaseClient.rpc('send_by_referral', {
-            p_code: referralCode,
-            p_amount: parseFloat(amount),
-            p_note: note
-        });
-
-        if (error) throw error;
-        
-        // Check for error in response
-        if (data && data.error) {
-            throw new Error(data.error);
-        }
-
-        return data;
-
-    } catch (error) {
-        console.error('Send money error:', error);
-        throw error;
+const newsArticles = [
+    {
+        id: 0, cat: 'invest',
+        title: 'لماذا دينار كوين هو مستقبل الاستثمار الرقمي العراقي؟',
+        summary: 'تحليل شامل لفرص الاستثمار في العملة الرقمية العراقية الأولى',
+        img: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=600&h=300&fit=crop',
+        date: '2026-02-06',
+        body: `في عالم يتجه بسرعة نحو الرقمنة، يبرز دينار كوين كفرصة استثمارية فريدة من نوعها في المنطقة العربية. مع تزايد الاهتمام العالمي بالعملات الرقمية، يقدم دينار كوين بديلاً محلياً يراعي خصوصيات السوق العراقي والعربي.\n\nيتميز دينار كوين بعدة مزايا تجعله خياراً مثالياً للمستثمرين: سعر مستقر مرتبط بالدينار العراقي، منصة آمنة وسهلة الاستخدام، فريق عمل عراقي متخصص، ودعم كامل للغة العربية.\n\nمع خطط التوسع المستقبلية التي تشمل إضافة محفظة متعددة العملات وتكامل مع بوابات الدفع المحلية، يُتوقع أن يشهد دينار كوين نمواً كبيراً في الفترة القادمة. انضم الآن وكن جزءاً من هذه الثورة الرقمية العراقية!`
+    },
+    {
+        id: 1, cat: 'update',
+        title: 'إطلاق النسخة التجريبية من دينار كوين',
+        summary: 'بداية رحلتنا نحو مستقبل رقمي متطور',
+        img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=300&fit=crop',
+        date: '2026-02-05',
+        body: `يسعدنا الإعلان عن إطلاق النسخة التجريبية من منصة دينار كوين! هذه النسخة تتضمن جميع الميزات الأساسية التي يحتاجها المستخدمون.\n\nالميزات المتاحة في النسخة التجريبية:\n• محفظة رقمية آمنة لحفظ عملات دينار كوين\n• إمكانية إرسال واستقبال العملات بسهولة\n• نظام إحالة مع مكافآت فورية\n• لوحة تحكم شاملة مع إحصائيات حية\n• تصميم عصري يعمل على جميع الأجهزة\n\nندعو جميع المهتمين للتسجيل والبدء باستخدام المنصة ومشاركة ملاحظاتهم لتحسين التجربة.`
+    },
+    {
+        id: 2, cat: 'guide',
+        title: 'دليل المبتدئين: كيف تبدأ مع دينار كوين خطوة بخطوة',
+        summary: 'كل ما تحتاج معرفته للبدء بالاستثمار في دينار كوين',
+        img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=300&fit=crop',
+        date: '2026-02-04',
+        body: `إذا كنت جديداً في عالم العملات الرقمية، فهذا الدليل مخصص لك! سنشرح لك كل خطوة بالتفصيل.\n\nالخطوة الأولى - إنشاء الحساب: قم بالتسجيل باستخدام بريدك الإلكتروني وكلمة مرور قوية. ستحصل فوراً على مكافأة ترحيبية!\n\nالخطوة الثانية - تأمين حسابك: تأكد من استخدام كلمة مرور فريدة ولا تشاركها مع أحد.\n\nالخطوة الثالثة - شراء العملات: يمكنك تقديم طلب شراء وسيتم مراجعته من قبل فريق الإدارة.\n\nالخطوة الرابعة - إرسال واستقبال: استخدم رمز الإحالة الخاص بك لاستقبال العملات، أو أدخل رمز شخص آخر لإرسال العملات إليه.\n\nالخطوة الخامسة - دعوة الأصدقاء: شارك رمز الإحالة واحصل على مكافآت مجانية!`
+    },
+    {
+        id: 3, cat: 'invest',
+        title: '5 أسباب تجعل العملات الرقمية العربية مستقبل الاقتصاد',
+        summary: 'لماذا العملات الرقمية المحلية أفضل من العملات العالمية؟',
+        img: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&h=300&fit=crop',
+        date: '2026-02-03',
+        body: `العملات الرقمية العربية تتميز بعدة مزايا فريدة تجعلها خياراً استراتيجياً للمستثمرين في المنطقة:\n\n1. فهم السوق المحلي: العملات المحلية مصممة لتلبية احتياجات المجتمع العربي.\n\n2. الاستقرار: ربط القيمة بالعملات المحلية يقلل من التقلبات الحادة.\n\n3. سهولة الاستخدام: واجهات عربية بالكامل مع دعم فني محلي.\n\n4. التكامل المحلي: إمكانية الربط مع البنوك وبوابات الدفع المحلية مستقبلاً.\n\n5. المجتمع: مجتمع عربي نشط يدعم نمو العملة.`
+    },
+    {
+        id: 4, cat: 'update',
+        title: 'تحديث جديد: نظام البطاقة الرقمية الذكية',
+        summary: 'كل مستخدم يحصل الآن على بطاقة رقمية فريدة',
+        img: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&h=300&fit=crop',
+        date: '2026-02-02',
+        body: `نحن متحمسون للإعلان عن إطلاق نظام البطاقة الرقمية الذكية! كل مستخدم جديد سيحصل تلقائياً على بطاقة رقمية فريدة برقم عشوائي خاص به.\n\nمميزات البطاقة الرقمية:\n• رقم بطاقة فريد لكل مستخدم\n• رمز CVV للأمان\n• تاريخ انتهاء\n• تصميم أنيق بألوان دينار كوين\n• إمكانية عرض تفاصيل البطاقة بقلبها\n\nهذه البطاقة هي خطوة نحو تقديم تجربة مصرفية رقمية كاملة في المستقبل القريب.`
+    },
+    {
+        id: 5, cat: 'invest',
+        title: 'كيف تحقق أرباحاً من نظام الإحالة في دينار كوين',
+        summary: 'استراتيجيات ذكية لزيادة أرباحك من دعوة الأصدقاء',
+        img: 'https://images.unsplash.com/photo-1553729459-afe8f2e2ed65?w=600&h=300&fit=crop',
+        date: '2026-02-01',
+        body: `نظام الإحالة في دينار كوين مصمم لمكافأة المستخدمين النشطين. إليك بعض الاستراتيجيات لتعظيم أرباحك:\n\nشارك على وسائل التواصل الاجتماعي: انشر رمز الإحالة الخاص بك على فيسبوك وإنستغرام وتويتر مع شرح مبسط عن دينار كوين.\n\nأنشئ محتوى تعليمي: اصنع فيديوهات قصيرة تشرح فيها كيفية استخدام المنصة.\n\nاستهدف المجتمعات المهتمة: انضم لمجموعات الاستثمار والتكنولوجيا.\n\nكل 10 إحالات ناجحة = 0.25 DC مكافأة مجانية! كلما زاد عدد إحالاتك، زادت مكافآتك.`
+    },
+    {
+        id: 6, cat: 'guide',
+        title: 'أمان حسابك: نصائح ذهبية لحماية عملاتك الرقمية',
+        summary: 'تعلم أفضل ممارسات الأمان لحماية استثماراتك',
+        img: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=600&h=300&fit=crop',
+        date: '2026-01-30',
+        body: `حماية حسابك وعملاتك الرقمية أمر بالغ الأهمية. إليك أهم النصائح:\n\n• استخدم كلمة مرور قوية وفريدة لا تقل عن 12 حرفاً\n• لا تشارك بيانات تسجيل الدخول مع أي شخص\n• تأكد من عنوان الموقع قبل تسجيل الدخول\n• لا تنقر على روابط مشبوهة تدعي أنها من دينار كوين\n• قم بتحديث متصفحك باستمرار\n• فعّل تسجيل الدخول بالبصمة عند توفره\n\nتذكر: فريق دينار كوين لن يطلب منك أبداً كلمة المرور الخاصة بك!`
     }
-}
-
-// Request topup (purchase)
-async function requestTopup(amount, note = '') {
-    try {
-        const { data, error } = await supabaseClient.rpc('request_topup', {
-            p_amount: parseFloat(amount),
-            p_note: note
-        });
-
-        if (error) throw error;
-        
-        if (data && data.error) {
-            throw new Error(data.error);
-        }
-
-        return data;
-
-    } catch (error) {
-        console.error('Request topup error:', error);
-        throw error;
-    }
-}
-
-// ==========================================
-// UI UPDATE FUNCTIONS
-// ==========================================
-
-// Apply user data to UI
-function applyUserDataToUI() {
-    if (!currentProfile || !currentWallet) return;
-
-    const fullName = `${currentProfile.first_name || 'مستخدم'} ${currentProfile.last_name || ''}`.trim();
-    const email = currentUser?.email || currentProfile.email || '';
-    const balance = Number(currentWallet.balance || 0).toFixed(2);
-
-    // Update user info
-    updateElement('userName', fullName);
-    updateElement('userEmail', email);
-    updateElement('profileName', fullName);
-    updateElement('profileNameDisplay', fullName);
-    updateElement('profileEmailValue', email);
-
-    // Update balance
-    updateElement('cardBalance', balance + ' DC');
-    updateElement('totalBalance', balance + ' DC');
-    updateElement('profileBalance', balance + ' DC');
-
-    // Update card info
-    updateElement('cardName', fullName);
-    if (currentProfile.card_number) {
-        updateElement('cardNumber', formatCardNumber(currentProfile.card_number));
-        updateElement('cardNumberFull', formatCardNumber(currentProfile.card_number));
-    }
-    if (currentProfile.card_expiry) {
-        updateElement('cardExpiry', currentProfile.card_expiry);
-    }
-    if (currentProfile.card_cvv) {
-        updateElement('cardCVV', currentProfile.card_cvv);
-    }
-
-    // Update referral code
-    if (currentProfile.referral_code) {
-        updateElement('myReferralCode', currentProfile.referral_code);
-        updateElement('receiveCode', currentProfile.referral_code);
-    }
-
-    // Update join date
-    if (currentProfile.join_date) {
-        const joinDate = new Date(currentProfile.join_date);
-        updateElement('profileJoinDate', joinDate.toLocaleDateString('ar-IQ'));
-    }
-
-    // Update referral stats
-    updateElement('profileReferralCount', currentProfile.referral_count || 0);
-    updateElement('profileReferralEarnings', (currentProfile.referral_earnings || 0).toFixed(2) + ' DC');
-
-    // Update avatar
-    const firstLetter = fullName.charAt(0).toUpperCase() || 'U';
-    updateElement('userAvatar', firstLetter);
-    updateElement('profileAvatar', firstLetter);
-
-    // Generate QR Code for receiving
-    generateReceiveQR();
-}
-
-// Format card number with spaces
-function formatCardNumber(cardNum) {
-    if (!cardNum) return '•••• •••• •••• ••••';
-    return cardNum.match(/.{1,4}/g).join(' ');
-}
-
-// Generate QR code for receiving
-function generateReceiveQR() {
-    if (!currentProfile || !currentProfile.referral_code) return;
-
-    const qrContainer = document.getElementById('qrcode');
-    if (!qrContainer) return;
-
-    // Clear existing QR
-    qrContainer.innerHTML = '';
-
-    // Generate new QR
-    try {
-        new QRCode(qrContainer, {
-            text: currentProfile.referral_code,
-            width: 200,
-            height: 200,
-            colorDark: '#D4AF37',
-            colorLight: '#0a1a14'
-        });
-    } catch (error) {
-        console.error('QR generation error:', error);
-    }
-}
-
-// Update global stats in UI
-async function updateGlobalStatsUI() {
-    const stats = await loadGlobalStats();
-    
-    updateElement('homeUsersCount', formatNumber(stats.total_users));
-    updateElement('dashUsersCount', formatNumber(stats.total_users));
-    
-    const remaining = Math.max(0, stats.total_remaining);
-    updateElement('homeCoinsRemaining', formatNumber(Math.floor(remaining)));
-    updateElement('dashCoinsRemaining', formatNumber(Math.floor(remaining)));
-}
-
-// Display transactions in UI
-async function displayTransactions() {
-    const transactions = await loadTransactions(20);
-    const container = document.getElementById('transactionsList');
-    
-    if (!container) return;
-
-    if (transactions.length === 0) {
-        container.innerHTML = `
-            <div style="text-align:center;padding:40px 20px;color:rgba(255,255,255,0.5);">
-                <i class="fas fa-inbox" style="font-size:48px;margin-bottom:15px;"></i>
-                <p>لا توجد معاملات بعد</p>
-            </div>
-        `;
-        return;
-    }
-
-    let html = '';
-    transactions.forEach(tx => {
-        const isReceived = tx.to_user === currentUser?.id;
-        const icon = isReceived ? 'arrow-down' : 'arrow-up';
-        const iconClass = isReceived ? 'receive' : 'send';
-        const sign = isReceived ? '+' : '-';
-        const amountClass = isReceived ? 'amount-positive' : 'amount-negative';
-        
-        let title = '';
-        if (tx.type === 'welcome') title = 'مكافأة الترحيب';
-        else if (tx.type === 'referral') title = 'مكافأة إحالة';
-        else if (tx.type === 'send') title = isReceived ? 'استلام' : 'إرسال';
-        else if (tx.type === 'topup') title = 'شراء رصيد';
-        else title = tx.type;
-
-        const date = new Date(tx.created_at).toLocaleDateString('ar-IQ');
-
-        html += `
-            <div class="transaction-item">
-                <div class="transaction-icon ${iconClass}">
-                    <i class="fas fa-${icon}"></i>
-                </div>
-                <div class="transaction-details">
-                    <div class="transaction-title">${title}</div>
-                    <div class="transaction-date">${date}</div>
-                    ${tx.note ? `<div class="transaction-note">${tx.note}</div>` : ''}
-                </div>
-                <div class="transaction-amount ${amountClass}">
-                    ${sign}${tx.amount.toFixed(2)} DC
-                </div>
-            </div>
-        `;
-    });
-
-    container.innerHTML = html;
-}
+];
 
 // ==========================================
 // APP INITIALIZATION
 // ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    createParticles();
+    setupEventListeners();
+    renderNewsArticles();
+    loadGlobalStats();
 
-function initializeApp() {
-    // Auth state listener
-    supabaseClient.auth.onAuthStateChange(async (event, session) => {
-        console.log('Auth state changed:', event);
-
-        if (session?.user) {
-            try {
-                await loadUserData();
-                showDashboard();
-            } catch (error) {
-                console.error('Error loading user data:', error);
-                showNotification('خطأ', 'فشل تحميل البيانات', 'error');
-            }
-        } else {
-            currentUser = null;
-            currentProfile = null;
-            currentWallet = null;
-            showHome();
-        }
-    });
-
-    // Check initial session
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-            loadUserData()
-                .then(() => showDashboard())
-                .catch(error => {
-                    console.error('Initial load error:', error);
-                    showHome();
-                });
+    // التحقق من الجلسة الحالية
+    supabase.auth.getSession().then(({ data }) => {
+        if (data?.session?.user) {
+            currentUser = data.session.user;
+            loadUserDataAndShowDashboard();
         } else {
             showHome();
         }
     });
+});
 
-    // Load global stats
-    updateGlobalStatsUI();
-    setInterval(updateGlobalStatsUI, 30000); // Update every 30 seconds
-}
+// مراقبة تغييرات حالة المصادقة
+supabase.auth.onAuthStateChange(async (event, session) => {
+    if (session?.user) {
+        currentUser = session.user;
+        await loadUserDataAndShowDashboard();
+    } else {
+        currentUser = null;
+        userCardData = null;
+        showHome();
+    }
+});
 
-// ==========================================
-// SCREEN NAVIGATION
-// ==========================================
+// تحميل بيانات المستخدم وعرض الداشبورد
+async function loadUserDataAndShowDashboard() {
+    try {
+        const { profile, wallet } = await loadMyProfileAndWallet();
+        
+        // حفظ بيانات البطاقة
+        userCardData = {
+            number: profile.card_number,
+            cvv: profile.card_cvv,
+            expiry: profile.card_expiry
+        };
 
-function showHome() {
-    hideAllScreens();
-    document.getElementById('homeScreen')?.classList.add('active-screen');
-    updateGlobalStatsUI();
-}
+        // بناء اسم المستخدم
+        const name = (profile.first_name || 'مستخدم') + (profile.last_name ? ' ' + profile.last_name : '');
+        const email = currentUser?.email || '';
+        const balance = Number(wallet.balance || 0).toFixed(2);
+        const referralCode = profile.referral_code || '';
 
-function showDashboard() {
-    hideAllScreens();
-    document.getElementById('dashboardScreen')?.classList.add('active-screen');
-    applyUserDataToUI();
-    switchTab('home');
-    updateGlobalStatsUI();
-}
+        // تحديث العناصر الأساسية
+        updateElement('userName', name);
+        updateElement('userEmail', email);
+        updateElement('userReferralCode', referralCode);
 
-function hideAllScreens() {
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active-screen');
-    });
-}
+        // تحديث الداشبورد
+        updateElement('cardBalance', balance + ' DC');
+        updateElement('totalBalance', balance + ' DC');
+        updateElement('cardName', name);
+        updateElement('referralCode', referralCode);
+        updateElement('referralCount', profile.referral_count || 0);
+        updateElement('referralEarnings', (profile.referral_earnings || 0).toFixed(2) + ' DC');
 
-function switchTab(tabName) {
-    // Update tab buttons
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`)?.classList.add('active');
+        // تحديث بيانات البطاقة
+        updateElement('cardNum', formatCardNumber(profile.card_number));
+        updateElement('cardNumFront', formatCardNumber(profile.card_number));
+        updateElement('cardCVV', profile.card_cvv);
+        updateElement('cardExpiry', profile.card_expiry);
 
-    // Update tab content
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    document.getElementById(`${tabName}Tab`)?.classList.add('active');
+        // تحديث الملف الشخصي
+        updateElement('profileName', name);
+        updateElement('profileNameDisplay', name);
+        updateElement('profileEmailValue', email);
+        updateElement('profileRefCode', referralCode);
+        updateElement('profileBalance', balance + ' DC');
+        updateElement('profileCardNum', formatCardNumber(profile.card_number));
+        updateElement('profileCVV', '***');
+        updateElement('profileExpiry', profile.card_expiry);
 
-    // Load data for specific tabs
-    if (tabName === 'analytics') {
-        displayTransactions();
+        // تحديث التحليلات
+        updateElement('analyticBalance', balance + ' DC');
+        updateElement('analyticReferrals', profile.referral_count || 0);
+        updateElement('analyticEarnings', (profile.referral_earnings || 0).toFixed(2) + ' DC');
+
+        // تحديث تاريخ الانضمام
+        if (profile.join_date) {
+            const date = new Date(profile.join_date);
+            updateElement('profileJoinDate', date.toLocaleDateString('ar-IQ', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            }));
+        }
+
+        // تحديث Avatar
+        const firstLetter = name.charAt(0).toUpperCase() || 'U';
+        updateElement('userAvatar', firstLetter);
+        updateElement('profileAvatar', firstLetter);
+
+        // تحديث رمز الاستقبال و QR
+        updateElement('receiveCode', referralCode);
+        generateQRCode(referralCode);
+
+        // تحميل المعاملات
+        await loadTransactionsSupabase();
+
+        // عرض الداشبورد
+        showDashboard();
+
+    } catch (e) {
+        console.error('Error loading user data:', e);
+        showNotification('خطأ', 'فشل تحميل البيانات', 'error');
     }
 }
 
 // ==========================================
-// AUTH MODAL FUNCTIONS
+// SCREEN MANAGEMENT
 // ==========================================
+function showHome() {
+    document.getElementById('homeScreen').classList.add('active-screen');
+    document.getElementById('dashboardScreen').classList.remove('active-screen');
+    const bottomNav = document.getElementById('bottomNav');
+    if (bottomNav) bottomNav.style.display = 'none';
+}
 
-function showAuthModal(mode) {
-    // اجعلها متاحة عالميًا
-    window.showAuthModal = showAuthModal;
-    const isSignup = mode === 'signup';
-    const title = isSignup ? 'إنشاء حساب جديد' : 'تسجيل الدخول';
-    const buttonText = isSignup ? 'إنشاء الحساب' : 'دخول';
-    
-    const signupFields = isSignup ? `
-        <input type="text" id="signupFirstName" placeholder="الاسم الأول" required>
-        <input type="text" id="signupLastName" placeholder="الاسم الأخير" required>
-        <input type="tel" id="signupPhone" placeholder="رقم الهاتف" required>
-        <select id="signupCountry">
-            <option value="IQ">العراق 🇮🇶</option>
-            <option value="SA">السعودية 🇸🇦</option>
-            <option value="AE">الإمارات 🇦🇪</option>
-            <option value="KW">الكويت 🇰🇼</option>
-        </select>
-        <input type="text" id="signupReferral" placeholder="رمز الإحالة (اختياري)">
-    ` : '';
+function showDashboard() {
+    document.getElementById('homeScreen').classList.remove('active-screen');
+    document.getElementById('dashboardScreen').classList.add('active-screen');
+    const bottomNav = document.getElementById('bottomNav');
+    if (bottomNav) bottomNav.style.display = 'flex';
+    switchTab('home');
+}
 
-    const html = `
-        <div class="modal-overlay active" id="authModal">
-            <div class="modal-sheet">
-                <div class="modal-handle"></div>
-                <button class="modal-close-btn" onclick="closeAuthModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="modal-icon-header">
-                    <div class="modal-icon-circle ${isSignup ? 'send' : 'receive'}">
-                        <i class="fas fa-${isSignup ? 'user-plus' : 'sign-in-alt'}"></i>
-                    </div>
-                    <h2>${title}</h2>
-                </div>
-                <form id="authForm" style="padding:20px;">
-                    <input type="email" id="authEmail" placeholder="البريد الإلكتروني" required>
-                    <input type="password" id="authPassword" placeholder="كلمة المرور" required>
-                    ${signupFields}
-                    <button type="submit" class="btn-primary" style="width:100%;margin-top:15px;">
-                        ${buttonText}
-                    </button>
-                </form>
-                <div style="text-align:center;padding:15px;color:rgba(255,255,255,0.6);">
-                    ${isSignup 
-                        ? '<a href="#" onclick="showAuthModal(\'login\');return false;">لديك حساب؟ تسجيل الدخول</a>'
-                        : '<a href="#" onclick="showAuthModal(\'signup\');return false;">ليس لديك حساب؟ إنشاء حساب</a>'
-                    }
-                </div>
-            </div>
-        </div>
-    `;
-
-    document.body.insertAdjacentHTML('beforeend', html);
-
-    // Add form submit handler
-    document.getElementById('authForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const email = document.getElementById('authEmail').value;
-        const password = document.getElementById('authPassword').value;
-
-        try {
-            if (isSignup) {
-                const formData = {
-                    email,
-                    password,
-                    firstName: document.getElementById('signupFirstName').value,
-                    lastName: document.getElementById('signupLastName').value,
-                    phone: document.getElementById('signupPhone').value,
-                    country: document.getElementById('signupCountry').value,
-                    referredBy: document.getElementById('signupReferral').value || null
-                };
-
-                await signUpWithProfile(formData);
-                showNotification('نجح!', 'تم إنشاء الحساب بنجاح', 'success');
-                closeAuthModal();
-            } else {
-                await signIn(email, password);
-                showNotification('أهلاً!', 'تم تسجيل الدخول بنجاح', 'success');
-                closeAuthModal();
-            }
-        } catch (error) {
-            console.error('Auth error:', error);
-            showNotification('خطأ', error.message || 'فشلت العملية', 'error');
-        }
+function switchTab(tab) {
+    const screens = ['dashboardScreen', 'newsScreen', 'analyticsScreen', 'profileScreen'];
+    screens.forEach(s => {
+        const screen = document.getElementById(s);
+        if (screen) screen.classList.remove('active-screen');
     });
+    
+    const tabs = document.querySelectorAll('.nav-tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    
+    if (tab === 'home') {
+        document.getElementById('dashboardScreen')?.classList.add('active-screen');
+        document.querySelector('[data-tab="home"]')?.classList.add('active');
+        loadTransactionsSupabase();
+    } else if (tab === 'news') {
+        document.getElementById('newsScreen')?.classList.add('active-screen');
+        document.querySelector('[data-tab="news"]')?.classList.add('active');
+    } else if (tab === 'analytics') {
+        document.getElementById('analyticsScreen')?.classList.add('active-screen');
+        document.querySelector('[data-tab="analytics"]')?.classList.add('active');
+        loadGlobalStats();
+    } else if (tab === 'profile') {
+        document.getElementById('profileScreen')?.classList.add('active-screen');
+        document.querySelector('[data-tab="profile"]')?.classList.add('active');
+    }
+}
+
+
+// ==========================================
+// AUTH FUNCTIONS
+// ==========================================
+function showAuthModal(type) {
+    const authModal = document.getElementById('authModal');
+    if (!authModal) return;
+    
+    authModal.classList.add('active');
+    if (type === 'signup') {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('signupForm').style.display = 'block';
+    } else {
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('signupForm').style.display = 'none';
+    }
 }
 
 function closeAuthModal() {
-    document.getElementById('authModal')?.remove();
+    document.getElementById('authModal')?.classList.remove('active');
 }
 
-// ==========================================
-// LOGOUT FUNCTION
-// ==========================================
+function switchAuthForm(type) {
+    if (type === 'signup') {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('signupForm').style.display = 'block';
+    } else {
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('signupForm').style.display = 'none';
+    }
+}
+
+async function signup() {
+    const form = {
+        email: document.getElementById('signupEmail')?.value.trim(),
+        password: document.getElementById('signupPassword')?.value,
+        firstName: document.getElementById('signupName')?.value.trim() || 'مستخدم',
+        lastName: '',
+        phone: '',
+        country: 'IQ',
+        referredBy: null
+    };
+
+    if (!form.email || !form.password) {
+        showNotification('خطأ', 'الرجاء ملء جميع الحقول', 'error');
+        return;
+    }
+
+    try {
+        await signUpWithProfile(form);
+        closeAuthModal();
+        showNotification('نجاح', 'تم إنشاء الحساب بنجاح! مرحباً بك في دينار كوين', 'success');
+    } catch (e) {
+        console.error('Signup error:', e);
+        showNotification('خطأ', e.message || 'فشل إنشاء الحساب', 'error');
+    }
+}
+
+async function login() {
+    const email = document.getElementById('loginEmail')?.value.trim();
+    const password = document.getElementById('loginPassword')?.value;
+
+    if (!email || !password) {
+        showNotification('خطأ', 'الرجاء إدخال البريد وكلمة المرور', 'error');
+        return;
+    }
+
+    try {
+        await signIn(email, password);
+        closeAuthModal();
+        showNotification('مرحباً', 'تم تسجيل الدخول بنجاح', 'success');
+    } catch (e) {
+        console.error('Login error:', e);
+        showNotification('خطأ', e.message || 'فشل تسجيل الدخول', 'error');
+    }
+}
 
 async function logout() {
     try {
-        await signOut();
-        showNotification('تم', 'تم تسجيل الخروج بنجاح', 'success');
+        await supabase.auth.signOut();
+        currentUser = null;
+        userCardData = null;
+        cardFlipped = false;
         showHome();
-    } catch (error) {
-        console.error('Logout error:', error);
+        showNotification('تم', 'تم تسجيل الخروج بنجاح', 'success');
+    } catch (e) {
+        console.error('Logout error:', e);
         showNotification('خطأ', 'فشل تسجيل الخروج', 'error');
     }
 }
 
 // ==========================================
-// SEND MONEY MODAL
+// CARD FUNCTIONS
 // ==========================================
+function flipCard() {
+    cardFlipped = !cardFlipped;
+    const flipper = document.getElementById('cardFlipper');
+    if (flipper) {
+        if (cardFlipped) flipper.classList.add('flipped');
+        else flipper.classList.remove('flipped');
+    }
+}
 
-function showSendModal() {
-    const html = `
-        <div class="modal-overlay active" id="sendModal">
-            <div class="modal-sheet">
-                <div class="modal-handle"></div>
-                <button class="modal-close-btn" onclick="closeSendModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="modal-icon-header">
-                    <div class="modal-icon-circle send">
-                        <i class="fas fa-paper-plane"></i>
-                    </div>
-                    <h2>إرسال دينار كوين</h2>
-                </div>
-                <form id="sendForm" style="padding:20px;">
-                    <label style="color:rgba(255,255,255,0.8);margin-bottom:8px;display:block;">رمز الإحالة للمستلم</label>
-                    <input type="text" id="sendRecipientCode" placeholder="مثال: ABC12345" required style="margin-bottom:15px;">
-                    
-                    <label style="color:rgba(255,255,255,0.8);margin-bottom:8px;display:block;">المبلغ (DC)</label>
-                    <input type="number" id="sendAmount" placeholder="0.00" step="0.01" min="0.01" required style="margin-bottom:15px;">
-                    
-                    <label style="color:rgba(255,255,255,0.8);margin-bottom:8px;display:block;">ملاحظة (اختياري)</label>
-                    <textarea id="sendNote" placeholder="أضف ملاحظة..." style="margin-bottom:15px;"></textarea>
-                    
-                    <div style="background:rgba(255,255,255,0.05);padding:12px;border-radius:8px;margin-bottom:15px;">
-                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-                            <span style="color:rgba(255,255,255,0.6);">رصيدك الحالي:</span>
-                            <span style="color:var(--gold-primary);font-weight:bold;">${currentWallet?.balance.toFixed(2) || '0.00'} DC</span>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn-primary" style="width:100%;">
-                        <i class="fas fa-paper-plane"></i> إرسال الآن
-                    </button>
-                </form>
-            </div>
-        </div>
-    `;
+function toggleCardNumVisibility() {
+    cardNumVisible = !cardNumVisible;
+    const el = document.getElementById('profileCardNum');
+    const icon = document.getElementById('cardNumToggle');
+    if (el && userCardData) {
+        el.textContent = cardNumVisible ? formatCardNumber(userCardData.number) : formatCardNumber('****************');
+        if (icon) icon.className = cardNumVisible ? 'fas fa-eye-slash settings-arrow' : 'fas fa-eye settings-arrow';
+    }
+}
 
-    document.body.insertAdjacentHTML('beforeend', html);
+function toggleCVVVisibility() {
+    cvvVisible = !cvvVisible;
+    const el = document.getElementById('profileCVV');
+    const icon = document.getElementById('cvvToggle');
+    if (el && userCardData) {
+        el.textContent = cvvVisible ? userCardData.cvv : '***';
+        if (icon) icon.className = cvvVisible ? 'fas fa-eye-slash settings-arrow' : 'fas fa-eye settings-arrow';
+    }
+}
 
-    document.getElementById('sendForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+// ==========================================
+// QR CODE GENERATION
+// ==========================================
+let qrCodeInstance = null;
 
-        const recipientCode = document.getElementById('sendRecipientCode').value.trim().toUpperCase();
-        const amount = parseFloat(document.getElementById('sendAmount').value);
-        const note = document.getElementById('sendNote').value.trim();
+function generateQRCode(text) {
+    const container = document.getElementById('qrCode');
+    if (!container || !text) return;
+    
+    container.innerHTML = '';
+    
+    try {
+        qrCodeInstance = new QRCode(container, {
+            text: text,
+            width: 200,
+            height: 200,
+            colorDark: '#0a1a14',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    } catch (e) {
+        console.error('Error generating QR code:', e);
+        container.innerHTML = '<p style="text-align:center;padding:20px;">خطأ في إنشاء رمز QR</p>';
+    }
+}
 
-        if (!recipientCode || amount <= 0) {
-            showNotification('خطأ', 'الرجاء ملء البيانات بشكل صحيح', 'error');
+// ==========================================
+// TRANSACTIONS FUNCTIONS
+// ==========================================
+async function loadTransactionsSupabase() {
+    const list = document.getElementById('transactionsList');
+    if (!list || !currentUser) return;
+
+    try {
+        const txs = await loadMyTransactions(20);
+
+        if (!txs || txs.length === 0) {
+            list.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>لا توجد عمليات بعد</p></div>';
             return;
         }
 
-        if (amount > currentWallet.balance) {
-            showNotification('خطأ', 'الرصيد غير كافٍ', 'error');
-            return;
-        }
-
-        try {
-            await sendMoneyByReferral(recipientCode, amount, note);
-            showNotification('نجح!', `تم إرسال ${amount.toFixed(2)} DC بنجاح`, 'success');
-            closeSendModal();
+        list.innerHTML = txs.map(tx => {
+            const isFromMe = tx.from_user === currentUser.id;
+            const cls = isFromMe ? 'negative' : 'positive';
+            const sign = isFromMe ? '-' : '+';
             
-            // Reload data
-            await loadUserData();
-            applyUserDataToUI();
-            displayTransactions();
-        } catch (error) {
-            console.error('Send error:', error);
-            showNotification('خطأ', error.message || 'فشل الإرسال', 'error');
-        }
-    });
-}
+            const iconMap = {
+                send: 'paper-plane',
+                receive: 'download',
+                topup: 'shopping-cart',
+                withdraw: 'hand-holding-usd',
+                welcome_bonus: 'gift',
+                referral_bonus: 'users'
+            };
+            const icon = iconMap[tx.type] || 'exchange-alt';
+            
+            const typeNames = {
+                send: 'إرسال',
+                receive: 'استقبال',
+                topup: 'شراء',
+                withdraw: 'سحب',
+                welcome_bonus: 'مكافأة ترحيب',
+                referral_bonus: 'مكافأة إحالة'
+            };
+            const typeName = typeNames[tx.type] || tx.type;
+            
+            const date = new Date(tx.created_at).toLocaleDateString('ar-IQ', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
 
-function closeSendModal() {
-    document.getElementById('sendModal')?.remove();
-}
-
-// ==========================================
-// BUY MODAL
-// ==========================================
-
-function showBuyModal() {
-    const html = `
-        <div class="modal-overlay active" id="buyModal">
-            <div class="modal-sheet">
-                <div class="modal-handle"></div>
-                <button class="modal-close-btn" onclick="closeBuyModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="modal-icon-header">
-                    <div class="modal-icon-circle receive">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <h2>شراء دينار كوين</h2>
+            return `<div class="transaction-item">
+                <div class="transaction-icon ${cls}"><i class="fas fa-${icon}"></i></div>
+                <div class="transaction-details">
+                    <div class="transaction-type">${typeName}</div>
+                    <div class="transaction-date">${date}${tx.note ? ' - ' + tx.note : ''}</div>
                 </div>
-                <form id="buyForm" style="padding:20px;">
-                    <label style="color:rgba(255,255,255,0.8);margin-bottom:8px;display:block;">الكمية (DC)</label>
-                    <input type="number" id="buyAmount" placeholder="0.00" step="0.01" min="0.01" required style="margin-bottom:15px;">
-                    
-                    <div style="background:rgba(255,255,255,0.05);padding:12px;border-radius:8px;margin-bottom:15px;">
-                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-                            <span style="color:rgba(255,255,255,0.6);">السعر:</span>
-                            <span style="color:var(--gold-primary);">1 DC = ${PRICE_PER_COIN.toLocaleString()} IQD</span>
-                        </div>
-                        <div style="display:flex;justify-content:space-between;">
-                            <span style="color:rgba(255,255,255,0.6);">الإجمالي:</span>
-                            <span style="color:var(--gold-primary);font-weight:bold;" id="buyTotal">0 IQD</span>
-                        </div>
-                    </div>
-                    
-                    <label style="color:rgba(255,255,255,0.8);margin-bottom:8px;display:block;">ملاحظة (اختياري)</label>
-                    <textarea id="buyNote" placeholder="رقم هاتفك أو طريقة الدفع المفضلة..." style="margin-bottom:15px;"></textarea>
-                    
-                    <div style="background:rgba(212,175,55,0.1);border:1px solid var(--gold-primary);padding:12px;border-radius:8px;margin-bottom:15px;">
-                        <p style="color:rgba(255,255,255,0.8);font-size:13px;line-height:1.6;">
-                            <i class="fas fa-info-circle" style="color:var(--gold-primary);"></i>
-                            سيتم مراجعة طلبك من قبل الإدارة وإضافة الرصيد خلال 24 ساعة.
-                        </p>
-                    </div>
-                    
-                    <button type="submit" class="btn-primary" style="width:100%;">
-                        <i class="fas fa-shopping-cart"></i> إرسال الطلب
-                    </button>
-                </form>
-            </div>
-        </div>
-    `;
+                <div class="transaction-amount ${cls}">${sign}${Number(tx.amount).toFixed(2)} DC</div>
+            </div>`;
+        }).join('');
 
-    document.body.insertAdjacentHTML('beforeend', html);
+    } catch (e) {
+        console.error('Error loading transactions:', e);
+        list.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>خطأ في تحميل العمليات</p></div>';
+    }
+}
 
-    // Update total on amount change
-    document.getElementById('buyAmount').addEventListener('input', (e) => {
-        const amount = parseFloat(e.target.value) || 0;
-        const total = amount * PRICE_PER_COIN;
-        document.getElementById('buyTotal').textContent = total.toLocaleString() + ' IQD';
-    });
+// ==========================================
+// MODAL FUNCTIONS
+// ==========================================
 
-    document.getElementById('buyForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const amount = parseFloat(document.getElementById('buyAmount').value);
-        const note = document.getElementById('buyNote').value.trim();
-
-        if (!amount || amount <= 0) {
-            showNotification('خطأ', 'الرجاء إدخال كمية صحيحة', 'error');
-            return;
-        }
-
-        try {
-            await requestTopup(amount, note);
-            showNotification('تم!', 'تم إرسال طلبك بنجاح. سيتم مراجعته قريباً.', 'success');
-            closeBuyModal();
-        } catch (error) {
-            console.error('Buy error:', error);
-            showNotification('خطأ', error.message || 'فشل إرسال الطلب', 'error');
-        }
-    });
+// Buy Modal
+function showBuyModal() {
+    document.getElementById('buyModal')?.classList.add('active');
 }
 
 function closeBuyModal() {
-    document.getElementById('buyModal')?.remove();
+    document.getElementById('buyModal')?.classList.remove('active');
+    document.getElementById('buyAmount').value = '';
+    document.getElementById('totalIQD').textContent = '0 IQD';
 }
 
-// ==========================================
-// RECEIVE MODAL
-// ==========================================
+function calculateBuyTotal() {
+    const amount = parseFloat(document.getElementById('buyAmount')?.value || 0);
+    const total = amount * PRICE_PER_COIN;
+    updateElement('totalIQD', total.toLocaleString('ar-IQ') + ' IQD');
+}
 
-function showReceiveModal() {
-    const code = currentProfile?.referral_code || 'Loading...';
-
-    const html = `
-        <div class="modal-overlay active" id="receiveModal">
-            <div class="modal-sheet modal-small">
-                <div class="modal-handle"></div>
-                <button class="modal-close-btn" onclick="closeReceiveModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-                <div class="modal-icon-header">
-                    <div class="modal-icon-circle receive">
-                        <i class="fas fa-qrcode"></i>
-                    </div>
-                    <h2>استقبال دينار كوين</h2>
-                </div>
-                <div style="padding:20px;text-align:center;">
-                    <p style="color:rgba(255,255,255,0.8);margin-bottom:20px;">
-                        شارك رمز الإحالة أو رمز QR لاستقبال الأموال
-                    </p>
-                    
-                    <div id="qrcodeReceive" style="margin:20px auto;max-width:200px;"></div>
-                    
-                    <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:12px;margin:20px 0;">
-                        <div style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:8px;">رمز الإحالة الخاص بك</div>
-                        <div style="color:var(--gold-primary);font-size:24px;font-weight:bold;letter-spacing:2px;">
-                            ${code}
-                        </div>
-                    </div>
-                    
-                    <button onclick="copyReferralCode('${code}')" class="btn-primary" style="width:100%;">
-                        <i class="fas fa-copy"></i> نسخ الرمز
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-
-    document.body.insertAdjacentHTML('beforeend', html);
-
-    // Generate QR
-    const qrContainer = document.getElementById('qrcodeReceive');
-    if (qrContainer && code !== 'Loading...') {
-        try {
-            new QRCode(qrContainer, {
-                text: code,
-                width: 200,
-                height: 200,
-                colorDark: '#D4AF37',
-                colorLight: '#0a1a14'
-            });
-        } catch (error) {
-            console.error('QR generation error:', error);
-        }
+async function submitBuyRequest() {
+    const amount = parseFloat(document.getElementById('buyAmount')?.value || 0);
+    
+    if (amount <= 0) {
+        showNotification('خطأ', 'الرجاء إدخال كمية صحيحة', 'error');
+        return;
     }
+
+    try {
+        const result = await supabase.rpc('request_topup', {
+            p_amount: amount,
+            p_note: 'طلب شراء'
+        });
+
+        if (result.error) throw result.error;
+
+        const data = result.data;
+        if (data && !data.success) {
+            showNotification('خطأ', data.error || 'فشل إرسال الطلب', 'error');
+            return;
+        }
+
+        closeBuyModal();
+        showNotification('نجاح', 'تم إرسال طلبك للإدارة', 'success');
+    } catch (e) {
+        console.error('Buy request error:', e);
+        showNotification('خطأ', 'فشل إرسال الطلب', 'error');
+    }
+}
+
+// Send Modal
+function showSendModal() {
+    document.getElementById('sendModal')?.classList.add('active');
+}
+
+function closeSendModal() {
+    document.getElementById('sendModal')?.classList.remove('active');
+    document.getElementById('recipientCode').value = '';
+    document.getElementById('sendAmount').value = '';
+    document.getElementById('sendNote').value = '';
+}
+
+async function sendCoins() {
+    const recipientCode = document.getElementById('recipientCode')?.value.trim();
+    const amount = parseFloat(document.getElementById('sendAmount')?.value || 0);
+    const note = document.getElementById('sendNote')?.value.trim();
+
+    if (!recipientCode) {
+        showNotification('خطأ', 'الرجاء إدخال رمز المستلم', 'error');
+        return;
+    }
+
+    if (amount <= 0) {
+        showNotification('خطأ', 'الرجاء إدخال كمية صحيحة', 'error');
+        return;
+    }
+
+    try {
+        const result = await supabase.rpc('send_by_referral', {
+            p_referral_code: recipientCode,
+            p_amount: amount,
+            p_note: note || ''
+        });
+
+        if (result.error) throw result.error;
+
+        const data = result.data;
+        if (data && !data.success) {
+            showNotification('خطأ', data.error || 'فشل إرسال العملات', 'error');
+            return;
+        }
+
+        closeSendModal();
+        showNotification('نجاح', 'تم إرسال العملات بنجاح', 'success');
+        
+        // إعادة تحميل البيانات
+        await loadUserDataAndShowDashboard();
+        
+    } catch (e) {
+        console.error('Send error:', e);
+        showNotification('خطأ', 'فشل إرسال العملات', 'error');
+    }
+}
+
+// Receive Modal
+function showReceiveModal() {
+    document.getElementById('receiveModal')?.classList.add('active');
 }
 
 function closeReceiveModal() {
-    document.getElementById('receiveModal')?.remove();
+    document.getElementById('receiveModal')?.classList.remove('active');
 }
 
-function copyReferralCode(code) {
-    navigator.clipboard.writeText(code)
-        .then(() => showNotification('تم!', 'تم نسخ الرمز', 'success'))
-        .catch(() => showNotification('خطأ', 'فشل النسخ', 'error'));
+function copyReceiveCode() {
+    const code = document.getElementById('receiveCode')?.textContent;
+    if (!code) return;
+    
+    navigator.clipboard.writeText(code).then(() => {
+        showNotification('نجاح', 'تم نسخ الرمز', 'success');
+    }).catch(() => {
+        showNotification('خطأ', 'فشل نسخ الرمز', 'error');
+    });
 }
 
-// ==========================================
-// CARD FUNCTIONS
-// ==========================================
-
-function flipCard() {
-    cardFlipped = !cardFlipped;
-    document.querySelector('.virtual-card')?.classList.toggle('flipped');
+// Edit Name Modal
+function showEditNameModal() {
+    document.getElementById('editNameModal')?.classList.add('active');
+    const currentName = document.getElementById('profileNameDisplay')?.textContent || '';
+    document.getElementById('editNameInput').value = currentName;
 }
 
-function toggleCardNumber() {
-    cardNumVisible = !cardNumVisible;
-    const el = document.getElementById('cardNumber');
-    if (el && currentProfile?.card_number) {
-        el.textContent = cardNumVisible 
-            ? formatCardNumber(currentProfile.card_number)
-            : '•••• •••• •••• ' + currentProfile.card_number.slice(-4);
+function closeEditNameModal() {
+    document.getElementById('editNameModal')?.classList.remove('active');
+}
+
+async function saveNewName() {
+    const newName = document.getElementById('editNameInput')?.value.trim();
+    
+    if (!newName) {
+        showNotification('خطأ', 'الرجاء إدخال اسم صحيح', 'error');
+        return;
+    }
+
+    if (!currentUser) {
+        showNotification('خطأ', 'غير مسجل دخول', 'error');
+        return;
+    }
+
+    try {
+        const { error } = await supabase
+            .from('profiles')
+            .update({ first_name: newName })
+            .eq('id', currentUser.id);
+
+        if (error) throw error;
+
+        closeEditNameModal();
+        showNotification('نجاح', 'تم تحديث الاسم بنجاح', 'success');
+        
+        // إعادة تحميل البيانات
+        await loadUserDataAndShowDashboard();
+        
+    } catch (e) {
+        console.error('Update name error:', e);
+        showNotification('خطأ', 'فشل تحديث الاسم', 'error');
     }
 }
 
-function toggleCVV() {
-    cvvVisible = !cvvVisible;
-    const el = document.getElementById('cardCVV');
-    if (el && currentProfile?.card_cvv) {
-        el.textContent = cvvVisible ? currentProfile.card_cvv : '•••';
-    }
-}
-
 // ==========================================
-// NOTIFICATIONS
+// NEWS FUNCTIONS
 // ==========================================
-
-function showNotification(title, message, type = 'success') {
-    const notification = document.getElementById('successNotification');
-    if (!notification) return;
-
-    document.getElementById('notificationTitle').textContent = title;
-    document.getElementById('notificationMessage').textContent = message;
-
-    notification.className = `toast-notification ${type} active`;
-    setTimeout(() => notification.classList.remove('active'), 4000);
+function renderNewsArticles() {
+    const container = document.getElementById('newsArticlesList');
+    if (!container) return;
+    
+    container.innerHTML = newsArticles.map(article => `
+        <div class="news-card" onclick="openArticle(${article.id})">
+            <div class="news-img" style="background-image:url('${article.img}');"></div>
+            <div class="news-content">
+                <div class="news-meta">
+                    <span class="news-cat ${article.cat}">${getCategoryName(article.cat)}</span>
+                    <span class="news-date">${new Date(article.date).toLocaleDateString('ar-IQ')}</span>
+                </div>
+                <h3 class="news-title">${article.title}</h3>
+                <p class="news-summary">${article.summary}</p>
+            </div>
+        </div>
+    `).join('');
 }
 
-function closeNotification() {
-    document.getElementById('successNotification')?.classList.remove('active');
+function getCategoryName(cat) {
+    const names = {
+        invest: 'استثمار',
+        update: 'تحديث',
+        guide: 'دليل',
+        news: 'أخبار'
+    };
+    return names[cat] || cat;
 }
+
+function openArticle(id) {
+    const article = newsArticles.find(a => a.id === id);
+    if (!article) return;
+    
+    const modal = document.getElementById('articleModal');
+    const content = document.getElementById('articleContent');
+    
+    if (!modal || !content) return;
+    
+    content.innerHTML = `
+        <div class="article-header">
+            <img src="${article.img}" alt="${article.title}" class="article-img">
+            <div class="article-meta">
+                <span class="article-cat ${article.cat}">${getCategoryName(article.cat)}</span>
+                <span class="article-date">${new Date(article.date).toLocaleDateString('ar-IQ', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                })}</span>
+            </div>
+            <h1 class="article-title">${article.title}</h1>
+        </div>
+        <div class="article-body">${article.body.replace(/\n/g, '<br><br>')}</div>
+    `;
+    
+    modal.classList.add('active');
+}
+
+function closeArticleModal() {
+    document.getElementById('articleModal')?.classList.remove('active');
+}
+
 
 // ==========================================
 // SETTINGS FUNCTIONS
 // ==========================================
-
-function toggleDarkMode() {
-    const toggle = document.getElementById('toggle-darkmode');
-    const isActive = toggle?.classList.toggle('active');
-    localStorage.setItem('setting-darkmode', isActive);
-    applyDarkMode(isActive);
+function showLanguageModal() {
+    const languages = [
+        { code: 'ar', name: 'العربية', flag: '🇮🇶' },
+        { code: 'en', name: 'English', flag: '🇺🇸' },
+        { code: 'ku', name: 'کوردی', flag: '🇮🇶' }
+    ];
+    
+    const currentLang = localStorage.getItem('app-language') || 'ar';
+    
+    let html = `
+        <div class="modal-overlay active">
+            <div class="modal-sheet modal-small">
+                <div class="modal-handle"></div>
+                <button class="modal-close-btn" onclick="closeLanguageModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-icon-header">
+                    <div class="modal-icon-circle receive">
+                        <i class="fas fa-language"></i>
+                    </div>
+                    <h2>اختر اللغة</h2>
+                </div>
+                <div class="settings-card" style="margin-top:20px;">
+    `;
+    
+    languages.forEach(lang => {
+        const active = lang.code === currentLang ? 'style="background:var(--gold-light);"' : '';
+        html += `
+            <div class="settings-item" onclick="changeLanguage('${lang.code}')" ${active}>
+                <div class="settings-item-icon">${lang.flag}</div>
+                <div class="settings-item-content">
+                    <span class="settings-item-label">${lang.name}</span>
+                </div>
+                ${lang.code === currentLang ? '<i class="fas fa-check" style="color:var(--gold-primary);"></i>' : ''}
+            </div>
+        `;
+    });
+    
+    html += `</div></div></div>`;
+    document.body.insertAdjacentHTML('beforeend', html);
 }
 
-function toggleNotifications() {
-    const toggle = document.getElementById('toggle-notifications');
-    const isActive = toggle?.classList.toggle('active');
-    localStorage.setItem('setting-notifications', isActive);
-    showNotification('تم', isActive ? 'تم تفعيل الإشعارات' : 'تم إيقاف الإشعارات', 'success');
+function closeLanguageModal() {
+    const modal = document.querySelector('.modal-overlay:last-child');
+    if (modal) modal.remove();
 }
 
-function toggleBiometric() {
-    const toggle = document.getElementById('toggle-biometric');
-    const isActive = toggle?.classList.toggle('active');
-    localStorage.setItem('setting-biometric', isActive);
-    showNotification('تم', isActive ? 'تم تفعيل البصمة' : 'تم إيقاف البصمة', 'success');
+function changeLanguage(langCode) {
+    localStorage.setItem('app-language', langCode);
+    showNotification('تم', 'سيتم تطبيق اللغة في التحديث القادم', 'success');
+    closeLanguageModal();
+}
+
+function showSecurityModal() {
+    const html = `
+        <div class="modal-overlay active">
+            <div class="modal-sheet">
+                <div class="modal-handle"></div>
+                <button class="modal-close-btn" onclick="closeSecurityModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-icon-header">
+                    <div class="modal-icon-circle receive">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h2>الأمان والخصوصية</h2>
+                </div>
+                <div style="padding:20px;">
+                    <h3 style="color:var(--gold-primary);margin-bottom:15px;">نصائح الأمان</h3>
+                    <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:12px;margin-bottom:15px;">
+                        <p style="line-height:1.8;">
+                            🔐 استخدم كلمة مرور قوية<br>
+                            🔒 لا تشارك بياناتك مع أحد<br>
+                            📱 فعّل المصادقة الثنائية<br>
+                            🛡️ تحقق من عنوان الموقع<br>
+                            ⚠️ احذر من الروابط المشبوهة
+                        </p>
+                    </div>
+                    <h3 style="color:var(--gold-primary);margin-bottom:15px;">سياسة الخصوصية</h3>
+                    <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:12px;">
+                        <p style="line-height:1.8;">
+                            نحن نحترم خصوصيتك ونحمي بياناتك الشخصية. 
+                            جميع المعلومات مشفرة ومخزنة بشكل آمن عبر Supabase.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeSecurityModal() {
+    const modal = document.querySelector('.modal-overlay:last-child');
+    if (modal) modal.remove();
+}
+
+function showHelpModal() {
+    const html = `
+        <div class="modal-overlay active">
+            <div class="modal-sheet">
+                <div class="modal-handle"></div>
+                <button class="modal-close-btn" onclick="closeHelpModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-icon-header">
+                    <div class="modal-icon-circle receive">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h2>المساعدة والدعم</h2>
+                </div>
+                <div style="padding:20px;">
+                    <h3 style="color:var(--gold-primary);margin-bottom:15px;">الأسئلة الشائعة</h3>
+                    
+                    <div style="margin-bottom:20px;">
+                        <h4 style="color:#fff;margin-bottom:8px;">❓ كيف أشتري دينار كوين؟</h4>
+                        <p style="color:rgba(255,255,255,0.7);line-height:1.6;">
+                            انقر على زر "شراء" وأدخل الكمية المطلوبة. سيتم مراجعة طلبك من الإدارة.
+                        </p>
+                    </div>
+                    
+                    <div style="margin-bottom:20px;">
+                        <h4 style="color:#fff;margin-bottom:8px;">❓ كيف أحصل على مكافأة الإحالة؟</h4>
+                        <p style="color:rgba(255,255,255,0.7);line-height:1.6;">
+                            شارك رمز الإحالة الخاص بك. ستحصل على 0.25 DC عن كل صديق يسجل.
+                        </p>
+                    </div>
+                    
+                    <div style="margin-bottom:20px;">
+                        <h4 style="color:#fff;margin-bottom:8px;">❓ هل التطبيق آمن؟</h4>
+                        <p style="color:rgba(255,255,255,0.7);line-height:1.6;">
+                            نعم، نستخدم تشفير عالي المستوى وSupabase لحماية بياناتك.
+                        </p>
+                    </div>
+                    
+                    <h3 style="color:var(--gold-primary);margin:20px 0 15px;">تواصل معنا</h3>
+                    <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:12px;">
+                        <p style="line-height:1.8;">
+                            📧 البريد: support@dinarcoin.iq<br>
+                            📱 الهاتف: +964 XXX XXX XXXX<br>
+                            💬 الدردشة: متاحة قريباً
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeHelpModal() {
+    const modal = document.querySelector('.modal-overlay:last-child');
+    if (modal) modal.remove();
+}
+
+function toggleSetting(settingId) {
+    const toggle = document.getElementById(`toggle-${settingId}`);
+    if (!toggle) return;
+    
+    const isActive = toggle.classList.toggle('active');
+    localStorage.setItem(`setting-${settingId}`, isActive);
+    
+    if (settingId === 'darkmode') {
+        applyDarkMode(isActive);
+    }
+    
+    showNotification('تم', `تم ${isActive ? 'تفعيل' : 'تعطيل'} الإعداد`, 'success');
 }
 
 function applyDarkMode(enabled) {
-    // Implementation for dark mode (if needed)
-    // Currently app is already dark themed
+    if (enabled) {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
 }
 
 function loadSettings() {
     const darkmode = localStorage.getItem('setting-darkmode') === 'true';
     const notifications = localStorage.getItem('setting-notifications') === 'true';
     const biometric = localStorage.getItem('setting-biometric') === 'true';
-
+    
     if (darkmode) {
         document.getElementById('toggle-darkmode')?.classList.add('active');
         applyDarkMode(true);
@@ -1142,45 +1163,103 @@ function loadSettings() {
 }
 
 // ==========================================
-// OTHER MODALS
+// PARTICLES ANIMATION
 // ==========================================
-
-function showLanguageModal() {
-    showNotification('قريباً', 'ميزة تغيير اللغة ستتوفر قريباً', 'success');
-}
-
-function showSecurityModal() {
-    showNotification('قريباً', 'إعدادات الأمان ستتوفر قريباً', 'success');
-}
-
-function showHelpModal() {
-    showNotification('قريباً', 'المساعدة والدعم ستتوفر قريباً', 'success');
-}
-
-// ==========================================
-// UTILITY EVENT LISTENERS
-// ==========================================
-
-// Close modals on overlay click
-window.addEventListener('click', (e) => {
-    if (e.target.classList.contains('modal-overlay')) {
-        e.target.classList.remove('active');
+function createParticles() {
+    const container = document.getElementById('particles');
+    if (!container) return;
+    
+    for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.width = particle.style.height = (Math.random() * 3 + 1) + 'px';
+        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+        particle.style.animationDelay = Math.random() * 5 + 's';
+        container.appendChild(particle);
     }
-});
-
-// Prevent form submission on Enter key
-document.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
-        e.preventDefault();
-    }
-});
+}
 
 // ==========================================
-// APP INITIALIZATION ON LOAD
+// EVENT LISTENERS SETUP
 // ==========================================
+function setupEventListeners() {
+    // Close modals on overlay click
+    window.addEventListener('click', e => {
+        if (e.target.classList.contains('modal-overlay')) {
+            e.target.classList.remove('active');
+        }
+    });
 
-window.addEventListener('DOMContentLoaded', () => {
-    console.log('Dinar Queen V3.0 - Supabase Edition');
-    initializeApp();
-    loadSettings();
-});
+    // Prevent Enter key default on inputs
+    document.addEventListener('keypress', e => {
+        if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+            e.preventDefault();
+        }
+    });
+}
+
+// ==========================================
+// NOTIFICATION SYSTEM
+// ==========================================
+function showNotification(title, msg, type = 'success') {
+    const notification = document.getElementById('successNotification');
+    if (!notification) return;
+    
+    updateElement('notificationTitle', title);
+    updateElement('notificationMessage', msg);
+    
+    notification.className = `toast-notification ${type} active`;
+    setTimeout(() => notification.classList.remove('active'), 4000);
+}
+
+function closeNotification() {
+    document.getElementById('successNotification')?.classList.remove('active');
+}
+
+// ==========================================
+// MAKE FUNCTIONS GLOBAL
+// ==========================================
+// Make functions available globally for HTML onclick handlers
+window.showAuthModal = showAuthModal;
+window.closeAuthModal = closeAuthModal;
+window.switchAuthForm = switchAuthForm;
+window.signup = signup;
+window.login = login;
+window.logout = logout;
+window.switchTab = switchTab;
+window.flipCard = flipCard;
+window.toggleCardNumVisibility = toggleCardNumVisibility;
+window.toggleCVVVisibility = toggleCVVVisibility;
+window.showBuyModal = showBuyModal;
+window.closeBuyModal = closeBuyModal;
+window.calculateBuyTotal = calculateBuyTotal;
+window.submitBuyRequest = submitBuyRequest;
+window.showSendModal = showSendModal;
+window.closeSendModal = closeSendModal;
+window.sendCoins = sendCoins;
+window.showReceiveModal = showReceiveModal;
+window.closeReceiveModal = closeReceiveModal;
+window.copyReceiveCode = copyReceiveCode;
+window.showEditNameModal = showEditNameModal;
+window.closeEditNameModal = closeEditNameModal;
+window.saveNewName = saveNewName;
+window.openArticle = openArticle;
+window.closeArticleModal = closeArticleModal;
+window.showLanguageModal = showLanguageModal;
+window.closeLanguageModal = closeLanguageModal;
+window.changeLanguage = changeLanguage;
+window.showSecurityModal = showSecurityModal;
+window.closeSecurityModal = closeSecurityModal;
+window.showHelpModal = showHelpModal;
+window.closeHelpModal = closeHelpModal;
+window.toggleSetting = toggleSetting;
+window.closeNotification = closeNotification;
+
+// تحميل الإعدادات عند بدء التطبيق
+setTimeout(loadSettings, 100);
+
+// ==========================================
+// END OF FILE
+// ==========================================
+console.log('✅ Dinar Queen V3.0 (Supabase Only) - Loaded Successfully');
