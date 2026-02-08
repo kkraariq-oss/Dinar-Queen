@@ -51,16 +51,86 @@ async function loadMyProfileAndWallet() {
     const user = await getCurrentUser();
     if (!user) throw new Error("غير مسجل دخول");
 
-    const { data: profile, error: pErr } = await supabase
-        .from("profiles").select("*").eq("id", user.id).single();
+    // ---- PROFILE ----
+    const { data: profiles, error: pErr } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .limit(1);
+
     if (pErr) throw pErr;
 
-    const { data: wallet, error: wErr } = await supabase
-        .from("wallets").select("*").eq("user_id", user.id).single();
+    // إذا لم يوجد profile (أول مرة)
+    let profile = profiles[0];
+    if (!profile) {
+        // إنشاء profile تلقائيًا
+        const { error: createErr } = await supabase.from("profiles").insert({
+            id: user.id,
+            first_name: "",
+            last_name: "",
+            phone: "",
+            country: "IQ"
+        });
+        if (createErr) throw createErr;
+
+        profile = { id: user.id };
+    }
+
+    // ---- WALLET ----
+    const { data: wallets, error: wErr } = await supabase
+        .from("wallets")
+        .select("*")
+        .eq("user_id", user.id)
+        .limit(1);
+
     if (wErr) throw wErr;
+
+    let wallet = wallets[0];
+    if (!wallet) {
+        const { error: wCreateErr } = await supabase.from("wallets").insert({
+            user_id: user.id,
+            balance: 0
+        });
+        if (wCreateErr) throw wCreateErr;
+
+        wallet = { user_id: user.id, balance: 0 };
+    }
 
     return { profile, wallet };
 }
+
+
+
+
+function initializeApp() {
+  // مراقبة جلسة Supabase بدل Firebase
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    if (session?.user) {
+      currentUser = session.user;
+      try {
+        await loadMyProfileAndWallet();
+      } catch (e) {
+        console.error(e);
+      }
+      showDashboard();
+    } else {
+      currentUser = null;
+      showHome();
+    }
+  });
+
+  // فحص جلسة عند التشغيل
+  supabase.auth.getSession().then(({ data }) => {
+    if (data?.session?.user) {
+      currentUser = data.session.user;
+      showDashboard();
+    } else {
+      showHome();
+    }
+  });
+}
+
+
 
 async function sendMoney(toUserId, amount, note = "") {
     const { error } = await supabase.rpc("send_money", {
@@ -196,19 +266,18 @@ document.addEventListener('DOMContentLoaded', () => {
     loadGlobalStats(); // تحميل الإحصائيات العامة
 });
 
-function initializeApp() {
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            currentUser = user;
-            loadUserData();
-            showDashboard();
-            updateAnalyticsStats();
-        } else {
-            currentUser = null;
-            showHome();
-        }
-    });
-}
+supabase.auth.onAuthStateChange(async (event, session) => {
+    if (session?.user) {
+        currentUser = session.user;
+        const data = await loadMyProfileAndWallet();
+        showDashboard();
+    } else {
+        currentUser = null;
+        showHome();
+    }
+});
+
+
 
 function createParticles() {
     const c = document.getElementById('particles');
@@ -358,90 +427,34 @@ function switchAuthForm(type) {
 }
 
 async function signup() {
-    const name = document.getElementById('signupName').value.trim();
-    const email = document.getElementById('signupEmail').value.trim();
-    const password = document.getElementById('signupPassword').value;
-    const refCode = document.getElementById('signupReferralCode').value.trim();
-    
-    if (!name || !email || !password) {
-            showNotification('خطأ', 'يرجى إدخال جميع البيانات', 'error');
-        return;
-    }
-    
-    if (password.length < 6) {
-            showNotification('خطأ', 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error');
-        return;
-    }
-    
+    const form = {
+        email: document.getElementById('signupEmail').value.trim(),
+        password: document.getElementById('signupPassword').value,
+        firstName: document.getElementById('signupName').value.trim(),
+        lastName: '',
+        phone: '',
+        country: 'IQ'
+    };
+
     try {
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const uid = userCredential.user.uid;
-        
-        // إنشاء بيانات البطاقة
-        const cardData = generateCardData(name);
-        
-        // بيانات المستخدم الأساسية
-        const userData = {
-            name: name,
-            email: email,
-            referralCode: generateReferralCode(),
-            balance: WELCOME_BONUS,
-            referralCount: 0,
-            referralEarnings: 0,
-            joinDate: new Date().toISOString(),
-            card: cardData
-        };
-        
-        await database.ref(`users/${uid}`).set(userData);
-        
-        // إضافة معاملة المكافأة الترحيبية
-        await addTransaction(uid, {
-            type: 'bonus',
-            amount: WELCOME_BONUS,
-            description: 'مكافأة الانضمام',
-            status: 'completed'
-        });
-        
-        // تحديث الإحصائيات العامة - إضافة مستخدم وتوزيع المكافأة
-        await updateGlobalStats(1, WELCOME_BONUS);
-        
-        // معالجة رمز الإحالة إن وُجد
-        if (refCode) {
-            const referrerUid = await validateReferralCode(refCode);
-            if (referrerUid && referrerUid !== uid) {
-                await processReferral(referrerUid);
-                await database.ref(`users/${uid}`).update({ referredBy: refCode });
-            }
-        }
-        
+        await signUpWithProfile(form);
         closeAuthModal();
-        showNotification('مرحباً!', `تم إنشاء حسابك بنجاح! حصلت على ${WELCOME_BONUS} DC`, 'success');
+        showNotification('نجاح', 'تم إنشاء الحساب في Supabase', 'success');
     } catch (e) {
-        let msg = 'حدث خطأ في التسجيل';
-        if (e.code === 'auth/email-already-in-use') msg = 'البريد الإلكتروني مستخدم مسبقاً';
-        else if (e.code === 'auth/invalid-email') msg = 'بريد إلكتروني غير صحيح';
-        showNotification('خطأ', msg, 'error');
+        showNotification('خطأ', e.message, 'error');
     }
 }
 
 async function login() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
-    
-    if (!email || !password) {
-        showNotification('خطأ', 'أدخل البريد وكلمة المرور', 'error');
-        return;
-    }
-    
+
     try {
-        await auth.signInWithEmailAndPassword(email, password);
+        await signIn(email, password);
         closeAuthModal();
-        showNotification('مرحباً بعودتك!', 'تم تسجيل الدخول بنجاح', 'success');
+        showNotification('مرحباً', 'تم تسجيل الدخول عبر Supabase', 'success');
     } catch (e) {
-        let msg = 'بيانات خاطئة';
-        if (e.code === 'auth/user-not-found') msg = 'المستخدم غير موجود';
-        else if (e.code === 'auth/wrong-password') msg = 'كلمة مرور خاطئة';
-        showNotification('خطأ', msg, 'error');
+        showNotification('خطأ', e.message, 'error');
     }
 }
 
