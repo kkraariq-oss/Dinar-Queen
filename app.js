@@ -8,7 +8,7 @@
 // ==========================================
 const SUPABASE_URL = "https://umlbxdcgpdifxzijujvj.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbGJ4ZGNncGRpZnh6aWp1anZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQzODUsImV4cCI6MjA4NjA1MDM4NX0.Ld3fU2_B4eu803BsDYKQ0ofg69WxQPJcscGf93lnM3w";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ==========================================
 // CONSTANTS
@@ -101,7 +101,7 @@ function updateElementHTML(id, html) {
 async function signUpWithProfile(formData) {
     try {
         // 1. Create auth account
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
             email: formData.email,
             password: formData.password
         });
@@ -118,7 +118,7 @@ async function signUpWithProfile(formData) {
         const referralCode = await generateUniqueReferralCode();
 
         // 3. Create profile with all data
-        const { error: profileError } = await supabase
+        const { error: profileError } = await supabaseClient
             .from('profiles')
             .insert({
                 id: userId,
@@ -137,7 +137,7 @@ async function signUpWithProfile(formData) {
         if (profileError) throw profileError;
 
         // 4. Create wallet
-        const { error: walletError } = await supabase
+        const { error: walletError } = await supabaseClient
             .from('wallets')
             .insert({
                 user_id: userId,
@@ -149,7 +149,7 @@ async function signUpWithProfile(formData) {
         // 5. Add welcome bonus (using RPC for security)
         // Note: This requires service_role, so we'll do it via edge function or admin
         // For now, we'll add it directly (you should use Edge Function in production)
-        const { error: bonusError } = await supabase.rpc('add_welcome_bonus', {
+        const { error: bonusError } = await supabaseClient.rpc('add_welcome_bonus', {
             p_user_id: userId,
             p_amount: WELCOME_BONUS
         });
@@ -157,11 +157,11 @@ async function signUpWithProfile(formData) {
         // If RPC fails (permission issue), add manually for demo
         if (bonusError) {
             console.warn('RPC failed, adding bonus manually:', bonusError);
-            await supabase.from('wallets')
+            await supabaseClient.from('wallets')
                 .update({ balance: WELCOME_BONUS })
                 .eq('user_id', userId);
             
-            await supabase.from('transactions')
+            await supabaseClient.from('transactions')
                 .insert({
                     to_user: userId,
                     amount: WELCOME_BONUS,
@@ -191,7 +191,7 @@ async function generateUniqueReferralCode() {
         const code = generateReferralCode();
         
         // Check if code exists
-        const { data } = await supabase
+        const { data } = await supabaseClient
             .from('profiles')
             .select('referral_code')
             .eq('referral_code', code)
@@ -209,7 +209,7 @@ async function generateUniqueReferralCode() {
 async function processReferralBonus(referralCode) {
     try {
         // Find referrer
-        const { data: referrer } = await supabase
+        const { data: referrer } = await supabaseClient
             .from('profiles')
             .select('id')
             .eq('referral_code', referralCode)
@@ -218,7 +218,7 @@ async function processReferralBonus(referralCode) {
         if (!referrer) return;
 
         // Add bonus using RPC
-        const { error } = await supabase.rpc('add_referral_bonus', {
+        const { error } = await supabaseClient.rpc('add_referral_bonus', {
             p_referrer_id: referrer.id,
             p_amount: REFERRAL_BONUS
         });
@@ -226,11 +226,11 @@ async function processReferralBonus(referralCode) {
         if (error) {
             console.warn('Referral bonus RPC failed:', error);
             // Manual fallback
-            await supabase.from('wallets')
+            await supabaseClient.from('wallets')
                 .update({ balance: supabase.raw(`balance + ${REFERRAL_BONUS}`) })
                 .eq('user_id', referrer.id);
             
-            await supabase.from('transactions')
+            await supabaseClient.from('transactions')
                 .insert({
                     to_user: referrer.id,
                     amount: REFERRAL_BONUS,
@@ -246,7 +246,7 @@ async function processReferralBonus(referralCode) {
 
 // Sign In
 async function signIn(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
         password
     });
@@ -257,7 +257,7 @@ async function signIn(email, password) {
 
 // Sign Out
 async function signOut() {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabaseClient.auth.signOut();
     if (error) throw error;
     
     // Clear local data
@@ -268,7 +268,7 @@ async function signOut() {
 
 // Get current user
 async function getCurrentUser() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabaseClient.auth.getUser();
     return user;
 }
 
@@ -283,7 +283,7 @@ async function loadUserData() {
         if (!user) throw new Error('Not authenticated');
 
         // Load profile
-        const { data: profile, error: profileError } = await supabase
+        const { data: profile, error: profileError } = await supabaseClient
             .from('profiles')
             .select('*')
             .eq('id', user.id)
@@ -294,7 +294,7 @@ async function loadUserData() {
         // If no profile exists, create one (shouldn't happen after signup fix)
         if (!profile) {
             const referralCode = await generateUniqueReferralCode();
-            const { data: newProfile, error: createError } = await supabase
+            const { data: newProfile, error: createError } = await supabaseClient
                 .from('profiles')
                 .insert({
                     id: user.id,
@@ -319,7 +319,7 @@ async function loadUserData() {
         }
 
         // Load wallet
-        const { data: wallet, error: walletError } = await supabase
+        const { data: wallet, error: walletError } = await supabaseClient
             .from('wallets')
             .select('*')
             .eq('user_id', user.id)
@@ -329,7 +329,7 @@ async function loadUserData() {
 
         // If no wallet exists, create one
         if (!wallet) {
-            const { data: newWallet, error: createError } = await supabase
+            const { data: newWallet, error: createError } = await supabaseClient
                 .from('wallets')
                 .insert({
                     user_id: user.id,
@@ -359,7 +359,7 @@ async function loadTransactions(limit = 50) {
         const user = await getCurrentUser();
         if (!user) throw new Error('Not authenticated');
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('transactions')
             .select('*')
             .or(`from_user.eq.${user.id},to_user.eq.${user.id}`)
@@ -378,7 +378,7 @@ async function loadTransactions(limit = 50) {
 // Load global stats
 async function loadGlobalStats() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('global_stats')
             .select('*')
             .eq('id', 1)
@@ -409,7 +409,7 @@ async function loadGlobalStats() {
 // Send money by referral code
 async function sendMoneyByReferral(referralCode, amount, note = '') {
     try {
-        const { data, error } = await supabase.rpc('send_by_referral', {
+        const { data, error } = await supabaseClient.rpc('send_by_referral', {
             p_code: referralCode,
             p_amount: parseFloat(amount),
             p_note: note
@@ -433,7 +433,7 @@ async function sendMoneyByReferral(referralCode, amount, note = '') {
 // Request topup (purchase)
 async function requestTopup(amount, note = '') {
     try {
-        const { data, error } = await supabase.rpc('request_topup', {
+        const { data, error } = await supabaseClient.rpc('request_topup', {
             p_amount: parseFloat(amount),
             p_note: note
         });
@@ -616,7 +616,7 @@ async function displayTransactions() {
 
 function initializeApp() {
     // Auth state listener
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
         console.log('Auth state changed:', event);
 
         if (session?.user) {
@@ -636,7 +636,7 @@ function initializeApp() {
     });
 
     // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
             loadUserData()
                 .then(() => showDashboard())
