@@ -1,5 +1,5 @@
 // ==========================================
-// DINAR COIN - Supabase Version V3.0
+// DINAR COIN - Full App JavaScript V2.0
 // ==========================================
 
 if ('serviceWorker' in navigator) {
@@ -8,13 +8,20 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// إعدادات Supabase
-const SUPABASE_URL = 'https://umlbxdcgpdifxzijujvj.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVtbGJ4ZGNncGRpZnh6aWp1anZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NzQzODUsImV4cCI6MjA4NjA1MDM4NX0.Ld3fU2_B4eu803BsDYKQ0ofg69WxQPJcscGf93lnM3w';
+const firebaseConfig = {
+    apiKey: "AIzaSyDGpAHia_wEmrhnmYjrPf1n1TrAzwEMiAI",
+    authDomain: "messageemeapp.firebaseapp.com",
+    databaseURL: "https://messageemeapp-default-rtdb.firebaseio.com",
+    projectId: "messageemeapp",
+    storageBucket: "messageemeapp.appspot.com",
+    messagingSenderId: "255034474844",
+    appId: "1:255034474844:web:5e3b7a6bc4b2fb94cc4199",
+    measurementId: "G-4QBEWRC583"
+};
 
-
-// إنشاء عميل Supabase
-var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const database = firebase.database();
 
 let currentUser = null;
 let userDataListener = null;
@@ -29,42 +36,6 @@ const TOTAL_SUPPLY = 1000000;
 const WELCOME_BONUS = 1.0;
 const REFERRAL_BONUS = 0.25;
 
-// قوائم الدول مع رموزها ومفاتيح الهاتف
-const countries = {
-    ar: [
-        { name: 'العراق', code: 'IQ', phone: '+964' },
-        { name: 'السعودية', code: 'SA', phone: '+966' },
-        { name: 'الإمارات', code: 'AE', phone: '+971' },
-        { name: 'الكويت', code: 'KW', phone: '+965' },
-        { name: 'قطر', code: 'QA', phone: '+974' },
-        { name: 'البحرين', code: 'BH', phone: '+973' },
-        { name: 'عُمان', code: 'OM', phone: '+968' },
-        { name: 'الأردن', code: 'JO', phone: '+962' },
-        { name: 'فلسطين', code: 'PS', phone: '+970' },
-        { name: 'لبنان', code: 'LB', phone: '+961' },
-        { name: 'سوريا', code: 'SY', phone: '+963' },
-        { name: 'مصر', code: 'EG', phone: '+20' },
-        { name: 'المغرب', code: 'MA', phone: '+212' },
-        { name: 'الجزائر', code: 'DZ', phone: '+213' },
-        { name: 'تونس', code: 'TN', phone: '+216' },
-        { name: 'ليبيا', code: 'LY', phone: '+218' },
-        { name: 'السودان', code: 'SD', phone: '+249' },
-        { name: 'اليمن', code: 'YE', phone: '+967' }
-    ],
-    en: [
-        { name: 'United States', code: 'US', phone: '+1' },
-        { name: 'United Kingdom', code: 'GB', phone: '+44' },
-        { name: 'Canada', code: 'CA', phone: '+1' },
-        { name: 'Australia', code: 'AU', phone: '+61' },
-        { name: 'Germany', code: 'DE', phone: '+49' },
-        { name: 'France', code: 'FR', phone: '+33' },
-        { name: 'Italy', code: 'IT', phone: '+39' },
-        { name: 'Spain', code: 'ES', phone: '+34' },
-        { name: 'Turkey', code: 'TR', phone: '+90' },
-        { name: 'India', code: 'IN', phone: '+91' }
-    ]
-};
-
 // ==========================================
 // NEWS ARTICLES DATA
 // ==========================================
@@ -75,614 +46,210 @@ const newsArticles = [
         summary: 'تحليل شامل لفرص الاستثمار في العملة الرقمية العراقية الأولى',
         img: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=600&h=300&fit=crop',
         date: '2026-02-06',
-        body: `في عالم يتجه بسرعة نحو الرقمنة، يبرز دينار كوين كفرصة استثمارية فريدة من نوعها في المنطقة العربية...`
+        body: `في عالم يتجه بسرعة نحو الرقمنة، يبرز دينار كوين كفرصة استثمارية فريدة من نوعها في المنطقة العربية. مع تزايد الاهتمام العالمي بالعملات الرقمية، يقدم دينار كوين بديلاً محلياً يراعي خصوصيات السوق العراقي والعربي.\n\nيتميز دينار كوين بعدة مزايا تجعله خياراً مثالياً للمستثمرين: سعر مستقر مرتبط بالدينار العراقي، منصة آمنة وسهلة الاستخدام، فريق عمل عراقي متخصص، ودعم كامل للغة العربية.\n\nمع خطط التوسع المستقبلية التي تشمل إضافة محفظة متعددة العملات وتكامل مع بوابات الدفع المحلية، يُتوقع أن يشهد دينار كوين نمواً كبيراً في الفترة القادمة. انضم الآن وكن جزءاً من هذه الثورة الرقمية العراقية!`
     },
-    // باقي المقالات...
+    {
+        id: 1, cat: 'update',
+        title: 'إطلاق النسخة التجريبية من دينار كوين',
+        summary: 'بداية رحلتنا نحو مستقبل رقمي متطور',
+        img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=300&fit=crop',
+        date: '2026-02-05',
+        body: `يسعدنا الإعلان عن إطلاق النسخة التجريبية من منصة دينار كوين! هذه النسخة تتضمن جميع الميزات الأساسية التي يحتاجها المستخدمون.\n\nالميزات المتاحة في النسخة التجريبية:\n• محفظة رقمية آمنة لحفظ عملات دينار كوين\n• إمكانية إرسال واستقبال العملات بسهولة\n• نظام إحالة مع مكافآت فورية\n• لوحة تحكم شاملة مع إحصائيات حية\n• تصميم عصري يعمل على جميع الأجهزة\n\nندعو جميع المهتمين للتسجيل والبدء باستخدام المنصة ومشاركة ملاحظاتهم لتحسين التجربة.`
+    },
+    {
+        id: 2, cat: 'guide',
+        title: 'دليل المبتدئين: كيف تبدأ مع دينار كوين خطوة بخطوة',
+        summary: 'كل ما تحتاج معرفته للبدء بالاستثمار في دينار كوين',
+        img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=300&fit=crop',
+        date: '2026-02-04',
+        body: `إذا كنت جديداً في عالم العملات الرقمية، فهذا الدليل مخصص لك! سنشرح لك كل خطوة بالتفصيل.\n\nالخطوة الأولى - إنشاء الحساب: قم بالتسجيل باستخدام بريدك الإلكتروني وكلمة مرور قوية. ستحصل فوراً على مكافأة ترحيبية!\n\nالخطوة الثانية - تأمين حسابك: تأكد من استخدام كلمة مرور فريدة ولا تشاركها مع أحد.\n\nالخطوة الثالثة - شراء العملات: يمكنك تقديم طلب شراء وسيتم مراجعته من قبل فريق الإدارة.\n\nالخطوة الرابعة - إرسال واستقبال: استخدم رمز الإحالة الخاص بك لاستقبال العملات، أو أدخل رمز شخص آخر لإرسال العملات إليه.\n\nالخطوة الخامسة - دعوة الأصدقاء: شارك رمز الإحالة واحصل على مكافآت مجانية!`
+    },
+    {
+        id: 3, cat: 'invest',
+        title: '5 أسباب تجعل العملات الرقمية العربية مستقبل الاقتصاد',
+        summary: 'لماذا العملات الرقمية المحلية أفضل من العملات العالمية؟',
+        img: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&h=300&fit=crop',
+        date: '2026-02-03',
+        body: `العملات الرقمية العربية تتميز بعدة مزايا فريدة تجعلها خياراً استراتيجياً للمستثمرين في المنطقة:\n\n1. فهم السوق المحلي: العملات المحلية مصممة لتلبية احتياجات المجتمع العربي.\n\n2. الاستقرار: ربط القيمة بالعملات المحلية يقلل من التقلبات الحادة.\n\n3. سهولة الاستخدام: واجهات عربية بالكامل مع دعم فني محلي.\n\n4. التكامل المحلي: إمكانية الربط مع البنوك وبوابات الدفع المحلية مستقبلاً.\n\n5. المجتمع: مجتمع عربي نشط يدعم نمو العملة.`
+    },
+    {
+        id: 4, cat: 'update',
+        title: 'تحديث جديد: نظام البطاقة الرقمية الذكية',
+        summary: 'كل مستخدم يحصل الآن على بطاقة رقمية فريدة',
+        img: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&h=300&fit=crop',
+        date: '2026-02-02',
+        body: `نحن متحمسون للإعلان عن إطلاق نظام البطاقة الرقمية الذكية! كل مستخدم جديد سيحصل تلقائياً على بطاقة رقمية فريدة برقم عشوائي خاص به.\n\nمميزات البطاقة الرقمية:\n• رقم بطاقة فريد لكل مستخدم\n• رمز CVV للأمان\n• تاريخ انتهاء\n• تصميم أنيق بألوان دينار كوين\n• إمكانية عرض تفاصيل البطاقة بقلبها\n\nهذه البطاقة هي خطوة نحو تقديم تجربة مصرفية رقمية كاملة في المستقبل القريب.`
+    },
+    {
+        id: 5, cat: 'invest',
+        title: 'كيف تحقق أرباحاً من نظام الإحالة في دينار كوين',
+        summary: 'استراتيجيات ذكية لزيادة أرباحك من دعوة الأصدقاء',
+        img: 'https://images.unsplash.com/photo-1553729459-afe8f2e2ed65?w=600&h=300&fit=crop',
+        date: '2026-02-01',
+        body: `نظام الإحالة في دينار كوين مصمم لمكافأة المستخدمين النشطين. إليك بعض الاستراتيجيات لتعظيم أرباحك:\n\nشارك على وسائل التواصل الاجتماعي: انشر رمز الإحالة الخاص بك على فيسبوك وإنستغرام وتويتر مع شرح مبسط عن دينار كوين.\n\nأنشئ محتوى تعليمي: اصنع فيديوهات قصيرة تشرح فيها كيفية استخدام المنصة.\n\nاستهدف المجتمعات المهتمة: انضم لمجموعات الاستثمار والتكنولوجيا.\n\nكل 10 إحالات ناجحة = 0.25 DC مكافأة مجانية! كلما زاد عدد إحالاتك، زادت مكافآتك.`
+    },
+    {
+        id: 6, cat: 'guide',
+        title: 'أمان حسابك: نصائح ذهبية لحماية عملاتك الرقمية',
+        summary: 'تعلم أفضل ممارسات الأمان لحماية استثماراتك',
+        img: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=600&h=300&fit=crop',
+        date: '2026-01-30',
+        body: `حماية حسابك وعملاتك الرقمية أمر بالغ الأهمية. إليك أهم النصائح:\n\n• استخدم كلمة مرور قوية وفريدة لا تقل عن 12 حرفاً\n• لا تشارك بيانات تسجيل الدخول مع أي شخص\n• تأكد من عنوان الموقع قبل تسجيل الدخول\n• لا تنقر على روابط مشبوهة تدعي أنها من دينار كوين\n• قم بتحديث متصفحك باستمرار\n• فعّل تسجيل الدخول بالبصمة عند توفره\n\nتذكر: فريق دينار كوين لن يطلب منك أبداً كلمة المرور الخاصة بك!`
+    }
 ];
 
 // ==========================================
-// AUTHENTICATION
+// INITIALIZATION
 // ==========================================
-
-// مراقبة حالة تسجيل الدخول
-supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-        await loadUserData(session.user.id);
-    } else if (event === 'SIGNED_OUT') {
-        currentUser = null;
-        showScreen('homeScreen');
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    initializeApp();
+    createParticles();
+    setupEventListeners();
+    renderNewsArticles();
+    loadGlobalStats(); // تحميل الإحصائيات العامة
 });
 
-// تسجيل الدخول
-async function login() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    
-    if (!email || !password) {
-        showNotification('خطأ', 'الرجاء إدخال البريد الإلكتروني وكلمة المرور', 'error');
-        return;
-    }
-    
-    try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
-        
-        if (error) throw error;
-        
-        // تحديث آخر تسجيل دخول
-        await supabase
-            .from('users')
-            .update({ last_login: new Date().toISOString() })
-            .eq('auth_id', data.user.id);
-        
-        showNotification('نجاح', 'تم تسجيل الدخول بنجاح!', 'success');
-        closeAuthModal();
-        
-    } catch (error) {
-        console.error('Login error:', error);
-        showNotification('خطأ', 'البريد الإلكتروني أو كلمة المرور غير صحيحة', 'error');
-    }
-}
-
-// إنشاء حساب جديد
-async function signup() {
-    // الحصول على القيم من النموذج
-    const firstName = document.getElementById('signupFirstName').value.trim();
-    const lastName = document.getElementById('signupLastName').value.trim();
-    const email = document.getElementById('signupEmail').value.trim();
-    const password = document.getElementById('signupPassword').value;
-    const confirmPassword = document.getElementById('signupConfirmPassword').value;
-    const phone = document.getElementById('signupPhone').value.trim();
-    const countrySelect = document.getElementById('signupCountry');
-    const selectedCountry = countries.ar[countrySelect.selectedIndex] || countries.ar[0];
-    const city = document.getElementById('signupCity').value.trim();
-    const street = document.getElementById('signupStreet').value.trim();
-    
-    // التحقق من البيانات
-    if (!firstName || !lastName || !email || !password || !phone || !city) {
-        showNotification('خطأ', 'الرجاء ملء جميع الحقول المطلوبة', 'error');
-        return;
-    }
-    
-    if (password !== confirmPassword) {
-        showNotification('خطأ', 'كلمتا المرور غير متطابقتين', 'error');
-        return;
-    }
-    
-    if (password.length < 8) {
-        showNotification('خطأ', 'كلمة المرور يجب أن تكون 8 أحرف على الأقل', 'error');
-        return;
-    }
-    
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-        showNotification('خطأ', 'كلمة المرور يجب أن تحتوي على أحرف كبيرة وصغيرة وأرقام', 'error');
-        return;
-    }
-    
-    try {
-        // التحقق من وجود البريد الإلكتروني
-        const { data: existingUser } = await supabase
-            .from('users')
-            .select('email')
-            .eq('email', email)
-            .single();
-        
-        if (existingUser) {
-            showNotification('خطأ', 'البريد الإلكتروني مستخدم بالفعل', 'error');
-            return;
-        }
-        
-        // إنشاء حساب المصادقة
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: email,
-            password: password
-        });
-        
-        if (authError) throw authError;
-        
-        // توليد بيانات فريدة
-        const referralCode = await generateReferralCode();
-        const cardNumber = generateCardNumber();
-        const cardCVV = generateCVV();
-        const cardExpiry = generateCardExpiry();
-        
-        // إنشاء سجل المستخدم
-        const { data: userData, error: userError } = await supabase
-            .from('users')
-            .insert([{
-                auth_id: authData.user.id,
-                first_name: firstName,
-                last_name: lastName,
-                email: email,
-                phone: phone,
-                phone_country_code: selectedCountry.phone,
-                country: selectedCountry.name,
-                country_code: selectedCountry.code,
-                city: city,
-                street: street || '',
-                referral_code: referralCode,
-                balance: WELCOME_BONUS,
-                welcome_bonus_received: true,
-                card_number: cardNumber,
-                card_cvv: cardCVV,
-                card_expiry: cardExpiry
-            }])
-            .select()
-            .single();
-        
-        if (userError) throw userError;
-        
-        // إضافة معاملة المكافأة الترحيبية
-        await supabase
-            .from('transactions')
-            .insert([{
-                receiver_id: userData.id,
-                amount: WELCOME_BONUS,
-                transaction_type: 'bonus',
-                status: 'completed',
-                note: 'مكافأة ترحيبية',
-                reference_number: `BONUS-${Date.now()}`,
-                completed_at: new Date().toISOString()
-            }]);
-        
-        showNotification('نجاح', `مرحباً ${firstName}! تم إنشاء حسابك بنجاح وحصلت على ${WELCOME_BONUS} دينار كمكافأة ترحيبية!`, 'success');
-        closeAuthModal();
-        
-    } catch (error) {
-        console.error('Signup error:', error);
-        showNotification('خطأ', 'حدث خطأ أثناء إنشاء الحساب. حاول مرة أخرى.', 'error');
-    }
-}
-
-// تسجيل الخروج
-async function logout() {
-    try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-        
-        currentUser = null;
-        showScreen('homeScreen');
-        showNotification('نجاح', 'تم تسجيل الخروج بنجاح', 'success');
-    } catch (error) {
-        console.error('Logout error:', error);
-    }
-}
-
-// ==========================================
-// DATA LOADING
-// ==========================================
-
-async function loadUserData(authId) {
-    try {
-        const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('auth_id', authId)
-            .single();
-        
-        if (error) throw error;
-        
-        currentUser = data;
-        updateDashboardUI();
-        showScreen('dashboardScreen');
-        loadTransactions();
-        loadReferrals();
-        
-    } catch (error) {
-        console.error('Error loading user data:', error);
-    }
-}
-
-async function loadPlatformStats() {
-    try {
-        const { data: stats, error } = await supabase
-            .from('platform_stats')
-            .select('*')
-            .limit(1)
-            .maybeSingle();
-        
-        if (error) {
-            console.error('Error fetching stats:', error);
-            return;
-        }
-        
-        const statsData = stats || {
-            total_users: 0,
-            total_coins_distributed: 0,
-            total_transactions: 0,
-            total_buy_requests: 0
-        };
-        
-        const remainingCoins = TOTAL_SUPPLY - (statsData.total_coins_distributed || 0);
-        
-        const homeUsersEl = document.getElementById('homeUsersCount');
-        const homeCoinsEl = document.getElementById('homeCoinsRemaining');
-        
-        if (homeUsersEl) homeUsersEl.textContent = formatNumber(statsData.total_users || 0);
-        if (homeCoinsEl) homeCoinsEl.textContent = formatNumber(remainingCoins);
-        
-        const dashUsersEl = document.getElementById('dashUsersCount');
-        const dashCoinsEl = document.getElementById('dashCoinsRemaining');
-        
-        if (dashUsersEl) dashUsersEl.textContent = formatNumber(statsData.total_users || 0);
-        if (dashCoinsEl) dashCoinsEl.textContent = formatNumber(remainingCoins);
-        
-    } catch (error) {
-        console.error('Error loading stats:', error);
-        const homeUsersEl = document.getElementById('homeUsersCount');
-        const homeCoinsEl = document.getElementById('homeCoinsRemaining');
-        if (homeUsersEl) homeUsersEl.textContent = '0';
-        if (homeCoinsEl) homeCoinsEl.textContent = formatNumber(TOTAL_SUPPLY);
-    }
-}
-
-async function loadTransactions() {
-    if (!currentUser) return;
-    
-    try {
-        const { data, error } = await supabase
-            .from('transactions')
-            .select(`
-                *,
-                sender:sender_id(full_name, referral_code),
-                receiver:receiver_id(full_name, referral_code)
-            `)
-            .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-            .order('created_at', { ascending: false })
-            .limit(50);
-        
-        if (error) throw error;
-        
-        displayTransactions(data);
-        
-    } catch (error) {
-        console.error('Error loading transactions:', error);
-    }
-}
-
-async function loadReferrals() {
-    if (!currentUser) return;
-    
-    try {
-        const { data, error } = await supabase
-            .from('referrals')
-            .select(`
-                *,
-                referred:referred_id(full_name, email, created_at)
-            `)
-            .eq('referrer_id', currentUser.id)
-            .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        displayReferrals(data);
-        
-    } catch (error) {
-        console.error('Error loading referrals:', error);
-    }
-}
-
-// ==========================================
-// UI UPDATES
-// ==========================================
-
-function updateDashboardUI() {
-    if (!currentUser) return;
-    
-    // تحديث معلومات المستخدم
-    const fullName = `${currentUser.first_name} ${currentUser.last_name}`;
-    document.getElementById('userName').textContent = fullName;
-    document.getElementById('userEmail').textContent = currentUser.email;
-    document.getElementById('userReferralCode').textContent = currentUser.referral_code;
-    
-    // تحديث الرصيد
-    document.getElementById('cardBalance').textContent = `${formatNumber(currentUser.balance)} DC`;
-    document.getElementById('profileBalance').textContent = `${formatNumber(currentUser.balance)} DC`;
-    document.getElementById('earnedCoins').textContent = formatNumber(currentUser.referral_earnings);
-    
-    // تحديث معلومات البطاقة
-    document.getElementById('cardName').textContent = fullName.toUpperCase();
-    document.getElementById('cardNum').textContent = currentUser.card_number;
-    document.getElementById('cardNumFront').textContent = currentUser.card_number;
-    document.getElementById('cardCVV').textContent = currentUser.card_cvv;
-    document.getElementById('cardExpiry').textContent = currentUser.card_expiry;
-    
-    // تحديث رمز الاستقبال
-    document.getElementById('receiveCode').textContent = currentUser.referral_code;
-    
-    // تحديث الأفاتار
-    const avatar = document.getElementById('userAvatar');
-    avatar.textContent = currentUser.first_name.charAt(0).toUpperCase();
-    
-    // تحديث معلومات الملف الشخصي
-    document.getElementById('profileName').textContent = fullName;
-    document.getElementById('profileEmail').textContent = currentUser.email;
-    document.getElementById('profilePhone').textContent = `${currentUser.phone_country_code} ${currentUser.phone}`;
-    document.getElementById('profileCountry').textContent = currentUser.country;
-    document.getElementById('profileCity').textContent = currentUser.city;
-    document.getElementById('profileAddress').textContent = currentUser.street || 'غير محدد';
-    document.getElementById('profileJoinDate').textContent = new Date(currentUser.created_at).toLocaleDateString('ar-IQ');
-    document.getElementById('totalReferrals').textContent = currentUser.total_referrals || 0;
-    
-    // توليد QR Code
-    generateQRCode(currentUser.referral_code);
-}
-
-function displayTransactions(transactions) {
-    const container = document.getElementById('transactionsList');
-    if (!container || !transactions || transactions.length === 0) {
-        if (container) container.innerHTML = '<p class="empty-state">لا توجد معاملات</p>';
-        return;
-    }
-    
-    container.innerHTML = transactions.map(tx => {
-        const isSender = tx.sender_id === currentUser.id;
-        const isReceiver = tx.receiver_id === currentUser.id;
-        const otherParty = isSender ? tx.receiver?.full_name : tx.sender?.full_name;
-        
-        let icon, typeText, amountClass;
-        if (tx.transaction_type === 'bonus' || tx.transaction_type === 'referral') {
-            icon = 'fas fa-gift';
-            typeText = 'مكافأة';
-            amountClass = 'positive';
-        } else if (isSender) {
-            icon = 'fas fa-arrow-up';
-            typeText = 'إرسال';
-            amountClass = 'negative';
+function initializeApp() {
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            currentUser = user;
+            loadUserData();
+            showDashboard();
+            updateAnalyticsStats();
         } else {
-            icon = 'fas fa-arrow-down';
-            typeText = 'استقبال';
-            amountClass = 'positive';
+            currentUser = null;
+            showHome();
         }
+    });
+}
+
+function createParticles() {
+    const c = document.getElementById('particles');
+    if (!c) return;
+    for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        const s = Math.random() * 3 + 1.5;
+        p.style.width = s + 'px';
+        p.style.height = s + 'px';
+        p.style.animationDelay = Math.random() * 20 + 's';
+        c.appendChild(p);
+    }
+}
+
+function setupEventListeners() {
+    document.getElementById('buyAmount')?.addEventListener('input', calculateBuyTotal);
+}
+
+// ==========================================
+// GLOBAL STATISTICS
+// ==========================================
+let globalStatsListener = null;
+
+function loadGlobalStats() {
+    // إنشاء العقدة إذا لم تكن موجودة
+    database.ref('global_stats').once('value').then(snap => {
+        if (!snap.exists()) {
+            database.ref('global_stats').set({
+                totalUsers: 0,
+                totalDistributed: 0,
+                totalRemaining: TOTAL_SUPPLY
+            });
+        }
+    });
+
+    // الاستماع للتحديثات
+    globalStatsListener = database.ref('global_stats').on('value', (snap) => {
+        const data = snap.val() || { totalUsers: 0, totalDistributed: 0, totalRemaining: TOTAL_SUPPLY };
         
-        return `
-            <div class="transaction-item">
-                <div class="transaction-icon ${tx.transaction_type}">
-                    <i class="${icon}"></i>
-                </div>
-                <div class="transaction-details">
-                    <div class="transaction-title">${typeText}${otherParty ? ' - ' + otherParty : ''}</div>
-                    <div class="transaction-date">${new Date(tx.created_at).toLocaleString('ar-IQ')}</div>
-                    ${tx.note ? `<div class="transaction-note">${tx.note}</div>` : ''}
-                </div>
-                <div class="transaction-amount ${amountClass}">
-                    ${isSender ? '-' : '+'}${formatNumber(tx.amount)} DC
-                </div>
-            </div>
-        `;
-    }).join('');
+        // تحديث شاشة الصفحة الرئيسية
+        updateElement('homeUsersCount', data.totalUsers.toLocaleString('ar-IQ'));
+        updateElement('homeCoinsRemaining', data.totalRemaining.toLocaleString('ar-IQ'));
+        
+        // تحديث شاشة الداشبورد
+        updateElement('dashUsersCount', data.totalUsers.toLocaleString('ar-IQ'));
+        updateElement('dashCoinsRemaining', data.totalRemaining.toLocaleString('ar-IQ'));
+        
+        // تحديث شاشة التحليلات
+        updateElement('statTotalUsers', data.totalUsers.toLocaleString('ar-IQ'));
+        updateElement('statCirculating', data.totalDistributed.toLocaleString('ar-IQ'));
+        updateElement('statRemaining', data.totalRemaining.toLocaleString('ar-IQ'));
+        updateElement('statTotalSupply', TOTAL_SUPPLY.toLocaleString('ar-IQ'));
+        
+        const distributionPercent = ((data.totalDistributed / TOTAL_SUPPLY) * 100).toFixed(2);
+        updateElement('distributionPercent', distributionPercent + '%');
+    });
 }
 
-function displayReferrals(referrals) {
-    const container = document.getElementById('referralsList');
-    if (!container) return;
-    
-    if (!referrals || referrals.length === 0) {
-        container.innerHTML = '<p class="empty-state">لم تقم بدعوة أي شخص بعد</p>';
-        return;
-    }
-    
-    container.innerHTML = referrals.map(ref => `
-        <div class="referral-item">
-            <div class="referral-avatar">
-                ${ref.referred?.full_name.charAt(0).toUpperCase()}
-            </div>
-            <div class="referral-details">
-                <div class="referral-name">${ref.referred?.full_name || 'مستخدم'}</div>
-                <div class="referral-date">${new Date(ref.created_at).toLocaleDateString('ar-IQ')}</div>
-            </div>
-            <div class="referral-bonus ${ref.bonus_paid ? 'paid' : 'pending'}">
-                ${ref.bonus_paid ? '✓' : '⏳'} ${formatNumber(ref.bonus_amount)} DC
-            </div>
-        </div>
-    `).join('');
-}
-
-// ==========================================
-// ACTIONS
-// ==========================================
-
-async function sendCoins() {
-    const recipientCode = document.getElementById('recipientCode').value.trim();
-    const amount = parseFloat(document.getElementById('sendAmount').value);
-    const note = document.getElementById('sendNote').value.trim();
-    
-    if (!recipientCode || !amount || amount <= 0) {
-        showNotification('خطأ', 'الرجاء إدخال رمز المستلم والكمية', 'error');
-        return;
-    }
-    
-    if (amount > currentUser.balance) {
-        showNotification('خطأ', 'رصيدك غير كافٍ', 'error');
-        return;
-    }
-    
-    if (recipientCode === currentUser.referral_code) {
-        showNotification('خطأ', 'لا يمكنك الإرسال لنفسك', 'error');
-        return;
-    }
-    
+async function updateGlobalStats(userCountDelta, coinsDelta) {
     try {
-        // البحث عن المستلم
-        const { data: recipient, error: recipientError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('referral_code', recipientCode)
-            .single();
+        const ref = database.ref('global_stats');
+        const snap = await ref.once('value');
+        const current = snap.val() || { totalUsers: 0, totalDistributed: 0, totalRemaining: TOTAL_SUPPLY };
         
-        if (recipientError || !recipient) {
-            showNotification('خطأ', 'رمز المستلم غير صحيح', 'error');
-            return;
-        }
-        
-        // خصم من المرسل
-        const { error: deductError } = await supabase
-            .from('users')
-            .update({ 
-                balance: currentUser.balance - amount,
-                total_sent: currentUser.total_sent + amount
-            })
-            .eq('id', currentUser.id);
-        
-        if (deductError) throw deductError;
-        
-        // إضافة للمستلم
-        const { error: addError } = await supabase
-            .from('users')
-            .update({ 
-                balance: recipient.balance + amount,
-                total_received: recipient.total_received + amount
-            })
-            .eq('id', recipient.id);
-        
-        if (addError) throw addError;
-        
-        // تسجيل المعاملة
-        await supabase
-            .from('transactions')
-            .insert([{
-                sender_id: currentUser.id,
-                receiver_id: recipient.id,
-                amount: amount,
-                transaction_type: 'send',
-                status: 'completed',
-                note: note || '',
-                reference_number: `SEND-${Date.now()}`,
-                completed_at: new Date().toISOString()
-            }]);
-        
-        currentUser.balance -= amount;
-        updateDashboardUI();
-        closeSendModal();
+        await ref.update({
+            totalUsers: Math.max(0, current.totalUsers + userCountDelta),
+            totalDistributed: Math.max(0, current.totalDistributed + coinsDelta),
+            totalRemaining: Math.max(0, TOTAL_SUPPLY - (current.totalDistributed + coinsDelta))
+        });
+    } catch (e) {
+        console.error('Error updating global stats:', e);
+    }
+}
+
+// ==========================================
+// SCREENS
+// ==========================================
+function showHome() {
+    document.getElementById('homeScreen').classList.add('active-screen');
+    document.getElementById('dashboardScreen').classList.remove('active-screen');
+    document.getElementById('bottomNav').style.display = 'none';
+}
+
+function showDashboard() {
+    document.getElementById('homeScreen').classList.remove('active-screen');
+    document.getElementById('dashboardScreen').classList.add('active-screen');
+    document.getElementById('bottomNav').style.display = 'flex';
+    switchTab('home');
+}
+
+function switchTab(tab) {
+    const screens = ['dashboardScreen', 'newsScreen', 'analyticsScreen', 'profileScreen'];
+    screens.forEach(s => document.getElementById(s).classList.remove('active-screen'));
+    
+    const tabs = document.querySelectorAll('.nav-tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    
+    if (tab === 'home') {
+        document.getElementById('dashboardScreen').classList.add('active-screen');
+        document.querySelector('[data-tab="home"]').classList.add('active');
         loadTransactions();
-        
-        showNotification('نجاح', `تم إرسال ${formatNumber(amount)} DC إلى ${recipient.full_name}`, 'success');
-        
-    } catch (error) {
-        console.error('Send error:', error);
-        showNotification('خطأ', 'حدث خطأ أثناء الإرسال', 'error');
-    }
-}
-
-async function submitBuyRequest() {
-    const amount = parseFloat(document.getElementById('buyAmount').value);
-    
-    if (!amount || amount <= 0) {
-        showNotification('خطأ', 'الرجاء إدخال كمية صحيحة', 'error');
-        return;
-    }
-    
-    const totalIQD = amount * PRICE_PER_COIN;
-    
-    try {
-        await supabase
-            .from('buy_requests')
-            .insert([{
-                user_id: currentUser.id,
-                amount: amount,
-                total_iqd: totalIQD,
-                status: 'pending'
-            }]);
-        
-        closeBuyModal();
-        showNotification('نجاح', 'تم إرسال طلب الشراء. سيتم مراجعته قريباً', 'success');
-        
-    } catch (error) {
-        console.error('Buy request error:', error);
-        showNotification('خطأ', 'حدث خطأ أثناء إرسال الطلب', 'error');
+    } else if (tab === 'news') {
+        document.getElementById('newsScreen').classList.add('active-screen');
+        document.querySelector('[data-tab="news"]').classList.add('active');
+    } else if (tab === 'analytics') {
+        document.getElementById('analyticsScreen').classList.add('active-screen');
+        document.querySelector('[data-tab="analytics"]').classList.add('active');
+        updateAnalyticsStats();
+    } else if (tab === 'profile') {
+        document.getElementById('profileScreen').classList.add('active-screen');
+        document.querySelector('[data-tab="profile"]').classList.add('active');
     }
 }
 
 // ==========================================
-// HELPER FUNCTIONS
+// AUTH
 // ==========================================
-
-async function generateReferralCode() {
-    let code;
-    let exists = true;
-    
-    while (exists) {
-        code = 'DC' + Math.floor(Math.random() * 100000000).toString().padStart(8, '0');
-        
-        const { data } = await supabase
-            .from('users')
-            .select('referral_code')
-            .eq('referral_code', code)
-            .single();
-        
-        exists = !!data;
-    }
-    
-    return code;
-}
-
-function generateCardNumber() {
-    const parts = [];
-    for (let i = 0; i < 4; i++) {
-        parts.push(Math.floor(Math.random() * 10000).toString().padStart(4, '0'));
-    }
-    return parts.join(' ');
-}
-
-function generateCVV() {
-    return Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-}
-
-function generateCardExpiry() {
-    const date = new Date();
-    date.setFullYear(date.getFullYear() + 5);
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${month}/${year}`;
-}
-
-function formatNumber(num) {
-    return new Intl.NumberFormat('ar-IQ').format(num || 0);
-}
-
-function generateQRCode(text) {
-    const qrContainer = document.getElementById('qrCode');
-    if (!qrContainer) return;
-    
-    qrContainer.innerHTML = '';
-    new QRCode(qrContainer, {
-        text: text,
-        width: 200,
-        height: 200,
-        colorDark: '#1a5f4a',
-        colorLight: '#ffffff'
-    });
-}
-
-function showNotification(title, message, type = 'success') {
-    const notification = document.getElementById('successNotification');
-    document.getElementById('notificationTitle').textContent = title;
-    document.getElementById('notificationMessage').textContent = message;
-    
-    notification.className = `toast-notification ${type} show`;
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 4000);
-}
-
-function copyReceiveCode() {
-    const code = document.getElementById('receiveCode').textContent;
-    navigator.clipboard.writeText(code).then(() => {
-        showNotification('نجاح', 'تم نسخ الرمز', 'success');
-    });
-}
-
-// ==========================================
-// MODALS & UI
-// ==========================================
-
 function showAuthModal(type) {
     document.getElementById('authModal').classList.add('active');
-    switchAuthForm(type);
+    if (type === 'signup') {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('signupForm').style.display = 'block';
+    } else {
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('signupForm').style.display = 'none';
+    }
 }
 
 function closeAuthModal() {
@@ -690,203 +257,998 @@ function closeAuthModal() {
 }
 
 function switchAuthForm(type) {
-    const loginForm = document.getElementById('loginForm');
-    const signupForm = document.getElementById('signupForm');
-    
-    if (type === 'login') {
-        loginForm.classList.add('active');
-        signupForm.classList.remove('active');
+    if (type === 'signup') {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('signupForm').style.display = 'block';
     } else {
-        loginForm.classList.remove('active');
-        signupForm.classList.add('active');
-        populateCountryOptions();
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('signupForm').style.display = 'none';
     }
 }
 
-function populateCountryOptions() {
-    const selectAr = document.getElementById('signupCountry');
-    const selectEn = document.getElementById('signupCountryEn');
+async function signup() {
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    const refCode = document.getElementById('signupReferralCode').value.trim();
     
-    if (selectAr && selectAr.children.length === 1) {
-        countries.ar.forEach(country => {
-            const option = document.createElement('option');
-            option.value = JSON.stringify(country);
-            option.textContent = country.name;
-            selectAr.appendChild(option);
+    if (!name || !email || !password) {
+        showNotification('خطأ', 'الرجاء إدخال جميع البيانات', 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showNotification('خطأ', 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error');
+        return;
+    }
+    
+    try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const uid = userCredential.user.uid;
+        
+        // إنشاء بيانات البطاقة
+        const cardData = generateCardData(name);
+        
+        // بيانات المستخدم الأساسية
+        const userData = {
+            name: name,
+            email: email,
+            referralCode: generateReferralCode(),
+            balance: WELCOME_BONUS,
+            referralCount: 0,
+            referralEarnings: 0,
+            joinDate: new Date().toISOString(),
+            card: cardData
+        };
+        
+        await database.ref(`users/${uid}`).set(userData);
+        
+        // إضافة معاملة المكافأة الترحيبية
+        await addTransaction(uid, {
+            type: 'bonus',
+            amount: WELCOME_BONUS,
+            description: 'مكافأة الانضمام',
+            status: 'completed'
         });
+        
+        // تحديث الإحصائيات العامة - إضافة مستخدم وتوزيع المكافأة
+        await updateGlobalStats(1, WELCOME_BONUS);
+        
+        // معالجة رمز الإحالة إن وُجد
+        if (refCode) {
+            const referrerUid = await validateReferralCode(refCode);
+            if (referrerUid && referrerUid !== uid) {
+                await processReferral(referrerUid);
+                await database.ref(`users/${uid}`).update({ referredBy: refCode });
+            }
+        }
+        
+        closeAuthModal();
+        showNotification('مرحباً!', `تم إنشاء حسابك بنجاح! حصلت على ${WELCOME_BONUS} DC`, 'success');
+    } catch (e) {
+        let msg = 'حدث خطأ في التسجيل';
+        if (e.code === 'auth/email-already-in-use') msg = 'البريد الإلكتروني مستخدم مسبقاً';
+        else if (e.code === 'auth/invalid-email') msg = 'بريد إلكتروني غير صحيح';
+        showNotification('خطأ', msg, 'error');
+    }
+}
+
+async function login() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!email || !password) {
+        showNotification('خطأ', 'أدخل البريد وكلمة المرور', 'error');
+        return;
     }
     
-    if (selectEn && selectEn.children.length === 1) {
-        countries.en.forEach(country => {
-            const option = document.createElement('option');
-            option.value = JSON.stringify(country);
-            option.textContent = country.name;
-            selectEn.appendChild(option);
+    try {
+        await auth.signInWithEmailAndPassword(email, password);
+        closeAuthModal();
+        showNotification('مرحباً بعودتك!', 'تم تسجيل الدخول بنجاح', 'success');
+    } catch (e) {
+        let msg = 'بيانات خاطئة';
+        if (e.code === 'auth/user-not-found') msg = 'المستخدم غير موجود';
+        else if (e.code === 'auth/wrong-password') msg = 'كلمة مرور خاطئة';
+        showNotification('خطأ', msg, 'error');
+    }
+}
+
+function logout() {
+    auth.signOut();
+    if (userDataListener) {
+        database.ref(`users/${currentUser.uid}`).off('value', userDataListener);
+        userDataListener = null;
+    }
+    if (globalStatsListener) {
+        database.ref('global_stats').off('value', globalStatsListener);
+        globalStatsListener = null;
+    }
+    cardFlipped = false;
+    showNotification('تم', 'تم تسجيل الخروج', 'success');
+}
+
+// ==========================================
+// USER DATA
+// ==========================================
+async function loadUserData() {
+    if (!currentUser) return;
+    
+    if (userDataListener) {
+        database.ref(`users/${currentUser.uid}`).off('value', userDataListener);
+    }
+    
+    userDataListener = database.ref(`users/${currentUser.uid}`).on('value', (snap) => {
+        const data = snap.val();
+        if (!data) return;
+        
+        updateElement('userName', data.name);
+        updateElement('userEmail', data.email);
+        updateElement('userReferralCode', data.referralCode);
+        
+        // Dashboard
+        const balance = parseFloat(data.balance || 0).toFixed(2);
+        updateElement('cardBalance', balance + ' DC');
+        updateElement('totalBalance', balance + ' DC');
+        updateElement('cardName', data.name);
+        updateElement('referralCode', data.referralCode);
+        updateElement('referralCount', data.referralCount || 0);
+        updateElement('referralEarnings', parseFloat(data.referralEarnings || 0).toFixed(2) + ' DC');
+
+        // Card
+        if (data.card) {
+            userCardData = data.card;
+            updateElement('cardNum', formatCardNumber(data.card.number));
+            updateElement('cardNumFront', formatCardNumber(data.card.number)); // تحديث رقم البطاقة في الواجهة الأمامية
+            updateElement('cardCVV', data.card.cvv);
+            updateElement('cardExpiry', data.card.expiry);
+        }
+        
+        // Profile
+        updateElement('profileName', data.name);
+        updateElement('profileNameDisplay', data.name);
+        updateElement('profileEmailValue', data.email);
+        updateElement('profileRefCode', data.referralCode);
+        updateElement('profileBalance', balance + ' DC');
+        updateElement('profileCardNum', formatCardNumber(data.card?.number || '****************'));
+        updateElement('profileCVV', '***');
+        updateElement('profileExpiry', data.card?.expiry || '--/--');
+        
+        if (data.joinDate) {
+            const date = new Date(data.joinDate);
+            updateElement('profileJoinDate', date.toLocaleDateString('ar-IQ', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }));
+        }
+        
+        // Analytics
+        updateElement('analyticBalance', balance + ' DC');
+        updateElement('analyticReferrals', data.referralCount || 0);
+        updateElement('analyticEarnings', parseFloat(data.referralEarnings || 0).toFixed(2) + ' DC');
+        
+        // Avatar
+        const firstLetter = data.name.charAt(0).toUpperCase();
+        updateElement('userAvatar', firstLetter);
+        updateElement('profileAvatar', firstLetter);
+        
+        // QR Code للاستقبال
+        updateElement('receiveCode', data.referralCode);
+        generateQRCode(data.referralCode);
+    });
+}
+
+function updateElement(id, value) {
+    const el = document.getElementById(id);
+    if (el) {
+        if (el.tagName === 'INPUT') el.value = value;
+        else el.textContent = value;
+    }
+}
+
+// ==========================================
+// CARD
+// ==========================================
+function generateCardData(name) {
+    return {
+        number: generateCardNumber(),
+        cvv: generateCVV(),
+        expiry: generateExpiry(),
+        holder: name
+    };
+}
+
+function generateCardNumber() {
+    let num = '5464';
+    for (let i = 0; i < 12; i++) {
+        num += Math.floor(Math.random() * 10);
+    }
+    return num;
+}
+
+function generateCVV() {
+    return String(Math.floor(100 + Math.random() * 900));
+}
+
+function generateExpiry() {
+    const month = String(Math.floor(1 + Math.random() * 12)).padStart(2, '0');
+    const year = String(new Date().getFullYear() + 5).slice(-2);
+    return `${month}/${year}`;
+}
+
+function formatCardNumber(num) {
+    if (!num) return '**** **** **** ****';
+    return num.match(/.{1,4}/g)?.join(' ') || num;
+}
+
+function flipCard() {
+    cardFlipped = !cardFlipped;
+    const flipper = document.getElementById('cardFlipper');
+    if (flipper) {
+        if (cardFlipped) flipper.classList.add('flipped');
+        else flipper.classList.remove('flipped');
+    }
+}
+
+function toggleCardNumVisibility() {
+    cardNumVisible = !cardNumVisible;
+    const el = document.getElementById('profileCardNum');
+    const icon = document.getElementById('cardNumToggle');
+    if (el && userCardData) {
+        el.textContent = cardNumVisible ? formatCardNumber(userCardData.number) : formatCardNumber('****************');
+        if (icon) icon.className = cardNumVisible ? 'fas fa-eye-slash settings-arrow' : 'fas fa-eye settings-arrow';
+    }
+}
+
+function toggleCVVVisibility() {
+    cvvVisible = !cvvVisible;
+    const el = document.getElementById('profileCVV');
+    const icon = document.getElementById('cvvToggle');
+    if (el && userCardData) {
+        el.textContent = cvvVisible ? userCardData.cvv : '***';
+        if (icon) icon.className = cvvVisible ? 'fas fa-eye-slash settings-arrow' : 'fas fa-eye settings-arrow';
+    }
+}
+
+// ==========================================
+// QR CODE
+// ==========================================
+let qrCodeInstance = null;
+
+function generateQRCode(text) {
+    const container = document.getElementById('qrCode');
+    if (!container || !text) return;
+    
+    // مسح الكود القديم
+    container.innerHTML = '';
+    
+    try {
+        // إنشاء كود QR جديد
+        qrCodeInstance = new QRCode(container, {
+            text: text,
+            width: 200,
+            height: 200,
+            colorDark: '#0a1a14',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
         });
+    } catch (e) {
+        console.error('Error generating QR code:', e);
+        container.innerHTML = '<p style="text-align:center;padding:20px;">خطأ في إنشاء رمز QR</p>';
     }
 }
 
-function updatePhoneCode() {
-    const select = document.getElementById('signupCountry');
-    const phoneCode = document.getElementById('phoneCountryCode');
+// ==========================================
+// TRANSACTIONS
+// ==========================================
+async function loadTransactions() {
+    if (!currentUser) return;
+    const list = document.getElementById('transactionsList');
+    if (!list) return;
     
-    if (select.selectedIndex > 0) {
-        const country = countries.ar[select.selectedIndex - 1];
-        phoneCode.textContent = country.phone;
+    try {
+        const snap = await database.ref(`transactions/${currentUser.uid}`).orderByChild('timestamp').limitToLast(20).once('value');
+        const txs = [];
+        snap.forEach(c => txs.push({ id: c.key, ...c.val() }));
+        txs.sort((a, b) => b.timestamp - a.timestamp);
+        
+        if (txs.length === 0) {
+            list.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>لا توجد عمليات بعد</p></div>';
+            return;
+        }
+        
+        list.innerHTML = txs.map(tx => {
+            const cls = tx.status === 'pending' ? 'pending' : (tx.type === 'send' ? 'negative' : 'positive');
+            const iconMap = {
+                buy: 'shopping-cart',
+                sell: 'hand-holding-usd',
+                send: 'paper-plane',
+                receive: 'download',
+                bonus: 'gift',
+                referral: 'users'
+            };
+            const icon = iconMap[tx.type] || 'exchange-alt';
+            const sign = tx.type === 'send' ? '-' : '+';
+            const date = new Date(tx.timestamp).toLocaleDateString('ar-IQ', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            return `<div class="transaction-item">
+                <div class="transaction-icon ${cls}"><i class="fas fa-${icon}"></i></div>
+                <div class="transaction-details">
+                    <div class="transaction-type">${tx.description}</div>
+                    <div class="transaction-date">${date}</div>
+                </div>
+                <div class="transaction-amount ${cls}">${sign}${parseFloat(tx.amount).toFixed(2)} DC</div>
+            </div>`;
+        }).join('');
+    } catch (e) {
+        console.error('Error loading transactions:', e);
     }
 }
 
-function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-    document.getElementById(screenId).classList.add('active-screen');
+async function addTransaction(uid, data) {
+    try {
+        await database.ref(`transactions/${uid}`).push({
+            ...data,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+    } catch (e) {
+        console.error('Error adding transaction:', e);
+    }
 }
 
+// ==========================================
+// REFERRAL
+// ==========================================
+function generateReferralCode() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = 'DC';
+    for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+}
+
+async function validateReferralCode(code) {
+    if (!code || code.length !== 10) return null;
+    
+    try {
+        const snap = await database.ref('users').orderByChild('referralCode').equalTo(code).once('value');
+        if (snap.exists()) {
+            return Object.keys(snap.val())[0];
+        }
+    } catch (e) {
+        console.error('Error validating referral code:', e);
+    }
+    
+    return null;
+}
+
+async function processReferral(referrerUid) {
+    try {
+        const ref = database.ref(`users/${referrerUid}`);
+        const snap = await ref.once('value');
+        const data = snap.val();
+        if (!data) return;
+        
+        const newCount = (data.referralCount || 0) + 1;
+        
+        // كل 10 إحالات يحصل على مكافأة
+        if (newCount % 10 === 0) {
+            const newEarnings = parseFloat(data.referralEarnings || 0) + REFERRAL_BONUS;
+            const newBalance = parseFloat(data.balance || 0) + REFERRAL_BONUS;
+            
+            await ref.update({
+                referralCount: newCount,
+                referralEarnings: newEarnings,
+                balance: newBalance
+            });
+            
+            await addTransaction(referrerUid, {
+                type: 'referral',
+                amount: REFERRAL_BONUS,
+                description: `مكافأة إحالة - ${newCount} إحالة`,
+                status: 'completed'
+            });
+            
+            // تحديث العملات الموزعة
+            await updateGlobalStats(0, REFERRAL_BONUS);
+        } else {
+            await ref.update({ referralCount: newCount });
+        }
+    } catch (e) {
+        console.error('Error processing referral:', e);
+    }
+}
+
+function copyReferralCode() {
+    const code = document.getElementById('referralCode')?.textContent;
+    if (code) {
+        copyToClipboard(code);
+        showNotification('تم النسخ', 'تم نسخ رمز الإحالة', 'success');
+    }
+}
+
+function copyReceiveCode() {
+    const code = document.getElementById('receiveCode')?.textContent;
+    if (code) {
+        copyToClipboard(code);
+        showNotification('تم النسخ', 'تم نسخ الرمز', 'success');
+    }
+}
+
+function copyToClipboard(text) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+    } else {
+        fallbackCopy(text);
+    }
+}
+
+function fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+}
+
+// ==========================================
+// BUY/SEND/RECEIVE
+// ==========================================
 function showBuyModal() {
     document.getElementById('buyModal').classList.add('active');
-}
-
-function closeBuyModal() {
-    document.getElementById('buyModal').classList.remove('active');
     document.getElementById('buyAmount').value = '';
     document.getElementById('totalIQD').textContent = '0 IQD';
 }
 
-function showSendModal() {
-    document.getElementById('sendModal').classList.add('active');
+function closeBuyModal() {
+    document.getElementById('buyModal').classList.remove('active');
 }
 
-function closeSendModal() {
-    document.getElementById('sendModal').classList.remove('active');
+function calculateBuyTotal() {
+    const amount = parseFloat(document.getElementById('buyAmount').value) || 0;
+    document.getElementById('totalIQD').textContent = (amount * PRICE_PER_COIN).toLocaleString('ar-IQ') + ' IQD';
+}
+
+async function submitBuyRequest() {
+    if (!currentUser) return;
+    
+    const amount = parseFloat(document.getElementById('buyAmount').value);
+    if (!amount || amount <= 0) {
+        showNotification('خطأ', 'أدخل كمية صحيحة', 'error');
+        return;
+    }
+    
+    try {
+        const total = amount * PRICE_PER_COIN;
+        await database.ref(`purchase_requests/${currentUser.uid}`).push({
+            userId: currentUser.uid,
+            amount: amount,
+            totalIQD: total,
+            status: 'pending',
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+        
+        await addTransaction(currentUser.uid, {
+            type: 'buy',
+            amount: amount,
+            description: `طلب شراء - ${total.toLocaleString('ar-IQ')} IQD`,
+            status: 'pending'
+        });
+        
+        closeBuyModal();
+        showNotification('تم!', `طلب شراء ${amount} DC أُرسل بنجاح`, 'success');
+    } catch (e) {
+        showNotification('خطأ', 'فشل الطلب', 'error');
+    }
+}
+
+function showSendModal() {
+    document.getElementById('sendModal').classList.add('active');
     document.getElementById('recipientCode').value = '';
     document.getElementById('sendAmount').value = '';
     document.getElementById('sendNote').value = '';
 }
 
+function closeSendModal() {
+    document.getElementById('sendModal').classList.remove('active');
+}
+
 function showReceiveModal() {
+    if (!currentUser) {
+        showAuthModal('login');
+        return;
+    }
     document.getElementById('receiveModal').classList.add('active');
+    // توليد QR عند فتح المودال
+    const code = document.getElementById('receiveCode')?.textContent || '';
+    generateQRCode(code);
 }
 
 function closeReceiveModal() {
     document.getElementById('receiveModal').classList.remove('active');
 }
 
-function calculateBuyTotal() {
-    const amount = parseFloat(document.getElementById('buyAmount').value) || 0;
-    const total = amount * PRICE_PER_COIN;
-    document.getElementById('totalIQD').textContent = formatNumber(total) + ' IQD';
-}
-
-function flipCard() {
-    cardFlipped = !cardFlipped;
-    document.getElementById('cardFlipper').classList.toggle('flipped', cardFlipped);
-}
-
-function switchTab(tab) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.getElementById(`${tab}Tab`).classList.add('active');
-}
-
-function closeNotification() {
-    document.getElementById('successNotification').classList.remove('show');
+async function sendCoins() {
+    if (!currentUser) return;
+    
+    const recipientCode = document.getElementById('recipientCode').value.trim();
+    const amount = parseFloat(document.getElementById('sendAmount').value);
+    const note = document.getElementById('sendNote').value.trim() || 'تحويل';
+    
+    if (!recipientCode || !amount || amount <= 0) {
+        showNotification('خطأ', 'أدخل جميع البيانات', 'error');
+        return;
+    }
+    
+    try {
+        const senderSnap = await database.ref(`users/${currentUser.uid}`).once('value');
+        const senderData = senderSnap.val();
+        
+        if (!senderData || parseFloat(senderData.balance) < amount) {
+            showNotification('خطأ', 'رصيد غير كافٍ', 'error');
+            return;
+        }
+        
+        const recipientUid = await validateReferralCode(recipientCode);
+        if (!recipientUid) {
+            showNotification('خطأ', 'رمز غير صحيح', 'error');
+            return;
+        }
+        
+        if (recipientUid === currentUser.uid) {
+            showNotification('خطأ', 'لا يمكن الإرسال لنفسك', 'error');
+            return;
+        }
+        
+        const recipientSnap = await database.ref(`users/${recipientUid}`).once('value');
+        const recipientData = recipientSnap.val();
+        
+        if (!recipientData) {
+            showNotification('خطأ', 'مستخدم غير موجود', 'error');
+            return;
+        }
+        
+        // تحديث الأرصدة
+        await database.ref(`users/${currentUser.uid}`).update({
+            balance: parseFloat(senderData.balance) - amount
+        });
+        
+        await database.ref(`users/${recipientUid}`).update({
+            balance: parseFloat(recipientData.balance || 0) + amount
+        });
+        
+        // إضافة المعاملات
+        await addTransaction(currentUser.uid, {
+            type: 'send',
+            amount: amount,
+            description: `إرسال إلى ${recipientData.name} - ${note}`,
+            status: 'completed'
+        });
+        
+        await addTransaction(recipientUid, {
+            type: 'receive',
+            amount: amount,
+            description: `استلام من ${senderData.name} - ${note}`,
+            status: 'completed'
+        });
+        
+        closeSendModal();
+        showNotification('تم!', `أُرسل ${amount} DC إلى ${recipientData.name}`, 'success');
+    } catch (e) {
+        console.error('Error sending coins:', e);
+        showNotification('خطأ', 'فشلت العملية', 'error');
+    }
 }
 
 // ==========================================
-// INITIALIZATION
+// NEWS
 // ==========================================
-
-document.addEventListener('DOMContentLoaded', async () => {
-    // تحميل الإحصائيات
-    loadPlatformStats();
-    setInterval(loadPlatformStats, 30000); // تحديث كل 30 ثانية
-    
-    // التحقق من حالة تسجيل الدخول
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-        await loadUserData(session.user.id);
-    }
-    
-    // عرض المقالات
-    renderNews();
-    
-    // إنشاء جزيئات الخلفية
-    createParticles();
-});
-
-function createParticles() {
-    const container = document.getElementById('particles');
-    if (!container) return;
-    
-    for (let i = 0; i < 50; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.top = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 20 + 's';
-        particle.style.animationDuration = (20 + Math.random() * 20) + 's';
-        container.appendChild(particle);
-    }
-}
-
-function renderNews() {
-    const container = document.getElementById('newsGrid');
+function renderNewsArticles() {
+    const container = document.getElementById('newsArticlesList');
     if (!container) return;
     
     container.innerHTML = newsArticles.map(article => `
-        <div class="news-card" onclick="openArticle(${article.id})">
-            <div class="news-img" style="background-image:url('${article.img}')"></div>
-            <div class="news-content">
-                <span class="news-cat ${article.cat}">${getCategoryName(article.cat)}</span>
-                <h4 class="news-title">${article.title}</h4>
-                <p class="news-summary">${article.summary}</p>
+        <div class="news-card" data-category="${article.cat}" onclick="openArticle(${article.id})">
+            <div class="news-card-img" style="background-image:url('${article.img}')"></div>
+            <div class="news-card-content">
+                <span class="news-badge ${article.cat}">${getCategoryLabel(article.cat)}</span>
+                <h3>${article.title}</h3>
+                <p>${article.summary}</p>
                 <div class="news-meta">
-                    <span><i class="fas fa-calendar"></i> ${new Date(article.date).toLocaleDateString('ar-IQ')}</span>
+                    <span><i class="fas fa-calendar"></i> ${formatDate(article.date)}</span>
                 </div>
             </div>
         </div>
     `).join('');
 }
 
-function getCategoryName(cat) {
-    const names = {
-        'invest': 'استثمار',
-        'update': 'تحديثات',
-        'guide': 'دليل'
+function getCategoryLabel(cat) {
+    const labels = {
+        update: 'تحديث',
+        guide: 'دليل',
+        invest: 'استثمار'
     };
-    return names[cat] || cat;
+    return labels[cat] || cat;
+}
+
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('ar-IQ', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function filterNews(category) {
+    const cards = document.querySelectorAll('.news-card');
+    const buttons = document.querySelectorAll('.filter-btn');
+    
+    buttons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.cat === category) btn.classList.add('active');
+    });
+    
+    cards.forEach(card => {
+        if (category === 'all' || card.dataset.category === category) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
 }
 
 function openArticle(id) {
     const article = newsArticles.find(a => a.id === id);
     if (!article) return;
     
-    const modal = document.getElementById('articleModal');
     const content = document.getElementById('articleContent');
-    
     content.innerHTML = `
-        <div class="article-header">
-            <span class="article-cat ${article.cat}">${getCategoryName(article.cat)}</span>
+        <div class="article-header-img" style="background-image:url('${article.img}')"></div>
+        <div class="article-body">
+            <span class="news-badge ${article.cat}">${getCategoryLabel(article.cat)}</span>
             <h2>${article.title}</h2>
             <div class="article-meta">
-                <span><i class="fas fa-calendar"></i> ${new Date(article.date).toLocaleDateString('ar-IQ')}</span>
+                <span><i class="fas fa-calendar"></i> ${formatDate(article.date)}</span>
             </div>
+            <div class="article-text">${article.body.replace(/\n/g, '<br>')}</div>
         </div>
-        <div class="article-body">${article.body.split('\n').map(p => `<p>${p}</p>`).join('')}</div>
     `;
     
-    modal.classList.add('active');
+    document.getElementById('articleModal').classList.add('active');
 }
 
 function closeArticleModal() {
     document.getElementById('articleModal').classList.remove('active');
 }
 
-// Enter key handlers
-document.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        if (document.getElementById('loginForm').classList.contains('active')) {
-            login();
-        } else if (document.getElementById('signupForm').classList.contains('active')) {
-            signup();
+// ==========================================
+// ANALYTICS
+// ==========================================
+function updateAnalyticsStats() {
+    if (!currentUser) return;
+    // Stats are already updated by loadUserData and loadGlobalStats
+}
+
+// ==========================================
+// PROFILE
+// ==========================================
+function showEditNameModal() {
+    document.getElementById('editNameModal').classList.add('active');
+    document.getElementById('editNameInput').value = document.getElementById('userName').textContent;
+}
+
+function closeEditNameModal() {
+    document.getElementById('editNameModal').classList.remove('active');
+}
+
+async function saveNewName() {
+    if (!currentUser) return;
+    
+    const newName = document.getElementById('editNameInput').value.trim();
+    if (!newName) {
+        showNotification('خطأ', 'أدخل اسماً صحيحاً', 'error');
+        return;
+    }
+    
+    try {
+        await database.ref(`users/${currentUser.uid}`).update({ name: newName });
+        closeEditNameModal();
+        showNotification('تم!', 'تم تحديث الاسم بنجاح', 'success');
+    } catch (e) {
+        showNotification('خطأ', 'فشل التحديث', 'error');
+    }
+}
+
+function toggleSetting(setting) {
+    const toggle = document.getElementById(`toggle-${setting}`);
+    if (toggle) {
+        const isActive = toggle.classList.toggle('active');
+        
+        // حفظ الإعدادات في localStorage
+        localStorage.setItem(`setting-${setting}`, isActive ? 'true' : 'false');
+        
+        // تطبيق الإعدادات
+        if (setting === 'darkmode') {
+            applyDarkMode(isActive);
+        } else if (setting === 'notifications') {
+            applyNotifications(isActive);
+        } else if (setting === 'biometric') {
+            applyBiometric(isActive);
         }
+        
+        showNotification('تم', `تم ${isActive ? 'تفعيل' : 'إلغاء'} ${getSettingName(setting)}`, 'success');
+    }
+}
+
+function getSettingName(setting) {
+    const names = {
+        'darkmode': 'الوضع الليلي',
+        'notifications': 'الإشعارات',
+        'biometric': 'تسجيل الدخول بالبصمة'
+    };
+    return names[setting] || setting;
+}
+
+function applyDarkMode(isActive) {
+    if (isActive) {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
+}
+
+function applyNotifications(isActive) {
+    if (isActive && 'Notification' in window) {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log('تم تفعيل الإشعارات');
+            }
+        });
+    }
+}
+
+function applyBiometric(isActive) {
+    if (isActive) {
+        console.log('تم تفعيل البصمة (متاح في التحديث القادم)');
+    }
+}
+
+// استعادة الإعدادات عند تحميل الصفحة
+function loadSettings() {
+    const darkmode = localStorage.getItem('setting-darkmode') === 'true';
+    const notifications = localStorage.getItem('setting-notifications') === 'true';
+    const biometric = localStorage.getItem('setting-biometric') === 'true';
+    
+    if (darkmode) {
+        document.getElementById('toggle-darkmode')?.classList.add('active');
+        applyDarkMode(true);
+    }
+    if (notifications) {
+        document.getElementById('toggle-notifications')?.classList.add('active');
+    }
+    if (biometric) {
+        document.getElementById('toggle-biometric')?.classList.add('active');
+    }
+}
+
+// تحميل الإعدادات عند بدء التطبيق
+setTimeout(loadSettings, 100);
+
+
+// ==========================================
+// LANGUAGE FUNCTIONS
+// ==========================================
+function showLanguageModal() {
+    const languages = [
+        { code: 'ar', name: 'العربية', flag: '🇮🇶' },
+        { code: 'en', name: 'English', flag: '🇺🇸' },
+        { code: 'ku', name: 'کوردی', flag: '🇮🇶' }
+    ];
+    
+    const currentLang = localStorage.getItem('app-language') || 'ar';
+    
+    let html = `
+        <div class="modal-overlay active">
+            <div class="modal-sheet modal-small">
+                <div class="modal-handle"></div>
+                <button class="modal-close-btn" onclick="closeLanguageModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-icon-header">
+                    <div class="modal-icon-circle receive">
+                        <i class="fas fa-language"></i>
+                    </div>
+                    <h2>اختر اللغة</h2>
+                </div>
+                <div class="settings-card" style="margin-top:20px;">
+    `;
+    
+    languages.forEach(lang => {
+        const active = lang.code === currentLang ? 'style="background:var(--gold-light);"' : '';
+        html += `
+            <div class="settings-item" onclick="changeLanguage('${lang.code}')" ${active}>
+                <div class="settings-item-icon">${lang.flag}</div>
+                <div class="settings-item-content">
+                    <span class="settings-item-label">${lang.name}</span>
+                </div>
+                ${lang.code === currentLang ? '<i class="fas fa-check" style="color:var(--gold-primary);"></i>' : ''}
+            </div>
+        `;
+    });
+    
+    html += `
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeLanguageModal() {
+    const modal = document.querySelector('.modal-overlay:last-child');
+    if (modal) modal.remove();
+}
+
+function changeLanguage(langCode) {
+    localStorage.setItem('app-language', langCode);
+    showNotification('تم', 'سيتم تطبيق اللغة في التحديث القادم', 'success');
+    closeLanguageModal();
+    
+    // تحديث عرض اللغة في الإعدادات
+    const langNames = { ar: 'العربية', en: 'English', ku: 'کوردی' };
+    const langValueEl = document.querySelector('.settings-item:has(.fa-language) .settings-item-value');
+    if (langValueEl) {
+        langValueEl.textContent = langNames[langCode];
+    }
+}
+
+// ==========================================
+// SECURITY & PRIVACY MODAL
+// ==========================================
+function showSecurityModal() {
+    const html = `
+        <div class="modal-overlay active">
+            <div class="modal-sheet">
+                <div class="modal-handle"></div>
+                <button class="modal-close-btn" onclick="closeSecurityModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-icon-header">
+                    <div class="modal-icon-circle receive">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h2>الأمان والخصوصية</h2>
+                </div>
+                <div style="padding:20px;">
+                    <h3 style="color:var(--gold-primary);margin-bottom:15px;">نصائح الأمان</h3>
+                    <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:12px;margin-bottom:15px;">
+                        <p style="line-height:1.8;">
+                            🔐 استخدم كلمة مرور قوية<br>
+                            🔒 لا تشارك بياناتك مع أحد<br>
+                            📱 فعّل المصادقة الثنائية<br>
+                            🛡️ تحقق من عنوان الموقع<br>
+                            ⚠️ احذر من الروابط المشبوهة
+                        </p>
+                    </div>
+                    <h3 style="color:var(--gold-primary);margin-bottom:15px;">سياسة الخصوصية</h3>
+                    <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:12px;">
+                        <p style="line-height:1.8;">
+                            نحن نحترم خصوصيتك ونحمي بياناتك الشخصية. 
+                            جميع المعلومات مشفرة ومخزنة بشكل آمن.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeSecurityModal() {
+    const modal = document.querySelector('.modal-overlay:last-child');
+    if (modal) modal.remove();
+}
+
+// ==========================================
+// HELP & SUPPORT MODAL
+// ==========================================
+function showHelpModal() {
+    const html = `
+        <div class="modal-overlay active">
+            <div class="modal-sheet">
+                <div class="modal-handle"></div>
+                <button class="modal-close-btn" onclick="closeHelpModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="modal-icon-header">
+                    <div class="modal-icon-circle receive">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h2>المساعدة والدعم</h2>
+                </div>
+                <div style="padding:20px;">
+                    <h3 style="color:var(--gold-primary);margin-bottom:15px;">الأسئلة الشائعة</h3>
+                    
+                    <div style="margin-bottom:20px;">
+                        <h4 style="color:#fff;margin-bottom:8px;">❓ كيف أشتري دينار كوين؟</h4>
+                        <p style="color:rgba(255,255,255,0.7);line-height:1.6;">
+                            انقر على زر "شراء" وأدخل الكمية المطلوبة. سيتم مراجعة طلبك من الإدارة.
+                        </p>
+                    </div>
+                    
+                    <div style="margin-bottom:20px;">
+                        <h4 style="color:#fff;margin-bottom:8px;">❓ كيف أحصل على مكافأة الإحالة؟</h4>
+                        <p style="color:rgba(255,255,255,0.7);line-height:1.6;">
+                            شارك رمز الإحالة الخاص بك. ستحصل على 0.25 DC عن كل صديق يسجل.
+                        </p>
+                    </div>
+                    
+                    <div style="margin-bottom:20px;">
+                        <h4 style="color:#fff;margin-bottom:8px;">❓ هل التطبيق آمن؟</h4>
+                        <p style="color:rgba(255,255,255,0.7);line-height:1.6;">
+                            نعم، نستخدم تشفير عالي المستوى وFirebase لحماية بياناتك.
+                        </p>
+                    </div>
+                    
+                    <h3 style="color:var(--gold-primary);margin:20px 0 15px;">تواصل معنا</h3>
+                    <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:12px;">
+                        <p style="line-height:1.8;">
+                            📧 البريد: support@dinarcoin.iq<br>
+                            📱 الهاتف: +964 XXX XXX XXXX<br>
+                            💬 الدردشة: متاحة قريباً
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeHelpModal() {
+    const modal = document.querySelector('.modal-overlay:last-child');
+    if (modal) modal.remove();
+}
+
+// ==========================================
+// NOTIFICATIONS
+// ==========================================
+function showNotification(title, msg, type = 'success') {
+    const notification = document.getElementById('successNotification');
+    if (!notification) return;
+    
+    document.getElementById('notificationTitle').textContent = title;
+    document.getElementById('notificationMessage').textContent = msg;
+    
+    notification.className = `toast-notification ${type} active`;
+    setTimeout(() => notification.classList.remove('active'), 4000);
+}
+
+function closeNotification() {
+    document.getElementById('successNotification')?.classList.remove('active');
+}
+
+// ==========================================
+// UTILS
+// ==========================================
+window.addEventListener('click', e => {
+    if (e.target.classList.contains('modal-overlay')) {
+        e.target.classList.remove('active');
+    }
+});
+
+document.addEventListener('keypress', e => {
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+        e.preventDefault();
     }
 });
