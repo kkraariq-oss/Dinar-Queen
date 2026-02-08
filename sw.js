@@ -1,5 +1,5 @@
 // Service Worker - دينار كوين V2.0
-const CACHE_NAME = 'dinar-coin-v2';
+const CACHE_NAME = 'dinar-queen-v3';
 const urlsToCache = [
   '/Dinar-Queen/',
   '/Dinar-Queen/index.html',

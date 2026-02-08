@@ -295,19 +295,62 @@ document.addEventListener('DOMContentLoaded', () => {
 supabase.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
         currentUser = session.user;
-        const { profile, wallet } = await loadMyProfileAndWallet();
-        applyUserDataFromSupabase(profile, wallet);
+        try {
+            const { profile, wallet } = await loadMyProfileAndWallet();
+            const data = mapSupabaseToUI(profile, wallet);
 
-        // حمّل معاملات Supabase بدل Firebase
-        await loadTransactionsSupabase();
+            // تحديث بيانات البطاقة
+            userCardData = data.card;
 
-        showDashboard();
+            // تحديث عناصر واجهة المستخدم الأساسية
+            updateElement('userName', data.name);
+            updateElement('userEmail', data.email);
+            updateElement('userReferralCode', data.referralCode);
+
+            const balance = data.balance.toFixed(2);
+            updateElement('cardBalance', balance + ' DC');
+            updateElement('totalBalance', balance + ' DC');
+            updateElement('cardName', data.name);
+            updateElement('referralCode', data.referralCode);
+
+            // تحديث بيانات الملف الشخصي
+            updateElement('profileName', data.name);
+            updateElement('profileNameDisplay', data.name);
+            updateElement('profileEmailValue', data.email);
+            updateElement('profileRefCode', data.referralCode);
+            updateElement('profileBalance', balance + ' DC');
+
+            // تحديث بيانات البطاقة
+            updateElement('cardNum', formatCardNumber(data.card.number));
+            updateElement('cardNumFront', formatCardNumber(data.card.number));
+            updateElement('cardCVV', data.card.cvv);
+            updateElement('cardExpiry', data.card.expiry);
+
+            // تحديث تاريخ الانضمام
+            if (data.joinDate) {
+                const date = new Date(data.joinDate);
+                updateElement('profileJoinDate', date.toLocaleDateString('ar-IQ', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                }));
+            }
+
+            // تحديث رمز الاستقبال و QR
+            updateElement('receiveCode', data.referralCode);
+            generateQRCode(data.referralCode);
+
+            // حمّل معاملات Supabase
+            await loadTransactionsSupabase();
+
+            showDashboard();
+        } catch (e) {
+            console.error('Error loading user data:', e);
+            showNotification('خطأ', 'فشل تحميل البيانات', 'error');
+        }
     } else {
         currentUser = null;
         showHome();
     }
 });
-
 
 
 function createParticles() {
@@ -490,17 +533,14 @@ async function login() {
 }
 
 function logout() {
-    auth.signOut();
-    if (userDataListener) {
-        database.ref(`users/${currentUser.uid}`).off('value', userDataListener);
-        userDataListener = null;
+    async function logout() {
+        await supabase.auth.signOut();
+        currentUser = null;
+        userCardData = null;
+        cardFlipped = false;
+        showHome();
+        showNotification('تم', 'تم تسجيل الخروج', 'success');
     }
-    if (globalStatsListener) {
-        database.ref('global_stats').off('value', globalStatsListener);
-        globalStatsListener = null;
-    }
-    cardFlipped = false;
-    showNotification('تم', 'تم تسجيل الخروج', 'success');
 }
 
 // ==========================================
@@ -771,13 +811,80 @@ async function loadTransactionsSupabase() {
 // REFERRAL
 // ==========================================
 function generateReferralCode() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let code = 'DC';
-    for (let i = 0; i < 8; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = 'DC';
+  for (let i = 0; i < 8; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+  return code; // DCXXXXXXXX (10)
 }
+
+function generateCardNumber() {
+  let num = '5464';
+  for (let i = 0; i < 12; i++) num += Math.floor(Math.random() * 10);
+  return num;
+}
+function generateCVV() { return String(Math.floor(100 + Math.random() * 900)); }
+function generateExpiry() {
+  const month = String(Math.floor(1 + Math.random() * 12)).padStart(2, '0');
+  const year = String(new Date().getFullYear() + 5).slice(-2);
+  return `${month}/${year}`;
+}
+
+async function signUpWithProfile(form) {
+  // 1) Auth
+  const { data, error } = await supabase.auth.signUp({
+    email: form.email,
+    password: form.password
+  });
+  if (error) throw error;
+
+  const userId = data.user?.id;
+  if (!userId) throw new Error("لم يتم الحصول على user id");
+
+  // 2) جهّز بيانات مشابهة لـ Firebase القديم
+  const name = (form.firstName || '').trim() || (form.name || '').trim() || 'مستخدم';
+  const referralCode = generateReferralCode();
+  const cardNumber = generateCardNumber();
+  const cardCVV = generateCVV();
+  const cardExpiry = generateExpiry();
+
+  // 3) خزّن profile (UPsert حتى ما يصير 409)
+  const { error: pErr } = await supabase.from("profiles").upsert({
+    id: userId,
+    name,
+    email: form.email,
+    first_name: form.firstName || name,
+    last_name: form.lastName || '',
+    phone: form.phone || '',
+    country: form.country || 'IQ',
+    referral_code: referralCode,
+    join_date: new Date().toISOString(),
+    card_number: cardNumber,
+    card_cvv: cardCVV,
+    card_expiry: cardExpiry
+  });
+  if (pErr) throw pErr;
+
+  // 4) أنشئ محفظة مع مكافأة الترحيب
+  const { error: wErr } = await supabase.from("wallets").upsert({
+    user_id: userId,
+    balance: WELCOME_BONUS
+  });
+  if (wErr) throw wErr;
+
+  // 5) سجّل معاملة المكافأة
+  const { error: tErr } = await supabase.from("transactions").insert({
+    from_user: null,
+    to_user: userId,
+    type: "topup",
+    amount: WELCOME_BONUS,
+    note: "مكافأة الانضمام",
+    status: "completed"
+  });
+  if (tErr) throw tErr;
+
+  return data;
+}
+
 
 async function validateReferralCode(code) {
     if (!code || code.length !== 10) return null;
@@ -839,6 +946,27 @@ function copyReferralCode() {
     }
 }
 
+
+function mapSupabaseToUI(profile, wallet) {
+  const data = {
+    name: profile?.name || profile?.first_name || 'مستخدم',
+    email: profile?.email || currentUser?.email || '',
+    referralCode: profile?.referral_code || 'DC--------',
+    joinDate: profile?.join_date || profile?.created_at || new Date().toISOString(),
+    balance: Number(wallet?.balance ?? 0),
+    card: {
+      number: profile?.card_number || '',
+      cvv: profile?.card_cvv || '',
+      expiry: profile?.card_expiry || '',
+      holder: profile?.name || profile?.first_name || ''
+    }
+  };
+  return data;
+}
+
+
+
+
 function copyReceiveCode() {
     const code = document.getElementById('receiveCode')?.textContent;
     if (code) {
@@ -885,36 +1013,33 @@ function calculateBuyTotal() {
 }
 
 async function submitBuyRequest() {
-    if (!currentUser) return;
-    
-    const amount = parseFloat(document.getElementById('buyAmount').value);
-    if (!amount || amount <= 0) {
-        showNotification('خطأ', 'أدخل كمية صحيحة', 'error');
-        return;
-    }
-    
-    try {
-        const total = amount * PRICE_PER_COIN;
-        await database.ref(`purchase_requests/${currentUser.uid}`).push({
-            userId: currentUser.uid,
-            amount: amount,
-            totalIQD: total,
-            status: 'pending',
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-        });
-        
-        await addTransaction(currentUser.uid, {
-            type: 'buy',
-            amount: amount,
-            description: `طلب شراء - ${total.toLocaleString('ar-IQ')} IQD`,
-            status: 'pending'
-        });
-        
-        closeBuyModal();
-        showNotification('تم!', `طلب شراء ${amount} DC أُرسل بنجاح`, 'success');
-    } catch (e) {
-        showNotification('خطأ', 'فشل الطلب', 'error');
-    }
+  if (!currentUser) return;
+
+  const amount = parseFloat(document.getElementById('buyAmount').value);
+  if (!amount || amount <= 0) {
+    showNotification('خطأ', 'أدخل كمية صحيحة', 'error');
+    return;
+  }
+
+  try {
+    const total = amount * PRICE_PER_COIN;
+
+    const { error } = await supabase.from("transactions").insert({
+      from_user: null,
+      to_user: currentUser.id,
+      type: "topup",
+      amount: amount,
+      note: `طلب شراء - ${total.toLocaleString('ar-IQ')} IQD`,
+      status: "pending"
+    });
+    if (error) throw error;
+
+    closeBuyModal();
+    showNotification('تم!', `طلب شراء ${amount} DC أُرسل بنجاح`, 'success');
+    await loadTransactionsSupabase();
+  } catch (e) {
+    showNotification('خطأ', e.message || 'فشل الطلب', 'error');
+  }
 }
 
 function showSendModal() {
@@ -944,75 +1069,37 @@ function closeReceiveModal() {
 }
 
 async function sendCoins() {
-    if (!currentUser) return;
-    
-    const recipientCode = document.getElementById('recipientCode').value.trim();
-    const amount = parseFloat(document.getElementById('sendAmount').value);
-    const note = document.getElementById('sendNote').value.trim() || 'تحويل';
-    
-    if (!recipientCode || !amount || amount <= 0) {
-        showNotification('خطأ', 'أدخل جميع البيانات', 'error');
-        return;
-    }
-    
-    try {
-        const senderSnap = await database.ref(`users/${currentUser.uid}`).once('value');
-        const senderData = senderSnap.val();
-        
-        if (!senderData || parseFloat(senderData.balance) < amount) {
-            showNotification('خطأ', 'رصيد غير كافٍ', 'error');
-            return;
-        }
-        
-        const recipientUid = await validateReferralCode(recipientCode);
-        if (!recipientUid) {
-            showNotification('خطأ', 'رمز غير صحيح', 'error');
-            return;
-        }
-        
-        if (recipientUid === currentUser.uid) {
-            showNotification('خطأ', 'لا يمكن الإرسال لنفسك', 'error');
-            return;
-        }
-        
-        const recipientSnap = await database.ref(`users/${recipientUid}`).once('value');
-        const recipientData = recipientSnap.val();
-        
-        if (!recipientData) {
-            showNotification('خطأ', 'مستخدم غير موجود', 'error');
-            return;
-        }
-        
-        // تحديث الأرصدة
-        await database.ref(`users/${currentUser.uid}`).update({
-            balance: parseFloat(senderData.balance) - amount
-        });
-        
-        await database.ref(`users/${recipientUid}`).update({
-            balance: parseFloat(recipientData.balance || 0) + amount
-        });
-        
-        // إضافة المعاملات
-        await addTransaction(currentUser.uid, {
-            type: 'send',
-            amount: amount,
-            description: `إرسال إلى ${recipientData.name} - ${note}`,
-            status: 'completed'
-        });
-        
-        await addTransaction(recipientUid, {
-            type: 'receive',
-            amount: amount,
-            description: `استلام من ${senderData.name} - ${note}`,
-            status: 'completed'
-        });
-        
-        closeSendModal();
-        showNotification('تم!', `أُرسل ${amount} DC إلى ${recipientData.name}`, 'success');
-    } catch (e) {
-        console.error('Error sending coins:', e);
-        showNotification('خطأ', 'فشلت العملية', 'error');
-    }
+  if (!currentUser) return;
+
+  const recipientCode = document.getElementById('recipientCode').value.trim();
+  const amount = parseFloat(document.getElementById('sendAmount').value);
+  const note = document.getElementById('sendNote').value.trim() || 'تحويل';
+
+  if (!recipientCode || !amount || amount <= 0) {
+    showNotification('خطأ', 'أدخل جميع البيانات', 'error');
+    return;
+  }
+
+  try {
+    const { error } = await supabase.rpc("send_by_referral", {
+      p_code: recipientCode,
+      p_amount: amount,
+      p_note: note
+    });
+    if (error) throw error;
+
+    closeSendModal();
+    showNotification('تم!', `أُرسل ${amount} DC بنجاح`, 'success');
+
+    // إعادة تحميل الرصيد والمعاملات
+    const { profile, wallet } = await loadMyProfileAndWallet();
+    const data = mapSupabaseToUI(profile, wallet);
+    updateElement('cardBalance', data.balance.toFixed(2) + ' DC');
+    updateElement('totalBalance', data.balance.toFixed(2) + ' DC');
+    await loadTransactionsSupabase();
+  } catch (e) {
+    showNotification('خطأ', e.message || 'فشلت العملية', 'error');
+  }
 }
 
 // ==========================================
