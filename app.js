@@ -19,6 +19,8 @@ async function signUpWithProfile(form) {
     const cardNumber = generateCardNumber();
     const cardCVV = generateCVV();
     const cardExpiry = generateExpiry();
+    // توليد referral_code
+    const referralCode = generateReferralCode();
 
     // 3) حفظ بيانات المستخدم في profiles
     const { error: pErr } = await sb
@@ -29,6 +31,7 @@ async function signUpWithProfile(form) {
             last_name: form.lastName,
             phone: form.phone,
             country: form.country,
+            referral_code: referralCode,
             card_number: cardNumber,
             card_cvv: cardCVV,
             card_expiry: cardExpiry
@@ -75,13 +78,16 @@ async function loadMyProfileAndWallet() {
         const cardNumber = generateCardNumber();
         const cardCVV = generateCVV();
         const cardExpiry = generateExpiry();
+        // توليد referral_code
+        const referralCode = generateReferralCode();
         // إنشاء profile تلقائيًا
-            const { error: createErr } = await sb.from("profiles").upsert({
+        const { error: createErr } = await sb.from("profiles").upsert({
             id: user.id,
             first_name: "",
             last_name: "",
             phone: "",
             country: "IQ",
+            referral_code: referralCode,
             card_number: cardNumber,
             card_cvv: cardCVV,
             card_expiry: cardExpiry
@@ -95,6 +101,7 @@ async function loadMyProfileAndWallet() {
             last_name: "",
             phone: "",
             country: "IQ",
+            referral_code: referralCode,
             card_number: cardNumber,
             card_cvv: cardCVV,
             card_expiry: cardExpiry
