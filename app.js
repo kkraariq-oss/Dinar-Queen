@@ -6,9 +6,9 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // Supabase Auth & Profile
 async function signUpWithProfile(form) {
     // 1) إنشاء حساب Auth
-    const { data, error } = await supabase.auth.signUp({
-           email: form.email,
-           password: form.password,
+    const { data, error } = await sb.auth.signUp({
+        email: form.email,
+        password: form.password,
     });
     if (error) throw error;
 
@@ -21,8 +21,8 @@ async function signUpWithProfile(form) {
     const cardExpiry = generateExpiry();
 
     // 3) حفظ بيانات المستخدم في profiles
-        const { error: pErr } = await sb
-           .from("profiles")
+    const { error: pErr } = await sb
+        .from("profiles")
         .upsert({
             id: userId,
             first_name: form.firstName,
@@ -36,8 +36,8 @@ async function signUpWithProfile(form) {
     if (pErr) throw pErr;
 
     // 3) إنشاء محفظة للمستخدم
-        const { error: wErr } = await sb
-           .from("wallets")
+    const { error: wErr } = await sb
+        .from("wallets")
         .upsert({ user_id: userId, balance: 0 });
     if (wErr) throw wErr;
 
@@ -660,61 +660,6 @@ function generateExpiry() {
   return `${month}/${year}`;
 }
 
-async function signUpWithProfile(form) {
-  // 1) Auth
-  const { data, error } = await supabase.auth.signUp({
-    email: form.email,
-    password: form.password
-  });
-  if (error) throw error;
-
-  const userId = data.user?.id;
-  if (!userId) throw new Error("لم يتم الحصول على user id");
-
-  // 2) جهّز بيانات مشابهة لـ Firebase القديم
-  const name = (form.firstName || '').trim() || (form.name || '').trim() || 'مستخدم';
-  const referralCode = generateReferralCode();
-  const cardNumber = generateCardNumber();
-  const cardCVV = generateCVV();
-  const cardExpiry = generateExpiry();
-
-  // 3) خزّن profile (UPsert حتى ما يصير 409)
-  const { error: pErr } = await supabase.from("profiles").upsert({
-    id: userId,
-    name,
-    email: form.email,
-    first_name: form.firstName || name,
-    last_name: form.lastName || '',
-    phone: form.phone || '',
-    country: form.country || 'IQ',
-    referral_code: referralCode,
-    join_date: new Date().toISOString(),
-    card_number: cardNumber,
-    card_cvv: cardCVV,
-    card_expiry: cardExpiry
-  });
-  if (pErr) throw pErr;
-
-  // 4) أنشئ محفظة مع مكافأة الترحيب
-  const { error: wErr } = await supabase.from("wallets").upsert({
-    user_id: userId,
-    balance: WELCOME_BONUS
-  });
-  if (wErr) throw wErr;
-
-  // 5) سجّل معاملة المكافأة
-  const { error: tErr } = await supabase.from("transactions").insert({
-    from_user: null,
-    to_user: userId,
-    type: "topup",
-    amount: WELCOME_BONUS,
-    note: "مكافأة الانضمام",
-    status: "completed"
-  });
-  if (tErr) throw tErr;
-
-  return data;
-}
 
 
 async function validateReferralCode(code) {
