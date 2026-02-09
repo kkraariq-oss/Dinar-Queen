@@ -14,8 +14,6 @@
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -373,7 +371,7 @@
                             <div class="settings-item-icon"><i class="fas fa-envelope"></i></div>
                             <div class="settings-item-content">
                                 <span class="settings-item-label">البريد الإلكتروني</span>
-                                <span class="settings-item-value" id="profileEmailValue"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="572224322517322f363a273b327934383a">[email&#160;protected]</a></span>
+                                <span class="settings-item-value" id="profileEmailValue">user@example.com</span>
                             </div>
                             <i class="fas fa-lock settings-arrow" style="color:var(--text-muted);font-size:0.7rem;"></i>
                         </div>
@@ -461,7 +459,7 @@
                                 <div class="toggle-knob"></div>
                             </div>
                         </div>
-                        <div class="settings-item" onclick="showLanguageModal()">
+                        <div class="settings-item">
                             <div class="settings-item-icon"><i class="fas fa-language"></i></div>
                             <div class="settings-item-content">
                                 <span class="settings-item-label">اللغة</span>
@@ -469,14 +467,14 @@
                             </div>
                             <i class="fas fa-chevron-left settings-arrow"></i>
                         </div>
-                        <div class="settings-item" onclick="showSecurityModal()">
+                        <div class="settings-item">
                             <div class="settings-item-icon"><i class="fas fa-shield-alt"></i></div>
                             <div class="settings-item-content">
                                 <span class="settings-item-label">الأمان والخصوصية</span>
                             </div>
                             <i class="fas fa-chevron-left settings-arrow"></i>
                         </div>
-                        <div class="settings-item" onclick="showHelpModal()">
+                        <div class="settings-item">
                             <div class="settings-item-icon"><i class="fas fa-question-circle"></i></div>
                             <div class="settings-item-content">
                                 <span class="settings-item-label">المساعدة والدعم</span>
@@ -770,6 +768,10 @@
     <span id="userEmail" style="display:none;"></span>
     <span id="userReferralCode" style="display:none;"></span>
 
-<script defer src="app.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

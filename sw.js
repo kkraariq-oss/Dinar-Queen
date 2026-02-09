@@ -1,5 +1,5 @@
-// Service Worker - دينار كوين V3.0 (Supabase Only - NO FIREBASE)
-const CACHE_NAME = 'dinar-queen-v4';
+// Service Worker - دينار كوين V2.0
+const CACHE_NAME = 'dinar-coin-v2';
 const urlsToCache = [
   '/Dinar-Queen/',
   '/Dinar-Queen/index.html',
@@ -13,7 +13,9 @@ const urlsToCache = [
   '/Dinar-Queen/manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+  'https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js',
+  'https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js'
 ];
 
 // التثبيت وإنشاء الكاش
@@ -46,13 +48,8 @@ self.addEventListener('activate', event => {
 
 // معالجة الطلبات
 self.addEventListener('fetch', event => {
-  // تجاهل طلبات POST/PUT/DELETE (للسماح بـ Supabase API calls)
+  // تجاهل طلبات POST
   if (event.request.method !== 'GET') {
-    return;
-  }
-  
-  // تجاهل طلبات Supabase API
-  if (event.request.url.includes('supabase.co')) {
     return;
   }
   
