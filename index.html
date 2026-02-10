@@ -24,7 +24,6 @@
         <div id="homeScreen" class="screen active-screen">
             <div class="home-top-area"><span class="beta-badge">BETA</span></div>
             
-            <!-- Logo Section with Icon -->
             <div class="home-logo-section">
                 <div class="logo-glow-ring">
                     <img src="logo.png" alt="Dinar Coin" class="home-logo-img">
@@ -105,16 +104,13 @@
                 <!-- Flippable Card -->
                 <div class="credit-card-wrapper" onclick="flipCard()">
                     <div class="card-flipper" id="cardFlipper">
-                        <!-- Front Side -->
                         <div class="credit-card card-front">
                             <div class="card-top-row">
-                                <!-- حذف شعار الدينار -->
                                 <div class="card-balance-section">
                                     <div class="card-label">الرصيد</div>
                                     <div class="card-balance" id="cardBalance">0.00 DC</div>
                                 </div>
                             </div>
-                            <!-- رقم البطاقة في الواجهة الأمامية -->
                             <div class="card-num-front" style="text-align:center;margin:10px 0;font-size:1.1em;color:#2c2c2c;font-weight:bold;letter-spacing:2px;">
                                 <span id="cardNumFront">**** **** **** ****</span>
                             </div>
@@ -133,7 +129,6 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Back Side -->
                         <div class="credit-card card-back">
                             <div class="card-mag-stripe"></div>
                             <div class="card-back-content">
@@ -153,6 +148,87 @@
                     </div>
                 </div>
 
+                <!-- Live Price Ticker -->
+                <div class="live-ticker-bar">
+                    <div class="ticker-item">
+                        <span class="ticker-label">DC/IQD</span>
+                        <span class="ticker-price" id="tickerPrice">1,000</span>
+                        <span class="ticker-change positive" id="tickerChange">
+                            <i class="fas fa-caret-up"></i> +2.5%
+                        </span>
+                    </div>
+                    <div class="ticker-divider"></div>
+                    <div class="ticker-item">
+                        <span class="ticker-label">حجم التداول</span>
+                        <span class="ticker-price" id="tickerVolume">24.5K</span>
+                    </div>
+                    <div class="ticker-divider"></div>
+                    <div class="ticker-item">
+                        <span class="ticker-label">القيمة السوقية</span>
+                        <span class="ticker-price" id="tickerMarketCap">1B IQD</span>
+                    </div>
+                </div>
+
+                <!-- Mini Market Chart (Candlestick Blocks) -->
+                <div class="market-chart-section">
+                    <div class="chart-header">
+                        <h3 class="section-title"><i class="fas fa-chart-bar"></i> سوق التداول</h3>
+                        <div class="chart-period-btns">
+                            <button class="period-btn active" onclick="changeChartPeriod('1h')">1س</button>
+                            <button class="period-btn" onclick="changeChartPeriod('1d')">1ي</button>
+                            <button class="period-btn" onclick="changeChartPeriod('1w')">1أ</button>
+                            <button class="period-btn" onclick="changeChartPeriod('1m')">1ش</button>
+                        </div>
+                    </div>
+                    <div class="chart-price-display">
+                        <span class="chart-current-price" id="chartCurrentPrice">1,000 IQD</span>
+                        <span class="chart-price-change positive" id="chartPriceChange">+2.5% ↑</span>
+                    </div>
+                    <div class="candlestick-chart" id="candlestickChart"></div>
+                    <div class="chart-labels">
+                        <span>أقل</span>
+                        <span>أعلى</span>
+                    </div>
+                    <div class="chart-volume-bars" id="volumeBars"></div>
+                </div>
+
+                <!-- Live Counters -->
+                <div class="counters-section">
+                    <h3 class="section-title"><i class="fas fa-tachometer-alt"></i> عدادات حية</h3>
+                    <div class="counters-grid">
+                        <div class="counter-card">
+                            <div class="counter-ring">
+                                <svg viewBox="0 0 36 36">
+                                    <path class="counter-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                    <path class="counter-ring-fill" id="supplyRing" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                </svg>
+                                <div class="counter-ring-text" id="supplyPercent">0%</div>
+                            </div>
+                            <span class="counter-label">الإمداد الموزع</span>
+                        </div>
+                        <div class="counter-card">
+                            <div class="counter-ring">
+                                <svg viewBox="0 0 36 36">
+                                    <path class="counter-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                    <path class="counter-ring-fill gold" id="usersRing" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                </svg>
+                                <div class="counter-ring-text" id="usersPercent">0</div>
+                            </div>
+                            <span class="counter-label">المستخدمون</span>
+                        </div>
+                        <div class="counter-card">
+                            <div class="counter-ring">
+                                <svg viewBox="0 0 36 36">
+                                    <path class="counter-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                    <path class="counter-ring-fill blue" id="txRing" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                </svg>
+                                <div class="counter-ring-text" id="txCount">0</div>
+                            </div>
+                            <span class="counter-label">المعاملات</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Quick Actions -->
                 <div class="quick-actions-grid">
                     <button class="action-btn buy" onclick="showBuyModal()">
@@ -167,10 +243,46 @@
                         <div class="action-icon"><i class="fas fa-qrcode"></i></div>
                         <span>استقبال</span>
                     </button>
-                    <button class="action-btn referral" onclick="showReceiveModal()">
+                    <button class="action-btn referral" onclick="showReferralShareModal()">
                         <div class="action-icon"><i class="fas fa-gift"></i></div>
                         <span>إحالة</span>
                     </button>
+                </div>
+
+                <!-- Currency Converter -->
+                <div class="converter-section">
+                    <h3 class="section-title"><i class="fas fa-exchange-alt"></i> محول العملات</h3>
+                    <div class="converter-card">
+                        <div class="converter-row">
+                            <div class="converter-input-group">
+                                <label>DC</label>
+                                <input type="number" id="convertDC" placeholder="0" oninput="convertCurrency('dc')">
+                            </div>
+                            <div class="converter-icon">
+                                <i class="fas fa-arrows-alt-h"></i>
+                            </div>
+                            <div class="converter-input-group">
+                                <label>IQD</label>
+                                <input type="number" id="convertIQD" placeholder="0" oninput="convertCurrency('iqd')">
+                            </div>
+                        </div>
+                        <div class="converter-rate">1 DC = 1,000 IQD</div>
+                    </div>
+                </div>
+
+                <!-- Daily Reward -->
+                <div class="daily-reward-card" id="dailyRewardCard" onclick="claimDailyReward()">
+                    <div class="reward-icon-wrap">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="reward-info">
+                        <h4>المكافأة اليومية</h4>
+                        <p id="rewardStatus">اضغط للحصول على مكافأتك اليومية</p>
+                    </div>
+                    <div class="reward-amount" id="rewardAmount">
+                        <span>0.01</span>
+                        <small>DC</small>
+                    </div>
                 </div>
 
                 <!-- Overview Cards -->
@@ -198,6 +310,13 @@
                                 <span class="overview-value" id="referralEarnings">0.00 DC</span>
                             </div>
                         </div>
+                        <div class="overview-card">
+                            <div class="overview-icon" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);"><i class="fas fa-chart-line"></i></div>
+                            <div class="overview-content">
+                                <span class="overview-label">القيمة بالدينار</span>
+                                <span class="overview-value" id="totalValueIQD">0 IQD</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -216,11 +335,20 @@
                             <i class="fas fa-copy"></i> نسخ
                         </button>
                     </div>
+                    <div class="referral-progress">
+                        <div class="referral-progress-bar">
+                            <div class="referral-progress-fill" id="referralProgressFill" style="width:0%"></div>
+                        </div>
+                        <span class="referral-progress-text" id="referralProgressText">0/10 إحالة</span>
+                    </div>
                 </div>
 
                 <!-- Recent Transactions -->
                 <div class="transactions-section">
-                    <h3 class="section-title">آخر العمليات</h3>
+                    <div class="section-header-row">
+                        <h3 class="section-title">آخر العمليات</h3>
+                        <button class="see-all-btn" onclick="showAllTransactions()">عرض الكل</button>
+                    </div>
                     <div id="transactionsList" class="transactions-list">
                         <div class="empty-state">
                             <i class="fas fa-inbox"></i>
@@ -266,6 +394,44 @@
                         <h3>إحصائيات دينار كوين</h3>
                         <p>تابع نمو استثمارك</p>
                     </div>
+                </div>
+
+                <!-- Market Overview Grid -->
+                <div class="market-overview-grid">
+                    <div class="market-card">
+                        <div class="market-card-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="market-card-value" id="marketPrice">1,000 IQD</div>
+                        <div class="market-card-label">السعر الحالي</div>
+                        <div class="market-card-change positive">+2.5%</div>
+                    </div>
+                    <div class="market-card">
+                        <div class="market-card-icon"><i class="fas fa-chart-area"></i></div>
+                        <div class="market-card-value" id="marketCap">1B IQD</div>
+                        <div class="market-card-label">القيمة السوقية</div>
+                    </div>
+                    <div class="market-card">
+                        <div class="market-card-icon"><i class="fas fa-exchange-alt"></i></div>
+                        <div class="market-card-value" id="market24hVol">24.5K DC</div>
+                        <div class="market-card-label">حجم التداول 24س</div>
+                    </div>
+                    <div class="market-card">
+                        <div class="market-card-icon"><i class="fas fa-fire"></i></div>
+                        <div class="market-card-value" id="marketBurned">0 DC</div>
+                        <div class="market-card-label">العملات المحروقة</div>
+                    </div>
+                </div>
+
+                <!-- Full Chart -->
+                <div class="analytics-chart-section">
+                    <div class="chart-header">
+                        <h3 class="section-title">مخطط الأسعار</h3>
+                        <div class="chart-period-btns">
+                            <button class="period-btn active" onclick="changeAnalyticsChart('1d')">يوم</button>
+                            <button class="period-btn" onclick="changeAnalyticsChart('1w')">أسبوع</button>
+                            <button class="period-btn" onclick="changeAnalyticsChart('1m')">شهر</button>
+                        </div>
+                    </div>
+                    <div class="analytics-full-chart" id="analyticsFullChart"></div>
                 </div>
 
                 <div class="stats-grid">
@@ -315,6 +481,13 @@
                             </div>
                             <div class="info-value">فبراير 2026</div>
                         </div>
+                        <div class="info-card">
+                            <div class="info-header">
+                                <i class="fas fa-layer-group"></i>
+                                <span>الشبكة</span>
+                            </div>
+                            <div class="info-value">Dinar Chain v1.0</div>
+                        </div>
                     </div>
                 </div>
 
@@ -326,12 +499,20 @@
                             <span class="gold-text" id="analyticBalance">0.00 DC</span>
                         </div>
                         <div class="account-stat-item">
+                            <span>القيمة بالدينار</span>
+                            <span id="analyticValueIQD">0 IQD</span>
+                        </div>
+                        <div class="account-stat-item">
                             <span>إحالاتك</span>
                             <span id="analyticReferrals">0</span>
                         </div>
                         <div class="account-stat-item">
                             <span>أرباحك من الإحالات</span>
                             <span class="green-text" id="analyticEarnings">0.00 DC</span>
+                        </div>
+                        <div class="account-stat-item">
+                            <span>المكافآت اليومية</span>
+                            <span class="gold-text" id="analyticDailyRewards">0.00 DC</span>
                         </div>
                     </div>
                 </div>
@@ -351,9 +532,22 @@
                 <div class="profile-top-section">
                     <div class="profile-avatar-large" id="profileAvatar">أ</div>
                     <h3 class="profile-name" id="profileNameDisplay">المستخدم</h3>
+                    <p class="profile-level" id="profileLevel">مستوى: مبتدئ ⭐</p>
                     <button class="btn-edit-name" onclick="showEditNameModal()">
                         <i class="fas fa-edit"></i> تعديل الاسم
                     </button>
+                </div>
+
+                <!-- Account Level Progress -->
+                <div class="level-progress-section">
+                    <div class="level-progress-bar">
+                        <div class="level-progress-fill" id="levelProgressFill" style="width:10%"></div>
+                    </div>
+                    <div class="level-info-row">
+                        <span>مبتدئ</span>
+                        <span id="levelXP">10/100 XP</span>
+                        <span>برونزي</span>
+                    </div>
                 </div>
 
                 <div class="settings-section">
@@ -374,6 +568,14 @@
                                 <span class="settings-item-value" id="profileEmailValue">user@example.com</span>
                             </div>
                             <i class="fas fa-lock settings-arrow" style="color:var(--text-muted);font-size:0.7rem;"></i>
+                        </div>
+                        <div class="settings-item">
+                            <div class="settings-item-icon"><i class="fas fa-phone"></i></div>
+                            <div class="settings-item-content">
+                                <span class="settings-item-label">رقم الهاتف</span>
+                                <span class="settings-item-value" id="profilePhone">غير محدد</span>
+                            </div>
+                            <i class="fas fa-edit settings-arrow" onclick="showEditPhoneModal()" style="color:var(--gold-primary);"></i>
                         </div>
                         <div class="settings-item">
                             <div class="settings-item-icon"><i class="fas fa-id-card"></i></div>
@@ -430,12 +632,13 @@
                 </div>
 
                 <div class="settings-section">
-                    <h4 class="settings-section-title">الإعدادات</h4>
+                    <h4 class="settings-section-title">الإعدادات العامة</h4>
                     <div class="settings-card">
                         <div class="settings-item" onclick="toggleSetting('notifications')">
                             <div class="settings-item-icon"><i class="fas fa-bell"></i></div>
                             <div class="settings-item-content">
                                 <span class="settings-item-label">الإشعارات</span>
+                                <span class="settings-item-value">تنبيهات الرصيد والمعاملات</span>
                             </div>
                             <div class="toggle-switch active" id="toggle-notifications">
                                 <div class="toggle-knob"></div>
@@ -445,6 +648,7 @@
                             <div class="settings-item-icon"><i class="fas fa-moon"></i></div>
                             <div class="settings-item-content">
                                 <span class="settings-item-label">الوضع الليلي</span>
+                                <span class="settings-item-value">تقليل سطوع الشاشة</span>
                             </div>
                             <div class="toggle-switch active" id="toggle-darkmode">
                                 <div class="toggle-knob"></div>
@@ -454,30 +658,123 @@
                             <div class="settings-item-icon"><i class="fas fa-fingerprint"></i></div>
                             <div class="settings-item-content">
                                 <span class="settings-item-label">تسجيل بالبصمة</span>
+                                <span class="settings-item-value">تسجيل دخول سريع</span>
                             </div>
                             <div class="toggle-switch" id="toggle-biometric">
                                 <div class="toggle-knob"></div>
                             </div>
                         </div>
-                        <div class="settings-item">
+                        <div class="settings-item" onclick="toggleSetting('sounds')">
+                            <div class="settings-item-icon"><i class="fas fa-volume-up"></i></div>
+                            <div class="settings-item-content">
+                                <span class="settings-item-label">الأصوات</span>
+                                <span class="settings-item-value">أصوات المعاملات والتنبيهات</span>
+                            </div>
+                            <div class="toggle-switch active" id="toggle-sounds">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                        <div class="settings-item" onclick="toggleSetting('autosave')">
+                            <div class="settings-item-icon"><i class="fas fa-save"></i></div>
+                            <div class="settings-item-content">
+                                <span class="settings-item-label">حفظ تلقائي</span>
+                                <span class="settings-item-value">حفظ البيانات تلقائياً</span>
+                            </div>
+                            <div class="toggle-switch active" id="toggle-autosave">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                        <div class="settings-item" onclick="toggleSetting('priceAlerts')">
+                            <div class="settings-item-icon"><i class="fas fa-chart-line"></i></div>
+                            <div class="settings-item-content">
+                                <span class="settings-item-label">تنبيهات الأسعار</span>
+                                <span class="settings-item-value">إشعار عند تغير السعر</span>
+                            </div>
+                            <div class="toggle-switch" id="toggle-priceAlerts">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h4 class="settings-section-title">التطبيق</h4>
+                    <div class="settings-card">
+                        <div class="settings-item" onclick="showLanguageModal()">
                             <div class="settings-item-icon"><i class="fas fa-language"></i></div>
                             <div class="settings-item-content">
                                 <span class="settings-item-label">اللغة</span>
-                                <span class="settings-item-value">العربية</span>
+                                <span class="settings-item-value" id="currentLangDisplay">العربية</span>
                             </div>
                             <i class="fas fa-chevron-left settings-arrow"></i>
                         </div>
-                        <div class="settings-item">
+                        <div class="settings-item" onclick="showCurrencyModal()">
+                            <div class="settings-item-icon"><i class="fas fa-money-bill-wave"></i></div>
+                            <div class="settings-item-content">
+                                <span class="settings-item-label">العملة الافتراضية</span>
+                                <span class="settings-item-value" id="currentCurrencyDisplay">IQD - دينار عراقي</span>
+                            </div>
+                            <i class="fas fa-chevron-left settings-arrow"></i>
+                        </div>
+                        <div class="settings-item" onclick="showThemeModal()">
+                            <div class="settings-item-icon"><i class="fas fa-palette"></i></div>
+                            <div class="settings-item-content">
+                                <span class="settings-item-label">المظهر</span>
+                                <span class="settings-item-value" id="currentThemeDisplay">أخضر كلاسيكي</span>
+                            </div>
+                            <i class="fas fa-chevron-left settings-arrow"></i>
+                        </div>
+                        <div class="settings-item" onclick="clearAppCache()">
+                            <div class="settings-item-icon"><i class="fas fa-broom"></i></div>
+                            <div class="settings-item-content">
+                                <span class="settings-item-label">مسح الكاش</span>
+                                <span class="settings-item-value">تحرير مساحة التخزين</span>
+                            </div>
+                            <i class="fas fa-chevron-left settings-arrow"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h4 class="settings-section-title">الأمان والدعم</h4>
+                    <div class="settings-card">
+                        <div class="settings-item" onclick="showChangePasswordModal()">
+                            <div class="settings-item-icon"><i class="fas fa-lock"></i></div>
+                            <div class="settings-item-content">
+                                <span class="settings-item-label">تغيير كلمة المرور</span>
+                                <span class="settings-item-value">تحديث كلمة المرور الحالية</span>
+                            </div>
+                            <i class="fas fa-chevron-left settings-arrow"></i>
+                        </div>
+                        <div class="settings-item" onclick="showSecurityModal()">
                             <div class="settings-item-icon"><i class="fas fa-shield-alt"></i></div>
                             <div class="settings-item-content">
                                 <span class="settings-item-label">الأمان والخصوصية</span>
+                                <span class="settings-item-value">نصائح وسياسة الخصوصية</span>
                             </div>
                             <i class="fas fa-chevron-left settings-arrow"></i>
                         </div>
-                        <div class="settings-item">
+                        <div class="settings-item" onclick="showHelpModal()">
                             <div class="settings-item-icon"><i class="fas fa-question-circle"></i></div>
                             <div class="settings-item-content">
                                 <span class="settings-item-label">المساعدة والدعم</span>
+                                <span class="settings-item-value">الأسئلة الشائعة والتواصل</span>
+                            </div>
+                            <i class="fas fa-chevron-left settings-arrow"></i>
+                        </div>
+                        <div class="settings-item" onclick="showAboutModal()">
+                            <div class="settings-item-icon"><i class="fas fa-info-circle"></i></div>
+                            <div class="settings-item-content">
+                                <span class="settings-item-label">عن التطبيق</span>
+                                <span class="settings-item-value">معلومات النسخة والمطور</span>
+                            </div>
+                            <i class="fas fa-chevron-left settings-arrow"></i>
+                        </div>
+                        <div class="settings-item" onclick="exportUserData()">
+                            <div class="settings-item-icon"><i class="fas fa-download"></i></div>
+                            <div class="settings-item-content">
+                                <span class="settings-item-label">تصدير البيانات</span>
+                                <span class="settings-item-value">تحميل نسخة من بياناتك</span>
                             </div>
                             <i class="fas fa-chevron-left settings-arrow"></i>
                         </div>
@@ -488,10 +785,15 @@
                     <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
                 </button>
 
+                <button class="btn-delete-account" onclick="confirmDeleteAccount()">
+                    <i class="fas fa-trash-alt"></i> حذف الحساب
+                </button>
+
                 <div class="app-version-info">
                     <img src="logo.png" alt="" class="version-logo">
-                    <span>Dinar Coin v2.0.0 BETA</span>
+                    <span>Dinar Coin v3.0.0 BETA</span>
                     <span>صنع بـ ❤️ في العراق 🇮🇶</span>
+                    <span>Digital Creativity Company</span>
                 </div>
 
                 <div style="height:100px;"></div>
@@ -533,7 +835,6 @@
                 <i class="fas fa-times"></i>
             </button>
             
-            <!-- Login Form -->
             <div id="loginForm" class="auth-form-content">
                 <div class="auth-form-header">
                     <div class="auth-icon-circle">
@@ -557,13 +858,13 @@
                     </div>
                 </div>
                 <button class="btn-submit" onclick="login()">تسجيل الدخول</button>
+                <button class="btn-forgot-password" onclick="showForgotPasswordModal()">نسيت كلمة المرور؟</button>
                 <p class="auth-switch-text">
                     ليس لديك حساب؟ 
                     <a href="#" onclick="switchAuthForm('signup')">إنشاء حساب جديد</a>
                 </p>
             </div>
             
-            <!-- Signup Form -->
             <div id="signupForm" class="auth-form-content" style="display:none;">
                 <div class="auth-form-header">
                     <div class="auth-icon-circle">
@@ -628,6 +929,12 @@
                     <i class="fas fa-coins"></i>
                     <input type="number" id="buyAmount" placeholder="0.00" min="0.01" step="0.01" oninput="calculateBuyTotal()">
                 </div>
+            </div>
+            <div class="quick-amount-btns">
+                <button onclick="setQuickBuyAmount(1)">1 DC</button>
+                <button onclick="setQuickBuyAmount(5)">5 DC</button>
+                <button onclick="setQuickBuyAmount(10)">10 DC</button>
+                <button onclick="setQuickBuyAmount(50)">50 DC</button>
             </div>
             <div class="calc-box">
                 <div class="calc-row">
