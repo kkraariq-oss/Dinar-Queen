@@ -91,7 +91,7 @@ a { text-decoration:none; color:var(--gold-primary); }
 .flag-stripe.black { background:#000; }
 
 /* DASHBOARD */
-#dashboardScreen,#newsScreen,#analyticsScreen,#profileScreen { background:var(--bg-dark); }
+#dashboardScreen,#newsScreen,#analyticsScreen,#profileScreen,#tradingScreen { background:var(--bg-dark); }
 .dash-header { display:flex; align-items:center; justify-content:space-between; padding:max(10px,env(safe-area-inset-top,10px)) 16px 10px; background:var(--bg-dark); position:sticky; top:0; z-index:10; }
 .dash-title { font-size:1.1rem; font-weight:700; letter-spacing:1px; }
 .dash-header-btn { width:36px; height:36px; border-radius:50%; background:var(--bg-card); border:1px solid var(--bg-card-border); color:var(--text-light); display:flex; align-items:center; justify-content:center; font-size:0.9rem; cursor:pointer; }
@@ -366,8 +366,8 @@ a { text-decoration:none; color:var(--gold-primary); }
 .version-logo { width:32px; height:32px; border-radius:50%; margin-bottom:4px; opacity:0.5; }
 
 /* BOTTOM NAV */
-.bottom-nav { display:none; position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:var(--bg-card); border-top:1px solid var(--bg-card-border); padding-bottom:var(--safe-bottom); z-index:100; }
-.nav-tab { flex:1; background:transparent; border:none; color:var(--text-muted); padding:10px 8px; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:0.7rem; font-weight:600; cursor:pointer; transition:all 0.3s; }
+.bottom-nav { display:none; position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:var(--bg-card); border-top:1px solid var(--bg-card-border); padding-bottom:var(--safe-bottom); z-index:100; flex-wrap:nowrap; }
+.nav-tab { flex:1; background:transparent; border:none; color:var(--text-muted); padding:8px 4px; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:0.62rem; font-weight:600; cursor:pointer; transition:all 0.3s; min-width:0; }
 .nav-tab i { font-size:1.1rem; }
 .nav-tab.active { color:var(--gold-primary); }
 .center-tab { position:relative; margin-top:-20px; }
@@ -443,6 +443,88 @@ body.dark-mode .credit-card.card-front { background:linear-gradient(145deg, #1a1
 body.dark-mode .settings-card,.dark-mode .overview-card,.dark-mode .stat-card,.dark-mode .news-card { background:rgba(20,20,20,0.8); border-color:#252525; }
 body.dark-mode .modal-sheet { background:linear-gradient(to bottom, #1a1a1a 0%, #0a0a0a 100%); }
 body.dark-mode input { background:rgba(30,30,30,0.6); color:var(--text-white); }
+
+/* TRADING SCREEN */
+.trading-disclaimer { display:flex; align-items:center; gap:12px; padding:12px 14px; background:linear-gradient(135deg,rgba(231,76,60,0.15),rgba(241,196,15,0.1)); border:1px solid rgba(231,76,60,0.4); border-radius:var(--radius-md); margin-bottom:14px; }
+.disclaimer-badge { background:var(--red); color:white; font-size:0.6rem; font-weight:800; padding:3px 10px; border-radius:20px; letter-spacing:1.5px; flex-shrink:0; }
+.disclaimer-text strong { display:block; font-size:0.8rem; color:var(--gold-primary); margin-bottom:2px; }
+.disclaimer-text p { font-size:0.7rem; color:var(--text-muted); }
+
+.trading-pair-selector { display:flex; gap:6px; margin-bottom:14px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; }
+.trading-pair-selector::-webkit-scrollbar { display:none; }
+.pair-btn { display:flex; align-items:center; gap:5px; background:var(--bg-card); border:1px solid var(--bg-card-border); color:var(--text-light); padding:8px 12px; border-radius:20px; font-size:0.75rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:all 0.3s; flex-shrink:0; }
+.pair-btn.active { background:var(--gold-primary); color:var(--bg-deep); border-color:var(--gold-primary); }
+.pair-flag { font-size:1rem; }
+.pair-name { font-size:0.72rem; }
+
+.trading-price-card { background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:var(--radius-lg); padding:16px; margin-bottom:14px; }
+.trading-price-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.trading-pair-label { font-size:0.9rem; font-weight:700; color:var(--text-white); }
+.trading-pair-status { display:flex; align-items:center; gap:5px; font-size:0.7rem; color:var(--green-light); font-weight:600; }
+.status-dot { width:7px; height:7px; border-radius:50%; display:inline-block; }
+.status-dot.live { background:var(--green-light); animation:blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+.trading-price-main { display:flex; align-items:baseline; gap:10px; margin-bottom:10px; }
+.trading-current-price { font-size:1.8rem; font-weight:800; color:var(--text-white); direction:ltr; }
+.trading-price-change { font-size:0.85rem; font-weight:700; }
+.trading-price-change.positive { color:var(--green-light); }
+.trading-price-change.negative { color:var(--red); }
+.trading-price-details { display:flex; gap:10px; }
+.tpd-item { flex:1; text-align:center; padding:8px 4px; background:var(--bg-deep); border-radius:var(--radius-sm); }
+.tpd-label { display:block; font-size:0.6rem; color:var(--text-muted); margin-bottom:3px; }
+.tpd-value { display:block; font-size:0.8rem; font-weight:700; color:var(--text-white); direction:ltr; }
+
+.trading-chart-section { background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:var(--radius-lg); padding:16px; margin-bottom:14px; }
+.trading-candle-chart { display:flex; align-items:flex-end; gap:2px; height:140px; padding:8px 0; direction:ltr; }
+.trading-candle-chart .t-candle { flex:1; min-width:6px; border-radius:2px 2px 0 0; position:relative; transition:all 0.4s ease; }
+.trading-candle-chart .t-candle.up { background:linear-gradient(to top,#1a5f4a,#2a8f6a); }
+.trading-candle-chart .t-candle.down { background:linear-gradient(to top,#c0392b,#e74c3c); }
+.trading-volume-bars { display:flex; align-items:flex-end; gap:2px; height:28px; margin-top:6px; padding-top:6px; border-top:1px solid var(--bg-card-border); direction:ltr; }
+.trading-volume-bars .t-vol { flex:1; min-width:6px; border-radius:2px 2px 0 0; background:rgba(212,175,55,0.25); transition:all 0.4s ease; }
+
+.trading-order-panel { background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:var(--radius-lg); padding:16px; margin-bottom:14px; overflow:hidden; }
+.order-tabs { display:flex; gap:0; margin-bottom:16px; background:var(--bg-deep); border-radius:var(--radius-sm); overflow:hidden; }
+.order-tab { flex:1; padding:10px; text-align:center; font-size:0.85rem; font-weight:700; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; justify-content:center; gap:6px; background:transparent; color:var(--text-muted); }
+.order-tab.buy.active { background:var(--green-primary); color:white; }
+.order-tab.sell.active { background:var(--red); color:white; }
+.order-balance-row { display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; margin-bottom:12px; padding:8px 10px; background:var(--bg-deep); border-radius:var(--radius-sm); }
+.order-balance-row span:first-child { color:var(--text-muted); }
+.trading-quick-btns { display:flex; gap:6px; margin-bottom:12px; }
+.trading-quick-btns button { flex:1; background:var(--bg-deep); border:1px solid var(--bg-card-border); color:var(--text-light); padding:7px; border-radius:8px; font-size:0.75rem; font-weight:600; cursor:pointer; transition:all 0.3s; }
+.trading-quick-btns button:active { background:var(--gold-primary); color:var(--bg-deep); }
+.trading-calc-box { background:var(--bg-deep); border:1px solid var(--bg-card-border); border-radius:var(--radius-sm); padding:12px; margin-bottom:12px; }
+.trading-calc-box .calc-row { margin-bottom:6px; font-size:0.8rem; }
+.trading-calc-box .calc-row:last-child { margin-bottom:0; }
+.btn-trade-execute { width:100%; padding:14px; border-radius:var(--radius-md); font-size:0.95rem; font-weight:700; cursor:pointer; transition:all 0.3s; border:none; display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn-trade-execute.buy { background:var(--green-primary); color:white; }
+.btn-trade-execute.sell { background:var(--red); color:white; }
+.btn-trade-execute:active { transform:scale(0.97); }
+
+.trading-holdings-section { margin-bottom:16px; }
+.trading-holdings-list { display:flex; flex-direction:column; gap:8px; }
+.holding-item { background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:var(--radius-md); padding:12px; display:flex; align-items:center; gap:12px; }
+.holding-icon { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--gold-dark),var(--gold-primary)); display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+.holding-info { flex:1; }
+.holding-symbol { font-size:0.85rem; font-weight:700; color:var(--text-white); margin-bottom:2px; }
+.holding-qty { font-size:0.7rem; color:var(--text-muted); }
+.holding-value { text-align:left; direction:ltr; }
+.holding-pnl { font-size:0.85rem; font-weight:700; }
+.holding-pnl.positive { color:var(--green-light); }
+.holding-pnl.negative { color:var(--red); }
+.holding-cost { font-size:0.65rem; color:var(--text-muted); }
+
+.trading-history-section { margin-bottom:16px; }
+.trading-history-list { display:flex; flex-direction:column; gap:8px; }
+.trade-history-item { background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:var(--radius-md); padding:12px; display:flex; align-items:center; gap:12px; }
+.trade-hist-icon { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0; }
+.trade-hist-icon.buy { background:linear-gradient(135deg,var(--green-primary),var(--green-light)); color:white; }
+.trade-hist-icon.sell { background:linear-gradient(135deg,#e74c3c,#ec7063); color:white; }
+.trade-hist-info { flex:1; }
+.trade-hist-pair { font-size:0.8rem; font-weight:700; color:var(--text-white); margin-bottom:2px; }
+.trade-hist-date { font-size:0.65rem; color:var(--text-muted); }
+.trade-hist-amount { font-size:0.8rem; font-weight:700; text-align:left; direction:ltr; }
+.trade-hist-amount.positive { color:var(--green-light); }
+.trade-hist-amount.negative { color:var(--red); }
 
 /* RESPONSIVE */
 @media (max-width:360px) {

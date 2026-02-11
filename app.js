@@ -461,7 +461,7 @@ function showDashboard() {
 }
 
 function switchTab(tab) {
-    const screens = ['dashboardScreen', 'newsScreen', 'analyticsScreen', 'profileScreen'];
+    const screens = ['dashboardScreen', 'newsScreen', 'analyticsScreen', 'profileScreen', 'tradingScreen'];
     screens.forEach(s => document.getElementById(s).classList.remove('active-screen'));
     
     const tabs = document.querySelectorAll('.nav-tab');
@@ -482,6 +482,10 @@ function switchTab(tab) {
     } else if (tab === 'profile') {
         document.getElementById('profileScreen').classList.add('active-screen');
         document.querySelector('[data-tab="profile"]').classList.add('active');
+    } else if (tab === 'trading') {
+        document.getElementById('tradingScreen').classList.add('active-screen');
+        document.querySelector('[data-tab="trading"]').classList.add('active');
+        initTradingScreen();
     }
 }
 
@@ -907,7 +911,10 @@ async function submitBuyRequest() {
 }
 
 function showSendModal() { document.getElementById('sendModal').classList.add('active'); document.getElementById('recipientCode').value = ''; document.getElementById('sendAmount').value = ''; document.getElementById('sendNote').value = ''; }
-function closeSendModal() { document.getElementById('sendModal').classList.remove('active'); }
+function closeSendModal() { 
+    closeQRScanner(); // إغلاق الكاميرا أولاً
+    document.getElementById('sendModal').classList.remove('active'); 
+}
 
 function showReceiveModal() {
     if (!currentUser) { showAuthModal('login'); return; }
@@ -1282,3 +1289,500 @@ window.addEventListener('click', e => {
 document.addEventListener('keypress', e => {
     if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.preventDefault();
 });
+
+// إغلاق الكاميرا عند الخروج من الصفحة
+window.addEventListener('beforeunload', () => {
+    if (html5QrCode && isScanning) {
+        html5QrCode.stop().catch(() => {});
+    }
+});
+
+// إغلاق الكاميرا عند إخفاء التطبيق
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && html5QrCode && isScanning) {
+        closeQRScanner();
+    }
+});
+
+// ==========================================
+// QR CODE SCANNER
+// ==========================================
+let html5QrCode = null;
+let isScanning = false;
+
+function openQRScanner() {
+    const container = document.getElementById('qrScannerContainer');
+    if (!container) return;
+    
+    // إذا كانت الكاميرا تعمل بالفعل، لا تفتحها مرة أخرى
+    if (isScanning) {
+        showNotification('تنبيه', 'الكاميرا تعمل بالفعل', 'info');
+        return;
+    }
+    
+    container.style.display = 'block';
+    
+    if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("qrReader");
+    }
+    
+    const config = { 
+        fps: 10, 
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0
+    };
+    
+    html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        onScanSuccess,
+        onScanError
+    ).then(() => {
+        isScanning = true;
+    }).catch(err => {
+        isScanning = false;
+        container.style.display = 'none';
+        showNotification('خطأ', 'لا يمكن الوصول للكاميرا. تأكد من منح الإذن', 'error');
+        console.error('Camera error:', err);
+    });
+}
+
+function onScanSuccess(decodedText, decodedResult) {
+    // إيقاف المسح الضوئي
+    closeQRScanner();
+    
+    // وضع الكود الممسوح في حقل رمز المستلم
+    const recipientInput = document.getElementById('recipientCode');
+    if (recipientInput) {
+        recipientInput.value = decodedText;
+        showNotification('تم!', 'تم قراءة رمز الإحالة بنجاح', 'success');
+    }
+}
+
+function onScanError(errorMessage) {
+    // تجاهل الأخطاء البسيطة أثناء المسح
+}
+
+function closeQRScanner() {
+    if (html5QrCode && isScanning) {
+        html5QrCode.stop().then(() => {
+            html5QrCode.clear();
+            isScanning = false;
+            const container = document.getElementById('qrScannerContainer');
+            if (container) container.style.display = 'none';
+        }).catch(err => {
+            isScanning = false;
+            console.error('Error stopping scanner:', err);
+            const container = document.getElementById('qrScannerContainer');
+            if (container) container.style.display = 'none';
+        });
+    }
+}
+
+// ==========================================
+// VIRTUAL FX MARKET SIMULATION (BETA)
+// Educational Simulation Only - No Real Money
+// ==========================================
+
+const TRADING_FEE = 0.005; // 0.5%
+let tradingMarketInterval = null;
+let tradingInitialized = false;
+let currentOrderType = 'buy';
+let selectedPair = 'USD-X';
+
+// Virtual Index Definitions
+const virtualIndexes = {
+    'USD-X': { name: 'مؤشر الدولار', base: 0.7650, volatility: 0.008, flag: '🇺🇸' },
+    'SAR-X': { name: 'مؤشر الريال', base: 0.2670, volatility: 0.006, flag: '🇸🇦' },
+    'KWD-X': { name: 'مؤشر الدينار الكويتي', base: 3.2500, volatility: 0.010, flag: '🇰🇼' },
+    'AED-X': { name: 'مؤشر الدرهم', base: 0.2100, volatility: 0.005, flag: '🇦🇪' },
+    'EUR-X': { name: 'مؤشر اليورو', base: 0.8350, volatility: 0.009, flag: '🇪🇺' }
+};
+
+// Market state (in-memory)
+let marketPrices = {};
+let marketOHLC = {};
+let userHoldings = {};
+let userTradeHistory = [];
+
+function initMarketPrices() {
+    Object.keys(virtualIndexes).forEach(symbol => {
+        const idx = virtualIndexes[symbol];
+        const noise = (Math.random() - 0.5) * idx.base * 0.02;
+        marketPrices[symbol] = {
+            price: parseFloat((idx.base + noise).toFixed(4)),
+            prevPrice: idx.base,
+            high24: idx.base,
+            low24: idx.base,
+            volume: Math.floor(Math.random() * 500 + 100),
+            change: 0
+        };
+    });
+}
+
+function generateOHLCData(symbol, count) {
+    const idx = virtualIndexes[symbol];
+    if (!idx) return [];
+    const data = [];
+    let price = marketPrices[symbol]?.price || idx.base;
+    for (let i = 0; i < count; i++) {
+        const change = (Math.random() - 0.48) * idx.base * idx.volatility * 2;
+        const open = price;
+        const close = parseFloat((price + change).toFixed(4));
+        const high = parseFloat((Math.max(open, close) + Math.random() * idx.base * idx.volatility).toFixed(4));
+        const low = parseFloat((Math.min(open, close) - Math.random() * idx.base * idx.volatility).toFixed(4));
+        const vol = Math.floor(Math.random() * 200 + 20);
+        data.push({ open, high, low, close, volume: vol, up: close >= open });
+        price = close;
+    }
+    marketOHLC[symbol] = data;
+    return data;
+}
+
+function updateMarketTick() {
+    Object.keys(virtualIndexes).forEach(symbol => {
+        const idx = virtualIndexes[symbol];
+        const state = marketPrices[symbol];
+        if (!state) return;
+
+        // Mean-reverting random walk with controlled volatility
+        const drift = (idx.base - state.price) * 0.01;
+        const shock = (Math.random() - 0.5) * idx.base * idx.volatility;
+        const newPrice = parseFloat((state.price + drift + shock).toFixed(4));
+
+        state.prevPrice = state.price;
+        state.price = Math.max(idx.base * 0.7, Math.min(idx.base * 1.3, newPrice));
+        state.high24 = Math.max(state.high24, state.price);
+        state.low24 = Math.min(state.low24, state.price);
+        state.volume += Math.floor(Math.random() * 30);
+        state.change = ((state.price - idx.base) / idx.base * 100);
+
+        // Append to OHLC
+        if (marketOHLC[symbol] && marketOHLC[symbol].length > 0) {
+            const last = marketOHLC[symbol][marketOHLC[symbol].length - 1];
+            const up = state.price >= last.close;
+            marketOHLC[symbol].push({
+                open: last.close,
+                high: Math.max(last.close, state.price),
+                low: Math.min(last.close, state.price),
+                close: state.price,
+                volume: Math.floor(Math.random() * 100 + 10),
+                up
+            });
+            if (marketOHLC[symbol].length > 40) marketOHLC[symbol].shift();
+        }
+    });
+
+    // Update UI for selected pair
+    renderTradingPriceCard();
+    renderTradingChart();
+    calcTradingTotal();
+    saveMarketToFirebase();
+}
+
+function renderTradingPriceCard() {
+    const state = marketPrices[selectedPair];
+    if (!state) return;
+    const idx = virtualIndexes[selectedPair];
+
+    updateElement('tradingPairLabel', `DC / ${selectedPair}`);
+    updateElement('tradingCurrentPrice', state.price.toFixed(4));
+    updateElement('tradingHigh24', state.high24.toFixed(4));
+    updateElement('tradingLow24', state.low24.toFixed(4));
+    updateElement('tradingVol24', state.volume.toLocaleString());
+
+    const changeEl = document.getElementById('tradingPriceChange');
+    if (changeEl) {
+        const isUp = state.change >= 0;
+        changeEl.textContent = `${isUp ? '+' : ''}${state.change.toFixed(2)}%`;
+        changeEl.className = `trading-price-change ${isUp ? 'positive' : 'negative'}`;
+    }
+
+    updateElement('tradingOrderPrice', `1 DC = ${state.price.toFixed(4)} ${selectedPair}`);
+}
+
+function renderTradingChart() {
+    const data = marketOHLC[selectedPair];
+    if (!data || !data.length) return;
+
+    const container = document.getElementById('tradingCandleChart');
+    const volContainer = document.getElementById('tradingVolumeBars');
+    if (!container) return;
+
+    const maxP = Math.max(...data.map(d => d.high));
+    const minP = Math.min(...data.map(d => d.low));
+    const range = maxP - minP || 0.001;
+    const maxVol = Math.max(...data.map(d => d.volume)) || 1;
+
+    container.innerHTML = data.map(d => {
+        const height = ((d.close - minP) / range) * 100;
+        return `<div class="t-candle ${d.up ? 'up' : 'down'}" style="height:${Math.max(4, height)}%"></div>`;
+    }).join('');
+
+    if (volContainer) {
+        volContainer.innerHTML = data.map(d => {
+            const h = (d.volume / maxVol) * 100;
+            return `<div class="t-vol" style="height:${Math.max(3, h)}%"></div>`;
+        }).join('');
+    }
+}
+
+function changeTradingChartPeriod(period, btn) {
+    const btns = document.querySelectorAll('.trading-chart-section .period-btn');
+    btns.forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    const counts = { '5m': 20, '15m': 28, '1h': 36, '1d': 40 };
+    generateOHLCData(selectedPair, counts[period] || 28);
+    renderTradingChart();
+}
+
+function selectTradingPair(symbol) {
+    selectedPair = symbol;
+    document.querySelectorAll('.pair-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.symbol === symbol);
+    });
+    if (!marketOHLC[symbol] || marketOHLC[symbol].length === 0) {
+        generateOHLCData(symbol, 28);
+    }
+    renderTradingPriceCard();
+    renderTradingChart();
+    calcTradingTotal();
+}
+
+function switchOrderType(type) {
+    currentOrderType = type;
+    const buyTab = document.getElementById('orderTabBuy');
+    const sellTab = document.getElementById('orderTabSell');
+    const execBtn = document.getElementById('btnExecuteTrade');
+
+    if (type === 'buy') {
+        buyTab.classList.add('active');
+        sellTab.classList.remove('active');
+        if (execBtn) { execBtn.className = 'btn-trade-execute buy'; execBtn.innerHTML = '<i class="fas fa-check-circle"></i> تنفيذ الشراء'; }
+    } else {
+        buyTab.classList.remove('active');
+        sellTab.classList.add('active');
+        if (execBtn) { execBtn.className = 'btn-trade-execute sell'; execBtn.innerHTML = '<i class="fas fa-check-circle"></i> تنفيذ البيع'; }
+    }
+    calcTradingTotal();
+}
+
+function calcTradingTotal() {
+    const amount = parseFloat(document.getElementById('tradingAmount')?.value) || 0;
+    const state = marketPrices[selectedPair];
+    if (!state) return;
+
+    const fee = amount * TRADING_FEE;
+    const total = currentOrderType === 'buy' ? (amount + fee) : (amount - fee);
+
+    updateElement('tradingOrderPrice', `1 DC = ${state.price.toFixed(4)} ${selectedPair}`);
+    updateElement('tradingOrderFee', fee.toFixed(4) + ' DC');
+    updateElement('tradingOrderTotal', total.toFixed(4) + ' DC');
+}
+
+function setTradingQuick(percent) {
+    if (!currentUser) return;
+    const balEl = document.getElementById('tradingBalance');
+    if (!balEl) return;
+    const bal = parseFloat(balEl.textContent) || 0;
+
+    if (currentOrderType === 'buy') {
+        const maxBuy = bal / (1 + TRADING_FEE);
+        document.getElementById('tradingAmount').value = (maxBuy * percent).toFixed(2);
+    } else {
+        const holdingQty = userHoldings[selectedPair]?.quantity || 0;
+        document.getElementById('tradingAmount').value = (holdingQty * percent).toFixed(2);
+    }
+    calcTradingTotal();
+}
+
+async function executeTrade() {
+    if (!currentUser) { showNotification('خطأ', 'سجّل الدخول أولاً', 'error'); return; }
+
+    const amount = parseFloat(document.getElementById('tradingAmount')?.value);
+    if (!amount || amount <= 0) { showNotification('خطأ', 'أدخل كمية صحيحة', 'error'); return; }
+
+    const state = marketPrices[selectedPair];
+    if (!state) return;
+
+    const fee = amount * TRADING_FEE;
+    const price = state.price;
+
+    try {
+        const snap = await database.ref(`users/${currentUser.uid}`).once('value');
+        const userData = snap.val();
+        if (!userData) return;
+
+        let balance = parseFloat(userData.balance || 0);
+
+        if (currentOrderType === 'buy') {
+            const totalCost = amount + fee;
+            if (balance < totalCost) { showNotification('خطأ', 'رصيد غير كافٍ', 'error'); return; }
+
+            balance -= totalCost;
+
+            // Update holdings
+            const holdSnap = await database.ref(`holdings/${currentUser.uid}/${selectedPair}`).once('value');
+            const existing = holdSnap.val() || { quantity: 0, avgCost: 0 };
+            const newQty = existing.quantity + amount;
+            const newAvg = ((existing.avgCost * existing.quantity) + (price * amount)) / newQty;
+
+            await database.ref(`holdings/${currentUser.uid}/${selectedPair}`).set({ quantity: newQty, avgCost: parseFloat(newAvg.toFixed(6)) });
+            await database.ref(`users/${currentUser.uid}`).update({ balance });
+
+            // Record trade
+            await database.ref(`trades/${currentUser.uid}`).push({
+                type: 'buy', symbol: selectedPair, amount, price, fee,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            await addTransaction(currentUser.uid, { type: 'buy', amount: fee, description: `شراء تداول ${amount.toFixed(2)} DC @ ${price.toFixed(4)} ${selectedPair}`, status: 'completed' });
+
+            showNotification('تم الشراء! ✅', `${amount.toFixed(2)} DC بسعر ${price.toFixed(4)} ${selectedPair}`, 'success');
+        } else {
+            // Sell
+            const holdSnap = await database.ref(`holdings/${currentUser.uid}/${selectedPair}`).once('value');
+            const existing = holdSnap.val();
+            if (!existing || existing.quantity < amount) { showNotification('خطأ', 'كمية غير كافية للبيع', 'error'); return; }
+
+            const proceeds = amount - fee;
+            balance += proceeds;
+            const newQty = existing.quantity - amount;
+
+            if (newQty <= 0.001) {
+                await database.ref(`holdings/${currentUser.uid}/${selectedPair}`).remove();
+            } else {
+                await database.ref(`holdings/${currentUser.uid}/${selectedPair}`).update({ quantity: newQty });
+            }
+
+            await database.ref(`users/${currentUser.uid}`).update({ balance });
+
+            await database.ref(`trades/${currentUser.uid}`).push({
+                type: 'sell', symbol: selectedPair, amount, price, fee,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            await addTransaction(currentUser.uid, { type: 'sell', amount: proceeds, description: `بيع تداول ${amount.toFixed(2)} DC @ ${price.toFixed(4)} ${selectedPair}`, status: 'completed' });
+
+            showNotification('تم البيع! ✅', `${amount.toFixed(2)} DC بسعر ${price.toFixed(4)} ${selectedPair}`, 'success');
+        }
+
+        document.getElementById('tradingAmount').value = '';
+        calcTradingTotal();
+        loadTradingHoldings();
+        loadTradeHistory();
+
+    } catch (e) {
+        console.error('Trade error:', e);
+        showNotification('خطأ', 'فشلت عملية التداول', 'error');
+    }
+}
+
+async function loadTradingHoldings() {
+    if (!currentUser) return;
+    const list = document.getElementById('tradingHoldingsList');
+    if (!list) return;
+
+    try {
+        const snap = await database.ref(`holdings/${currentUser.uid}`).once('value');
+        const data = snap.val();
+        if (!data || Object.keys(data).length === 0) {
+            list.innerHTML = '<div class="empty-state"><i class="fas fa-briefcase"></i><p>لا توجد ممتلكات بعد</p></div>';
+            userHoldings = {};
+            return;
+        }
+
+        userHoldings = data;
+        list.innerHTML = Object.keys(data).map(symbol => {
+            const h = data[symbol];
+            const currentPrice = marketPrices[symbol]?.price || virtualIndexes[symbol]?.base || 1;
+            const pnl = ((currentPrice - h.avgCost) / h.avgCost * 100);
+            const pnlClass = pnl >= 0 ? 'positive' : 'negative';
+            const flag = virtualIndexes[symbol]?.flag || '💱';
+            return `<div class="holding-item">
+                <div class="holding-icon">${flag}</div>
+                <div class="holding-info">
+                    <div class="holding-symbol">DC / ${symbol}</div>
+                    <div class="holding-qty">الكمية: ${h.quantity.toFixed(2)} DC</div>
+                </div>
+                <div class="holding-value">
+                    <div class="holding-pnl ${pnlClass}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}%</div>
+                    <div class="holding-cost">التكلفة: ${h.avgCost.toFixed(4)}</div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch (e) { console.error('Error loading holdings:', e); }
+}
+
+async function loadTradeHistory() {
+    if (!currentUser) return;
+    const list = document.getElementById('tradingHistoryList');
+    if (!list) return;
+
+    try {
+        const snap = await database.ref(`trades/${currentUser.uid}`).orderByChild('timestamp').limitToLast(15).once('value');
+        const trades = [];
+        snap.forEach(c => trades.push({ id: c.key, ...c.val() }));
+        trades.sort((a, b) => b.timestamp - a.timestamp);
+
+        if (trades.length === 0) {
+            list.innerHTML = '<div class="empty-state"><i class="fas fa-history"></i><p>لا توجد صفقات بعد</p></div>';
+            return;
+        }
+
+        list.innerHTML = trades.map(t => {
+            const isBuy = t.type === 'buy';
+            const date = new Date(t.timestamp).toLocaleDateString('ar-IQ', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+            return `<div class="trade-history-item">
+                <div class="trade-hist-icon ${t.type}"><i class="fas fa-arrow-${isBuy ? 'up' : 'down'}"></i></div>
+                <div class="trade-hist-info">
+                    <div class="trade-hist-pair">${isBuy ? 'شراء' : 'بيع'} DC/${t.symbol}</div>
+                    <div class="trade-hist-date">${date}</div>
+                </div>
+                <div class="trade-hist-amount ${isBuy ? 'negative' : 'positive'}">${isBuy ? '-' : '+'}${t.amount.toFixed(2)} DC</div>
+            </div>`;
+        }).join('');
+    } catch (e) { console.error('Error loading trade history:', e); }
+}
+
+function saveMarketToFirebase() {
+    if (!currentUser) return;
+    // Save market prices snapshot periodically
+    const pricesData = {};
+    Object.keys(marketPrices).forEach(symbol => {
+        pricesData[symbol] = {
+            price: marketPrices[symbol].price,
+            change: marketPrices[symbol].change,
+            volume: marketPrices[symbol].volume
+        };
+    });
+    database.ref('market').update(pricesData).catch(() => {});
+}
+
+function initTradingScreen() {
+    if (!tradingInitialized) {
+        initMarketPrices();
+        Object.keys(virtualIndexes).forEach(s => generateOHLCData(s, 28));
+        tradingInitialized = true;
+
+        // Start market updates every 8-12s
+        if (tradingMarketInterval) clearInterval(tradingMarketInterval);
+        const interval = 8000 + Math.floor(Math.random() * 4000);
+        tradingMarketInterval = setInterval(updateMarketTick, interval);
+    }
+
+    renderTradingPriceCard();
+    renderTradingChart();
+
+    // Update balance display
+    if (currentUser) {
+        database.ref(`users/${currentUser.uid}/balance`).once('value').then(snap => {
+            const bal = parseFloat(snap.val() || 0);
+            updateElement('tradingBalance', bal.toFixed(2) + ' DC');
+        });
+    }
+
+    loadTradingHoldings();
+    loadTradeHistory();
+    calcTradingTotal();
+}
